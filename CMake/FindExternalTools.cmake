@@ -327,6 +327,12 @@ set( SourceCodeArgs
   SVN_REVISION -r 149 # 01/31/2013 # 144 # 01/30/2013 version modified by Adrien for windows compilation # 137 # 01/16/2013 # 113 # 12/20/2012 updated for ITKv4.4.0
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DBUILD_TESTING:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
   -DVTK_DIR:PATH=${VTK_DIR}
@@ -346,18 +352,28 @@ AddToolMacro( dtiprocessTK ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_
 # ===== AtlasWerks ================================================================
 # code for external tools from http://github.com/Chaircrusher/AtlasWerksBuilder/blob/master/CMakeLists.txt
 set( SourceCodeArgs
-  URL "http://www.sci.utah.edu/releases/atlaswerks_v0.1.4/AtlasWerks_0.1.4_Linux.tgz"
-  URL_MD5 05fc867564e3340d0d448dd0daab578a
+#URL "http://www.sci.utah.edu/releases/atlaswerks_v0.1.4/AtlasWerks_0.1.4_Linux.tgz"
+#URL_MD5 05fc867564e3340d0d448dd0daab578a
+
+  GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/AtlasWerks.git"
+  GIT_TAG "ecd6891216ccbc7ccf3fdb589182ae503189a960" # 02-01-2013 fix bug with clang mac build
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DITK_DIR:PATH=${ITK_DIR}
   -DVTK_DIR:PATH=${VTK_DIR}
 #  -DFFTW_INSTALL_BASE_PATH:PATH=${FFTW_DIR} # will use find_library to find the libs
-#  -DFFTWF_LIB:PATH=${FFTW_DIR}/lib/libfftw3f.a # FFTW in float
-#  -DFFTWD_LIB:PATH=${FFTW_DIR}/lib/libfftw3.a # FFTW in double # needed for AtlasWerks to configure, not to compile with
+  -DFFTW_DIR:PATH=${FFTW_DIR}
+  -DFFTW_INCLUDE_PATH:PATH=${FFTW_DIR}/include # will be used to set FFTW_INSTALL_BASE_PATH by finding the path = remove the /include
+  -DFFTWF_LIB:PATH=${FFTW_DIR}/lib/libfftw3f.a # FFTW in float
+  -DFFTWD_LIB:PATH=${FFTW_DIR}/lib/libfftw3.a # FFTW in double # needed for AtlasWerks to configure, not to compile with
 #  -DFFTWF_THREADS_LIB:PATH=${FFTW_DIR}/lib/libfftw3f_threads.a
 #  -DFFTWD_THREADS_LIB:PATH=${FFTW_DIR}/lib/libfftw3_threads.a
-  -DFFTW_INCLUDE_PATH:PATH=${FFTW_DIR}/include # will be used to set FFTW_INSTALL_BASE_PATH by finding the path = remove the /include
   -DAtlasWerks_COMPILE_TESTING:BOOL=OFF
   -DatlasWerks_COMPILE_APP_Affine:BOOL=OFF
   -DatlasWerks_COMPILE_APP_AffineAtlas:BOOL=OFF
@@ -373,8 +389,6 @@ set( CMAKE_ExtraARGS
   -DatlasWerks_COMPILE_APP_TX_WERKS:BOOL=OFF
   -DatlasWerks_COMPILE_APP_UTILITIES:BOOL=OFF
   DEPENDS ${ITK_DEPEND} FFTWD FFTWF CLAPACK # Not CMake Arg -> directly after CMakeArg in ExternalProject_Add()
-#  PATCH_COMMAND patch -p0 -d ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build -i ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerksLAPACK.patch # !! no "" # !! patch doesn't exist on windows !
-  PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/CMakeLists-AtlasWerksLAPACK-Patched.txt ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks/CMakeLists.txt
   )
 set( Tools
   GreedyAtlas
@@ -384,13 +398,19 @@ AddToolMacro( AtlasWerks ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_Ex
 # ===== BRAINSFit =============================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSStandAlone.git"
-  GIT_TAG "812696334c11cca12b077bc9080836e2d92aa00e" # 01-30-2013 fix bug with ITK4.4 # "dd7ad3926a01fbdd098ea858fb95012ca16fb236" # 12/18/2012
+  GIT_TAG "1abcb55fafc1c9b94dabd33f5fcc40e248c326ba" # 01-30-2013 fix bug with ITK4.4 # "dd7ad3926a01fbdd098ea858fb95012ca16fb236" # 12/18/2012
 # "ff94032edafbc46a95f51db4bce894f0120b5992" : Slicer4 version # /devel/linux/Slicer4_linux64/Slicer/SuperBuild/External_BRAINSTools.cmake -> compiles but segfault
 # "31dcba577ee1bac5c4680fc9d7c830d6074020a9" : 12/13/2012
 # "98a46a2b08da882d46f04cbf0d539c2b73348049" # version from http://www.nitrc.org/svn/dtiprep/trunk/SuperBuild/External_BRAINSTools.cmake -> compiles but run error "undefined symbol: ModuleEntryPoint"
   )
 
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=OFF
   -DBRAINSTools_SUPERBUILD:BOOL=OFF
@@ -435,7 +455,7 @@ set( CMAKE_ExtraARGS
   -DLOCAL_SEM_EXECUTABLE_ONLY:BOOL=ON # Variable used in SlicerExecutionModel/CMake/SEMMacroBuildCLI.cmake:l.120 : if true, will only create executable without shared lib lib(exec)Lib.so
   DEPENDS ${ITK_DEPEND} # So ITK is compiled before
 #  PATCH_COMMAND patch -p0 -d ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build -i ${CMAKE_CURRENT_SOURCE_DIR}/CMake/BRAINS.patch # !! no "" # !! patch doesn't exist on windows !
-  PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeBRAINS3BuildMacros-Patched.cmake ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/BRAINS/BRAINSCommonLib/BuildScripts/CMakeBRAINS3BuildMacros.cmake
+#  PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeBRAINS3BuildMacros-Patched.cmake ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/BRAINS/BRAINSCommonLib/BuildScripts/CMakeBRAINS3BuildMacros.cmake
   )
 set( Tools
   BRAINSFit
@@ -451,6 +471,12 @@ set( SourceCodeArgs
   SVN_REVISION -r 1685 # 12/13/2012
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=OFF
   -DANTS_SUPERBUILD:BOOL=OFF
@@ -479,6 +505,12 @@ set( SourceCodeArgs
 # http://github.com/midas-journal/midas-journal-742/tree/master/ResampleDTIInsightJournal
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_GENERATECLP:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
@@ -498,6 +530,12 @@ set( SourceCodeArgs
   SVN_REVISION -r 30 # 01/28/2013
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DANTSTOOL:PATH=${ANTSPath}
   -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
   -DBRAINSFitTOOL:PATH=${BRAINSFitPath}
@@ -530,6 +568,12 @@ set( SourceCodeArgs
   SVN_REVISION -r 5888 # 12/13/2012
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DITK_DIR:PATH=${ITK_DIR}
   DEPENDS ${ITK_DEPEND}
   )
@@ -546,6 +590,12 @@ set( SourceCodeArgs
   SVN_REVISION -r 16 # 12/13/2012
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
   -DITK_DIR:PATH=${ITK_DIR}
   DEPENDS ${ITK_DEPEND}
@@ -563,6 +613,12 @@ set( SourceCodeArgs
   SVN_REVISION -r 41 # 01/29/2013
   )
 set( CMAKE_ExtraARGS
+  -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_LINKER_FLAGS:STRING=${CMAKE_LINKER_FLAGS}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DCOMPILE_CONVERTITKFORMATS:BOOL=OFF
   -DCOMPILE_CROPTOOLS:BOOL=ON
   -DCOMPILE_CURVECOMPARE:BOOL=OFF
