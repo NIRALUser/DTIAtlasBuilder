@@ -14,6 +14,10 @@
 class ScriptWriter
 {
   public:
+
+/* SUB  WRITING FUNCTIONS */
+    std::string pyExecuteCommandPreprocessCase ( std::string NameOfFileVarToTest, std::string NameOfCmdVarToExec, std::string ErrorTxtToDisplay, std::string SpacesBeforeFirstIf );
+
 /*WRITING FUNCTIONS*/
     void WriteScript();
     void Preprocess();

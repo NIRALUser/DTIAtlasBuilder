@@ -60,7 +60,6 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
     set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=636&screenshot_id=607")
     set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/0/02/DTIAtlasBuilder_Interface.png")
     set(EXTENSION_STATUS Beta)
-#    set(EXTENSION_DEPENDS "boost")
     set(EXTENSION_BUILD_SUBDIRECTORY DTIAtlasBuilder-build)
   endif()
 

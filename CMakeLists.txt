@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 CMAKE_POLICY(VERSION 2.8)
 
 option(InnerBuildCMakeLists OFF) # Not even useful
+mark_as_advanced(InnerBuildCMakeLists)
 
 if(InnerBuildCMakeLists) # For the DTIAB external project
 

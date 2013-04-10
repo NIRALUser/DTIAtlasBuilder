@@ -275,6 +275,8 @@ if(COMPILE_EXTERNAL_DTIReg) # BatchMake only needed for DTIReg
     message("BatchMake not found. It will be downloaded and recompiled, unless a path is manually specified in the BatchMake_DIR variable.") # Not a Warning = just info
     set(RecompileBatchMake ON) # If not found, recompile it
   endif(BatchMake_FOUND )
+else(COMPILE_EXTERNAL_DTIReg)
+  set(RecompileBatchMake OFF) # if has been enabled by if(RecompileITK): No DTI-Reg = No BatchMake
 endif(COMPILE_EXTERNAL_DTIReg)
 
 if(RecompileBatchMake)
@@ -395,8 +397,6 @@ set( CMAKE_ExtraARGS
   -DatlasWerks_COMPILE_APP_TX_WERKS:BOOL=OFF
   -DatlasWerks_COMPILE_APP_UTILITIES:BOOL=OFF
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} FFTW CLAPACK # Not CMake Arg -> directly after CMakeArg in ExternalProject_Add()
-#  PATCH_COMMAND patch -p0 -d ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build -i ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerksLAPACK.patch # !! no "" # !! patch doesn't exist on windows !
-#  PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/CMakeLists-AtlasWerksLAPACK-Patched.txt ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks/CMakeLists.txt
   )
 set( Tools
   GreedyAtlas
@@ -457,8 +457,6 @@ set( CMAKE_ExtraARGS
   -DUSE_GTRACT:BOOL=OFF
   -DLOCAL_SEM_EXECUTABLE_ONLY:BOOL=ON # Variable used in SlicerExecutionModel/CMake/SEMMacroBuildCLI.cmake:l.120 : if true, will only create executable without shared lib lib(exec)Lib.so
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} # So ITK is compiled before
-#  PATCH_COMMAND patch -p0 -d ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build -i ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/BRAINS.patch # !! no "" # !! patch doesn't exist on windows !
-#  PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/CMakeBRAINS3BuildMacros-Patched.cmake ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/BRAINS/BRAINSCommonLib/BuildScripts/CMakeBRAINS3BuildMacros.cmake
   )
 set( Tools
   BRAINSFit
@@ -467,14 +465,6 @@ set( Tools
 AddToolMacro( BRAINS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
 
 # ===== ANTS/WarpMultiTransform =====================================================
-if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION ) # Boost compiled as extension in Slicer
-  set(Boost_DIR ${CMAKE_CURRENT_BINARY_DIR}/../boost-build) # ${CMAKE_CURRENT_BINARY_DIR} is [ExtsBuildDir]/DTIAtlasBuilder-build
-  set(ANTS_SUPERBUILD OFF)
-else()
-  set(Boost_DIR "")
-  set(ANTS_SUPERBUILD ON) # because needs boost
-endif()
-
 set( SourceCodeArgs
   # SVN_REPOSITORY "http://advants.svn.sourceforge.net/svnroot/advants/trunk"
   # SVN_REVISION -r 1685 # 12/13/2012
@@ -484,8 +474,7 @@ set( SourceCodeArgs
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=OFF
-  -DANTS_SUPERBUILD:BOOL=ON#${ANTS_SUPERBUILD}
-#  -DBoost_DIR:PATH=${Boost_DIR}
+  -DANTS_SUPERBUILD:BOOL=ON
   -DSuperBuild_ANTS_USE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
   -DUSE_SYSTEM_ITK:BOOL=ON
   -DITK_DIR:PATH=${ITK_DIR}
@@ -495,6 +484,7 @@ set( CMAKE_ExtraARGS
   -DUSE_VTK:BOOL=OFF
   -DVTK_DIR:PATH=${VTK_DIR}
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
+  PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/configureboostPatched.cmake ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/ANTS/SuperBuild/configureboost.cmake
   )
 set( Tools
   ANTS
