@@ -210,7 +210,7 @@ if(RecompileITK)
   # Download and compile ITKv4
   ExternalProject_Add(I4 # BRAINSStandAlone/SuperBuild/External_ITKv4.cmake # !! All args needed as they are # Name shorten from ITKv4 because Windows ITKv4 path limited to 50 chars
     GIT_REPOSITORY "${git_protocol}://itk.org/ITK.git"
-    GIT_TAG 3c03e162c7e287b81115e2175898482998b50a34 # master 01-31-13 4.4.0 : fixed extra itk namespaces # 555049f830d1c09f8d4d95904f429290467d39ab #2012-12-16 ITKv4.3.0
+    GIT_TAG 1866ef42887df677a6197ad11ed0ef6e9b239567 # 2013-04-03 (from Slicer) # 3c03e162c7e287b81115e2175898482998b50a34 # master 01-31-13 4.4.0 : fixed extra itk namespaces # 555049f830d1c09f8d4d95904f429290467d39ab #2012-12-16 ITKv4.3.0
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4 # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-b # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
     CMAKE_GENERATOR ${gen}
@@ -469,11 +469,12 @@ set( SourceCodeArgs
   # SVN_REPOSITORY "http://advants.svn.sourceforge.net/svnroot/advants/trunk"
   # SVN_REVISION -r 1685 # 12/13/2012
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
-  GIT_TAG "6cb624225fe99047b562acb1a0cb053dc98dbc50" # 2013-01-31 Move to new repository home
+  GIT_TAG "49a8e5911cc5cbd180f15c63ee8c545ebd3828f9" # 2013-04-11 Prevent Boost from compiling libs # 6cb624225fe99047b562acb1a0cb053dc98dbc50 # 2013-01-31 Move to new repository home
   )
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=OFF
+  -DBUILD_EXTERNAL_APPLICATIONS:BOOL=OFF
   -DANTS_SUPERBUILD:BOOL=ON
   -DSuperBuild_ANTS_USE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
   -DUSE_SYSTEM_ITK:BOOL=ON
@@ -482,9 +483,7 @@ set( CMAKE_ExtraARGS
   -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   -DUSE_VTK:BOOL=OFF
-  -DVTK_DIR:PATH=${VTK_DIR}
-  DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
-  PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/configureboostPatched.cmake ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/ANTS/SuperBuild/configureboost.cmake
+  DEPENDS ${ITK_DEPEND}
   )
 set( Tools
   ANTS

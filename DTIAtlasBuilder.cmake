@@ -43,12 +43,27 @@ else() # Unix
 endif()
 configure_file(DTIAtlasBuilder.xml.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml)
 
+# Send python path to the program by preprocessor definition: For testing, c++ program needs to know where Slicer's python is
+if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  # Python # Needed to use the python compiled with Slicer # "PYTHON_EXECUTABLE" given in SlicerConfig.cmake when find_package(Slicer REQUIRED)
+  if(WIN32)
+    set(SlicerPythonExec ${PYTHON_EXECUTABLE})
+  else(WIN32) # On Unix, "PYTHON_EXECUTABLE" is customPython* -> replace "customPython" by "python" (which also exists)
+    get_filename_component(SlicerPythonExecDir ${PYTHON_EXECUTABLE} PATH) # get the directory
+    set(SlicerPythonExec ${SlicerPythonExecDir}/python)
+  endif(WIN32)
+  install(PROGRAMS ${SlicerPythonExec} DESTINATION ${NOCLI_INSTALL_DIR})
+else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  set(SlicerPythonExec "")
+endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+
+# DTIAtlasBuilder target
 QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
 QT4_WRAP_UI(UI_FILES GUIwindow.ui)
 set(DTIABsources DTIAtlasBuilder.cxx GUI.h GUI.cxx ChangeHistory.h ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES})
 GENERATECLP(DTIABsources ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml) # include the GCLP file to the project
 add_executable(DTIAtlasBuilder ${DTIABsources})  # add the files contained by "DTIABsources" to the project
-set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}") # Add preprocessor definitions
+set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar} -DSlicerPythonExec='\"${SlicerPythonExec}\"'") # Add preprocessor definitions
 target_link_libraries(DTIAtlasBuilder ${QT_LIBRARIES} ${ITK_LIBRARIES})
 install(TARGETS DTIAtlasBuilder DESTINATION ${INSTALL_DIR}) # same if Slicer Ext or not
 
@@ -72,15 +87,6 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   set( ITK_DIR ${ITK_DIR_TMP} CACHE PATH "ITK PATH" FORCE )
   set( ITK_LIBRARIES ${ITK_LIBRARIES_TMP} CACHE PATH "ITK PATH" FORCE )
   set( SlicerExecutionModel_DIR ${SlicerExecutionModel_DIR_TMP} CACHE PATH "SlicerExecutionModel PATH" FORCE )
-
-  # Python # Needed to use the python compiled with Slicer # "PYTHON_EXECUTABLE" given in SlicerConfig.cmake when find_package(Slicer REQUIRED)
-  if(WIN32)
-    set(SlicerPythonExec ${PYTHON_EXECUTABLE})
-  else(WIN32) # On Unix, "PYTHON_EXECUTABLE" is customPython* -> replace "customPython" by "python" (which also exists)
-    get_filename_component(SlicerPythonExecDir ${PYTHON_EXECUTABLE} PATH) # get the directory
-    set(SlicerPythonExec ${SlicerPythonExecDir}/python)
-  endif(WIN32)
-  install(PROGRAMS ${SlicerPythonExec} DESTINATION ${NOCLI_INSTALL_DIR})
 
   # Create sym links during install step
   if(APPLE)
@@ -177,12 +183,12 @@ InstallToolMacro( NIRALUtilities OFF)
 
 #======================================================================================
 # Testing for DTIAtlasBuilder
-if(BUILD_TESTING AND NOT WIN32 AND NOT APPLE) # DTIAtlasBuilder fails on Windows and MacOS
+if(BUILD_TESTING)
   set(TestingSRCdirectory ${CMAKE_CURRENT_SOURCE_DIR}/Testing)
   set(TestingBINdirectory ${CMAKE_CURRENT_BINARY_DIR}/Testing)
   set(TestDataFolder ${CMAKE_CURRENT_SOURCE_DIR}/Data/Testing)
   add_library(DTIAtlasBuilderLib STATIC ${DTIABsources}) # STATIC is also the default
-  set_target_properties(DTIAtlasBuilderLib PROPERTIES COMPILE_FLAGS "-Dmain=ModuleEntryPoint -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}") # replace the main in DTIAtlasBuilder.cxx by the itkTest function ModuleEntryPoint
+  set_target_properties(DTIAtlasBuilderLib PROPERTIES COMPILE_FLAGS "-Dmain=ModuleEntryPoint -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar} -DSlicerPythonExec='\"${SlicerPythonExec}\"'") # replace the main in DTIAtlasBuilder.cxx by the itkTest function ModuleEntryPoint
   target_link_libraries(DTIAtlasBuilderLib ${QT_LIBRARIES} ${ITK_LIBRARIES})
   set_target_properties(DTIAtlasBuilderLib PROPERTIES LABELS DTIAtlasBuilder)
   # Create Tests

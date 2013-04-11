@@ -23,49 +23,25 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include <itksys/SystemTools.hxx> // for FindProgram() and GetFilenamePath()
-//#include <itksys/Process.h> // itksysProcess
 
-/* Values of the C variables:
-F_OK= 0
-W_OK= 2
-R_OK= 4
-X_OK= 1
-*/
+/* ITK modes = same values than the C variables: F_OK W_OK R_OK X_OK */
 mode_t ITKmode_F_OK = 0;
 mode_t ITKmode_W_OK = 2;
 mode_t ITKmode_R_OK = 4;
 mode_t ITKmode_X_OK = 1;
 
-/* Process variables in itksys/Process.h
-itksysProcess_State_Starting    = 0
-itksysProcess_State_Error    = 1
-itksysProcess_State_Exception    = 2
-itksysProcess_State_Executing    = 3
-itksysProcess_State_Exited    = 4
-itksysProcess_State_Expired    = 5
-itksysProcess_State_Killed    = 6
-itksysProcess_State_Disowned    = 7
+/* DTIAB version check:
+Version will be written in a log file when computing
+to display a warning if a new compute is done afterwards with a newer version
+1.0 : No version file
+1.1 : Introducing version file
+      Renaming AW folder to Diffeomorphic folders (folders renamed in python script)
+      Renaming GreedyAtlas' Def Fields to HField
+      Renaming Final Def Fields to GlobalDisplacementField
 */
+#define DTIABversion "1.2"
 
-/*
-itksysProcess* TestProcess = itksysProcess_New();
-char const* tab[] = {"sleep","5",NULL};
-std::vector<const char*> cmd;
-cmd.push_back("sleep");
-cmd.push_back("5");
-cmd.push_back(0);
-itksysProcess_SetCommand(TestProcess, tab);
-itksysProcess_SetCommand(TestProcess, &*cmd.begin());
-itksysProcess_SetOption(TestProcess, itksysProcess_Option_Detach, 1); // In another independant process = idem fork()
-itksysProcess_SetPipeShared( TestProcess, itksysProcess_Pipe_STDERR, 1); // Needed to have the std outputs in the terminal
-itksysProcess_SetPipeShared( TestProcess, itksysProcess_Pipe_STDOUT, 1);
-itksysProcess_Execute(TestProcess);
-itksysProcess_WaitForExit(TestProcess,NULL); // NULL = no timeout
-int ExitCode=itksysProcess_GetExitCode(TestProcess);
-std::cout<<ExitCode<<std::endl;
-itksysProcess_Delete(TestProcess);
-*/
-
+/* homemade */
 #include "GUI.h"
 #include "ScriptWriter.h"
 #include "ChangeHistory.h"
@@ -79,17 +55,6 @@ itksysProcess_Delete(TestProcess);
 #define Platform "linux"
 #endif
 
-/* DTIAB version check:
-Version will be written in a log file when computing
-to display a warning if a new compute is done afterwards with a newer version
-1.0 : No version file
-1.1 : Introducing version file
-      Renaming AW folder to Diffeomorphic folders (folders renamed in python script)
-      Renaming GreedyAtlas' Def Fields to HField
-      Renaming Final Def Fields to GlobalDisplacementField
-*/
-#define DTIABversion "1.2"
-
 // DTIAtlasBuilder_BUILD_SLICER_EXTENSION is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
 
   /////////////////////////////////////////
@@ -98,16 +63,9 @@ to display a warning if a new compute is done afterwards with a newer version
   
 GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, bool overwrite, bool noGUI, std::string commandRan) : QMainWindow()
 {
-/*  std::cout<<"Command Line ran command: "<<commandRan<<std::endl;
-  std::cout<<"Command Line parameter file : "<<ParamFile<<std::endl;
-  std::cout<<"Command Line configuration file : "<<ConfigFile<<std::endl;
-  std::cout<<"Command Line dataset file : "<<CSVFile<<std::endl;
-*/
   setupUi(this);
 
   m_ErrorDetectedInConstructor=false;
-
-//  ExecStatusLabel->setText("                       "); // fill with spaces
 
 /* Script writing object */
   m_scriptwriter = new ScriptWriter; // delete in "void GUI::ExitProgram()"
@@ -125,7 +83,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   QObject::connect(m_ScriptRunningQTimer, SIGNAL(timeout()), this, SLOT(UpdateScriptRunningGUIDisplay()));
 
 /* Error message if windows or mac */
-  if(Platform == "mac" || Platform == "win")
+  if( (std::string)Platform == "mac" || (std::string)Platform == "win")
   {
     if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION) QMessageBox::critical(this, "DTIAtlasBuilder not working", "This program is currently not working as it should on this platform.\nPlease do not hit the compute button, or the process will fail.\nYou can find other useful tools in Slicer:\n> DTI-Reg\n>Resample DTI Volume - log euclidean");
     else QMessageBox::critical(this, "DTIAtlasBuilder not working", "This program is currently not working as it should on this platform.\nPlease do not hit the compute button, or the process will fail.\nIf the package was compiled or downloaded, you will find other useful tools in the specified install directory.");
@@ -283,12 +241,12 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
 
   // If DTIAB is built as an SlicerExtension, give the path to the folder containing external non cli tools
   // If no SicerExtension, find_program will just search there and find nothing -> not an issue
-  if(Platform == "linux" || Platform == "win") m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../../../ExternalBin"; // the executable will be in Ext/lib/Slicer4.2/cli_modules and the tools will be in Ext/ExternalBin
-  else if(Platform == "mac") m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../ExternalBin";
+  if((std::string)Platform == "linux" || (std::string)Platform == "win") m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../../../ExternalBin"; // the executable will be in Ext/lib/Slicer4.2/cli_modules and the tools will be in Ext/ExternalBin
+  else if((std::string)Platform == "mac") m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../ExternalBin";
   m_FindProgramDTIABExecDirVec.push_back(m_DTIABSlicerExtensionExternalBinDir);
 
   // On Mac if Slicer Ext, paths to BRAINS (compiled within Slicer) are not set in the PATH env var, so add it to the search vector
-  if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION && Platform=="mac")
+  if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION && (std::string)Platform=="mac")
   {
     std::string SlicerExtMacBRAINSPath = m_DTIABSlicerExtensionExternalBinDir + "/../../../cli_modules";
     m_FindProgramDTIABExecDirVec.push_back(SlicerExtMacBRAINSPath);
@@ -703,14 +661,6 @@ void GUI::DisplayAffineQC() /*SLOT*/
 
   QProcess* QCQProcess = new QProcess;
   QCQProcess->start(program.c_str());
-
-/*  int pid=fork(); // cloning the process : returns the son's pid in the father and 0 in the son
-
-  if(pid==0) // we are in the son
-  {
-    int status = system( program.c_str() );
-    _exit(status); // son ends
-  }*/
 }
 
 void GUI::DisplayDeformQC() /*SLOT*/
@@ -732,14 +682,6 @@ void GUI::DisplayDeformQC() /*SLOT*/
 
   QProcess* QCQProcess = new QProcess;
   QCQProcess->start(program.c_str());
-
-/*  int pid=fork(); // cloning the process : returns the son's pid in the father and 0 in the son
-
-  if(pid==0) // we are in the son
-  {
-    int status = system( program.c_str() );
-    _exit(status); // son ends
-  }*/
 }
 
 void GUI::DisplayResampQC() /*SLOT*/
@@ -761,14 +703,6 @@ void GUI::DisplayResampQC() /*SLOT*/
 
   QProcess* QCQProcess = new QProcess;
   QCQProcess->start(program.c_str());
-
-/*  int pid=fork(); // cloning the process : returns the son's pid in the father and 0 in the son
-
-  if(pid==0) // we are in the son
-  {
-    int status = system( program.c_str() );
-    _exit(status); // son ends
-  }*/
 }
 
 void GUI::DisableQC() // disable QC buttons
@@ -1174,29 +1108,6 @@ int GUI::LoadParameters(QString paramFile, bool DiscardParametersCSV) // Discard
       return -1;
     }
     int ParamFileVersion = list.at(1).toInt();
-
-    // Declare array containing parameters names
-/*    std::vector< const char* > ParametersVector;
-
-    switch(ParamFileVersion)
-    {
-      case 1:{const char* ParametersArray[] ={"Output Folder",
-                "Atlas Template",
-                "SafetyMargin",
-                "Loops for the registration"};
-        ParametersVector.insert(ParametersVector.end(), ParametersArray, ParametersArray+4);
-        break; }
-
-      case 2:{const char* ParametersArray[] ={"Output Folder",
-                "Atlas Template",
-                "SafetyMargin",
-                "Loops for the registration"};
-        ParametersVector.insert(ParametersVector.end(), ParametersArray, ParametersArray+4);
-        break; }
-    }
-*/
-// for(int i =0; i< ParametersVector.size() ; i++) std::cout<<ParametersVector[i]<<std::endl;
-
 
     std::cout<<"| Loading Parameters file \'"<< paramFile.toStdString() <<"\'..."; // command line display
 
@@ -1910,17 +1821,6 @@ void GUI::SaveConfig() /*SLOT*/
 
 void GUI::ConfigDefault() /*SLOT*/
 {
-/* /tools/ITK/ITKv4.1.0/ITKv4.1.0_linux64/include/ITK-4.1/itksys/SystemTools.hxx */
-/**
-   * Find an executable in the system PATH, with optional extra paths
-*/
-/*  static kwsys_stl::string FindProgram(
-    const char* name,
-    const kwsys_stl::vector<kwsys_stl::string>& path = 
-    kwsys_stl::vector<kwsys_stl::string>(),
-    bool no_system_path = false);
-*/
-
   std::cout<<"| Searching the softwares..."; // command line display
 
   std::string program;
@@ -2738,12 +2638,22 @@ int GUI::LaunchScriptWriter()
 
 /* Find Python */ // m_PythonPath member because needed in LaunchScriptRunner()
   m_PythonPath = ""; // in case it has been used before
-  if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION) // Use the python executable copied from the Slicer build tree (python-build/bin/python) to the ExternalBin folder
+  if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
   {
-    m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/python";
-    if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) m_PythonPath=""; // If Slicer Extension and testing, ExternalBin folder does not exist so just leave it // itksys::SystemTools::GetPermissions() returns true if ok, -1 if not ok
-  }
-  if( m_PythonPath.empty() ) // Find and display Python version used // If not slicer ext -> empty, if slicer ext and test -> empty
+    m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/python"; // Use the python executable copied from the Slicer build tree (python-build/bin/python) to the ExternalBin folder
+
+    if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // If not here -> Testing: use Slicer's python
+    {
+      m_PythonPath = SlicerPythonExec; // SlicerPythonExec is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
+      if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // if still not here: use default python
+      {
+        m_PythonPath=""; // If Slicer Extension and testing, ExternalBin folder does not exist so just leave it // itksys::SystemTools::GetPermissions() returns true if ok, -1 if not ok
+      }
+
+    }
+  } // if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
+
+  if( m_PythonPath.empty() ) // Find Python version used // If not slicer ext -> empty, if slicer ext and test -> empty
   {
     m_PythonPath = itksys::SystemTools::FindProgram("python",m_FindProgramDTIABExecDirVec);
     if(m_PythonPath.empty())
@@ -2999,36 +2909,6 @@ int GUI::LaunchScriptRunner()
   ScriptRunningDisplayQLabel->setText( QString( text.c_str() ) );
 
   return 0;
-/*
-  if(!m_noGUI) // If GUI, not freeze it = use fork()
-  {
-    int pid=fork(); // cloning the process : returns the son's pid in the father and 0 in the son
-
-    if(pid==0) // we are in the  son : the father just keeps on running (window), the son will execute the script
-    {
-      int ExitCode = system( program.c_str() ); // son freezes here during execution of the script
-
-//      sigval value;
-//      value.sival_int = ExitCode;
-//      sigqueue(getppid(),SIGUSR1, value); // send a signal to the father (main window) with the value of the exit code of the script
-
-      if(ExitCode==0) kill(getppid(),SIGUSR1);
-      else kill(getppid(),SIGUSR2);
-
-      _exit(0); // son ends // exit terminates the calling process after cleanup; _exit terminates it immediately.
-    }
-
-    return 0;
-  }
-*/
-/* If need to not freeze the main window :
--> wait() or waitpid() make the process wait for the end of a son => FREEZE !!
-
-execl( program.c_str() , program.c_str(), NULL); // we REPLACE the son process by our command while the father is still running normally
-kill(getpid(),SIGKILL); // the son kills himself
-waitpid(pid, &ExitCode, 0); 
-if(ExitCode==0) kill(getppid(),SIGUSR1); // signal to the father than execution is done OK
-*/
 }
 
 void GUI::KillScriptQProcess() /* SLOT */
@@ -3049,7 +2929,7 @@ void GUI::KillScriptQProcess() /* SLOT */
       while( ! PID.isEmpty() ) // end of file = PID empty
       {
         std::cout<<"| Killing: "<< PID.toStdString() <<std::endl;
-        if(Platform == "mac" || Platform == "linux") // Kill PID
+        if((std::string)Platform == "mac" || (std::string)Platform == "linux") // Kill PID
         {
           std::string KillCommand = "kill " + PID.toStdString();
           QProcess * KillProcess = new QProcess;
@@ -3125,20 +3005,6 @@ void GUI::RunningFailed()
 
 void GUI::ProgressBar(int Progress) // value sent by python script in signal
 {
-//  if(!m_noGUI) progressBar->setValue( Progress ); // crashes when refreshed too quickly
   std::cout<<Progress<<"/100 complete"<<std::endl;
-
-/*  int nbCases=CaseListWidget->count();
-  int nbLoops=NbLoopsSpinBox->value();
-  // nbSteps = nbLoops+1 x (nbCases x (Generate FA, Normalize, Affine reg, Apply transfm, generate FA) + Compute average) + nonLinear reg + nbCases x Apply tfm + DTI average + nbCases x (1st resamp 2nd resamp) + DTI average
-  int nbSteps = (nbLoops+1)*(nbCases*5 + 1) + 1 + nbCases*1 + 1 + nbCases*2 + 1;
-  if(m_NeedToBeCropped==1) nbSteps = nbSteps + nbCases*1; // + Crop DTI
-
-  int progressStep;
-  if(nbSteps>=100) progressStep=1;
-  else progressStep=(int)((double)100/(double)nbSteps); // compute a %
-
-  int progressValue = progressBar->value() + progressStep;
-*/
 }
 
