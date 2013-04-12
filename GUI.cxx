@@ -2640,7 +2640,15 @@ int GUI::LaunchScriptWriter()
   m_PythonPath = ""; // in case it has been used before
   if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
   {
-    m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/python"; // Use the python executable copied from the Slicer build tree (python-build/bin/python) to the ExternalBin folder
+    // Use the python executable copied from the Slicer build tree (python-build/bin/python or customPython) to the ExternalBin folder
+    if((std::string)Platform == "linux" || (std::string)Platform == "mac")
+    {
+      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/customPython";
+    }
+    else if((std::string)Platform == "win")
+    {
+      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/python";
+    }
 
     if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // If not here -> Testing: use Slicer's python
     {

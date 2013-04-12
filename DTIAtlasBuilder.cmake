@@ -46,12 +46,7 @@ configure_file(DTIAtlasBuilder.xml.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilde
 # Send python path to the program by preprocessor definition: For testing, c++ program needs to know where Slicer's python is
 if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   # Python # Needed to use the python compiled with Slicer # "PYTHON_EXECUTABLE" given in SlicerConfig.cmake when find_package(Slicer REQUIRED)
-  if(WIN32)
-    set(SlicerPythonExec ${PYTHON_EXECUTABLE})
-  else(WIN32) # On Unix, "PYTHON_EXECUTABLE" is customPython* -> replace "customPython" by "python" (which also exists)
-    get_filename_component(SlicerPythonExecDir ${PYTHON_EXECUTABLE} PATH) # get the directory
-    set(SlicerPythonExec ${SlicerPythonExecDir}/python)
-  endif(WIN32)
+  set(SlicerPythonExec ${PYTHON_EXECUTABLE})
   install(PROGRAMS ${SlicerPythonExec} DESTINATION ${NOCLI_INSTALL_DIR})
 else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   set(SlicerPythonExec "")
