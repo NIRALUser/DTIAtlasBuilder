@@ -1,5 +1,7 @@
 #DTIAtlasBuilder
 
+Current stable release: [**1.2**](http://github.com/NIRALUser/DTIAtlasBuilder/tags "DTIAtlasBuilder tags")
+
 ##What?
 
 A tool to create an atlas from several DTI images

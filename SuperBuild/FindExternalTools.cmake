@@ -176,8 +176,6 @@ if(COMPILE_EXTERNAL_AtlasWerks) # FFTW D + F build one on(after) another
       -DBUILD_TESTING:BOOL=OFF
     INSTALL_COMMAND "" # No install step
     )
-  #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/CMakeLists-AtlasWerksLAPACK-Patched.txt.in ${CMAKE_CURRENT_BINARY_DIR}/CMakeLists-AtlasWerksLAPACK-Patched.txt @ONLY)
-  # In the patch : search before in the recompiled CLAPACK because needs to be compiled statically
 endif(COMPILE_EXTERNAL_AtlasWerks)
 
 # ITK and SlicerExecutionModel
@@ -495,8 +493,10 @@ AddToolMacro( ANTS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARG
 # ===== ResampleDTIlogEuclidean =====================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/ResampleDTIlogEuclidean.git"
-  GIT_TAG "84e691a0600128dbe1e9d41a80336e7083e73fa7" # 02/04/2013 fix comp with ITK4.4 + stat lib windows linkage error # "e78a9ea00d73a11cc52b3c457e32f1302a3403d4" # 12/20/2012
-#  URL "http://www.insight-journal.org/download/sourcecode/742/11/SourceCode11_ResampleDTIInsightJournal2.tar.gz"
+  GIT_TAG a2afcd57c931d224b91e6ce026cb499648e4f017 # 04-22-2013 addition of MatrixOffsetTransformBase support (ANTS affine tfm for DTIReg)
+# "84e691a0600128dbe1e9d41a80336e7083e73fa7" # 02/04/2013 fix comp with ITK4.4 + stat lib windows linkage error
+# "e78a9ea00d73a11cc52b3c457e32f1302a3403d4" # 12/20/2012
+# URL "http://www.insight-journal.org/download/sourcecode/742/11/SourceCode11_ResampleDTIInsightJournal2.tar.gz"
 # http://github.com/midas-journal/midas-journal-742/tree/master/ResampleDTIInsightJournal
   )
 set( CMAKE_ExtraARGS
@@ -516,7 +516,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 40 # 03/05/2013
+  SVN_REVISION -r 41 # 05/01/2013
   )
 set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}

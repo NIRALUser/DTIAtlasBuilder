@@ -56,6 +56,7 @@ to display a warning if a new compute is done afterwards with a newer version
 #endif
 
 // DTIAtlasBuilder_BUILD_SLICER_EXTENSION is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
+#define SlicerPythonExec "${SlicerPythonExec}" // configured in DTIAtlasBuilder.cmake
 
   /////////////////////////////////////////
  //            CONSTRUCTOR              //
@@ -95,139 +96,139 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   if(!m_noGUI)
   {
 /* Objects connections */
-  QObject::connect(ComputepushButton, SIGNAL(clicked()), this, SLOT(Compute()));
-  QObject::connect(StoppushButton, SIGNAL(clicked()), this, SLOT(KillScriptQProcess()));
-  QObject::connect(BrowseCSVPushButton, SIGNAL(clicked()), this, SLOT(ReadCSVSlot()));
-  QObject::connect(SaveCSVPushButton, SIGNAL(clicked()), this, SLOT(SaveCSVDatasetBrowse()));
-  QObject::connect(BrowseOutputPushButton, SIGNAL(clicked()), this, SLOT(OpenOutputBrowseWindow()));
-  QObject::connect(BrowseDTIRegExtraPathPushButton, SIGNAL(clicked()), this, SLOT(OpenDTIRegExtraPathBrowseWindow()));
-  QObject::connect(TemplateBrowsePushButton, SIGNAL(clicked()), this, SLOT(OpenTemplateBrowseWindow()));
-  QObject::connect(AddPushButton, SIGNAL(clicked()), this, SLOT(OpenAddCaseBrowseWindow()));
-  QObject::connect(RemovePushButton, SIGNAL(clicked()), this, SLOT(RemoveSelectedCases()));
-  RemovePushButton->setEnabled(false);
-  ComputepushButton->setEnabled(false);
-  StoppushButton->setEnabled(false);
+    QObject::connect(ComputepushButton, SIGNAL(clicked()), this, SLOT(Compute()));
+    QObject::connect(StoppushButton, SIGNAL(clicked()), this, SLOT(KillScriptQProcess()));
+    QObject::connect(BrowseCSVPushButton, SIGNAL(clicked()), this, SLOT(ReadCSVSlot()));
+    QObject::connect(SaveCSVPushButton, SIGNAL(clicked()), this, SLOT(SaveCSVDatasetBrowse()));
+    QObject::connect(BrowseOutputPushButton, SIGNAL(clicked()), this, SLOT(OpenOutputBrowseWindow()));
+    QObject::connect(BrowseDTIRegExtraPathPushButton, SIGNAL(clicked()), this, SLOT(OpenDTIRegExtraPathBrowseWindow()));
+    QObject::connect(TemplateBrowsePushButton, SIGNAL(clicked()), this, SLOT(OpenTemplateBrowseWindow()));
+    QObject::connect(AddPushButton, SIGNAL(clicked()), this, SLOT(OpenAddCaseBrowseWindow()));
+    QObject::connect(RemovePushButton, SIGNAL(clicked()), this, SLOT(RemoveSelectedCases()));
+    RemovePushButton->setEnabled(false);
+    ComputepushButton->setEnabled(false);
+    StoppushButton->setEnabled(false);
 
-  QObject::connect(actionLoad_parameters, SIGNAL(triggered()), this, SLOT(LoadParametersSlot()));
-  QObject::connect(actionSave_parameters, SIGNAL(triggered()), this, SLOT(SaveParametersSlot()));
-  QObject::connect(actionExit, SIGNAL(triggered()), this, SLOT(ExitProgram()));
-  QObject::connect(actionLoad_Software_Configuration, SIGNAL(triggered()), this, SLOT(LoadConfigSlot()));
-  QObject::connect(actionSave_Software_Configuration, SIGNAL(triggered()), this, SLOT(SaveConfig()));
-  QObject::connect(actionRead_Me, SIGNAL(triggered()), this, SLOT(ReadMe()));
+    QObject::connect(actionLoad_parameters, SIGNAL(triggered()), this, SLOT(LoadParametersSlot()));
+    QObject::connect(actionSave_parameters, SIGNAL(triggered()), this, SLOT(SaveParametersSlot()));
+    QObject::connect(actionExit, SIGNAL(triggered()), this, SLOT(ExitProgram()));
+    QObject::connect(actionLoad_Software_Configuration, SIGNAL(triggered()), this, SLOT(LoadConfigSlot()));
+    QObject::connect(actionSave_Software_Configuration, SIGNAL(triggered()), this, SLOT(SaveConfig()));
+    QObject::connect(actionRead_Me, SIGNAL(triggered()), this, SLOT(ReadMe()));
 
-  QObject::connect(InterpolTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(InterpolTypeComboBoxChanged(int)));
-  QObject::connect(TensInterpolComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(TensorInterpolComboBoxChanged(int)));
-  QObject::connect(RegMethodcomboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(RegMethodComboBoxChanged(int)));
+    QObject::connect(InterpolTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(InterpolTypeComboBoxChanged(int)));
+    QObject::connect(TensInterpolComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(TensorInterpolComboBoxChanged(int)));
+    QObject::connect(RegMethodcomboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(RegMethodComboBoxChanged(int)));
 
-  QObject::connect(DefaultButton, SIGNAL(clicked()), this, SLOT(ConfigDefault()));
-  QObject::connect(GAPath, SIGNAL(editingFinished()), this, SLOT(testGA())); // test the version of GreedyAtlas automatically when the text is changed manually ( not by a setText() )
-  QObject::connect(DTIRegPath, SIGNAL(editingFinished()), this, SLOT(testDTIReg())); // test the version of DTI-Reg automatically when the text is changed manually ( not by a setText() )
+    QObject::connect(DefaultButton, SIGNAL(clicked()), this, SLOT(ConfigDefault()));
+    QObject::connect(GAPath, SIGNAL(editingFinished()), this, SLOT(testGA())); // test the version of GreedyAtlas automatically when the text is changed manually ( not by a setText() )
+    QObject::connect(DTIRegPath, SIGNAL(editingFinished()), this, SLOT(testDTIReg())); // test the version of DTI-Reg automatically when the text is changed manually ( not by a setText() )
 
-  QObject::connect(GridProcesscheckBox, SIGNAL(stateChanged(int)), this, SLOT(GridProcesscheckBoxHasChanged(int)));
+    QObject::connect(GridProcesscheckBox, SIGNAL(stateChanged(int)), this, SLOT(GridProcesscheckBoxHasChanged(int)));
 
-  QObject::connect(AffineQCButton, SIGNAL(clicked()), this, SLOT(DisplayAffineQC()));
-  QObject::connect(DeformQCButton, SIGNAL(clicked()), this, SLOT(DisplayDeformQC()));
-  QObject::connect(ResampQCButton, SIGNAL(clicked()), this, SLOT(DisplayResampQC()));
+    QObject::connect(AffineQCButton, SIGNAL(clicked()), this, SLOT(DisplayAffineQC()));
+    QObject::connect(DeformQCButton, SIGNAL(clicked()), this, SLOT(DisplayDeformQC()));
+    QObject::connect(ResampQCButton, SIGNAL(clicked()), this, SLOT(DisplayResampQC()));
 
 /* Browse software path Buttons */
-  QSignalMapper *SoftButtonMapper = new QSignalMapper();
-  QObject::connect(SoftButtonMapper, SIGNAL(mapped(int)), this, SLOT( BrowseSoft(int) ));
+    QSignalMapper *SoftButtonMapper = new QSignalMapper();
+    QObject::connect(SoftButtonMapper, SIGNAL(mapped(int)), this, SLOT( BrowseSoft(int) ));
 
-  QObject::connect(ImagemathButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(ImagemathButton,1);
-  QObject::connect(ResampButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(ResampButton,2);
-  QObject::connect(CropDTIButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(CropDTIButton,3);
-  QObject::connect(dtiprocButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(dtiprocButton,4);
-  QObject::connect(BRAINSFitButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(BRAINSFitButton,5);
-  QObject::connect(GAButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(GAButton,6);
-  QObject::connect(dtiavgButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(dtiavgButton,7);
-  QObject::connect(DTIRegButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(DTIRegButton,8);
-  QObject::connect(unuButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(unuButton,9);
-  QObject::connect(MriWatcherButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
-  SoftButtonMapper->setMapping(MriWatcherButton,10);
+    QObject::connect(ImagemathButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(ImagemathButton,1);
+    QObject::connect(ResampButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(ResampButton,2);
+    QObject::connect(CropDTIButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(CropDTIButton,3);
+    QObject::connect(dtiprocButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(dtiprocButton,4);
+    QObject::connect(BRAINSFitButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(BRAINSFitButton,5);
+    QObject::connect(GAButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(GAButton,6);
+    QObject::connect(dtiavgButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(dtiavgButton,7);
+    QObject::connect(DTIRegButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(DTIRegButton,8);
+    QObject::connect(unuButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(unuButton,9);
+    QObject::connect(MriWatcherButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(MriWatcherButton,10);
 
 /* Reset software path Buttons */
-  QSignalMapper *ResetSoftButtonMapper = new QSignalMapper();
-  QObject::connect(ResetSoftButtonMapper, SIGNAL(mapped(int)), this, SLOT( ResetSoft(int) ));
+    QSignalMapper *ResetSoftButtonMapper = new QSignalMapper();
+    QObject::connect(ResetSoftButtonMapper, SIGNAL(mapped(int)), this, SLOT( ResetSoft(int) ));
 
-  QObject::connect(ImagemathResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(ImagemathResetButton,1);
-  QObject::connect(ResampResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(ResampResetButton,2);
-  QObject::connect(CropDTIResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(CropDTIResetButton,3);
-  QObject::connect(dtiprocResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(dtiprocResetButton,4);
-  QObject::connect(BRAINSFitResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(BRAINSFitResetButton,5);
-  QObject::connect(GAResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(GAResetButton,6);
-  QObject::connect(dtiavgResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(dtiavgResetButton,7);
-  QObject::connect(DTIRegResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(DTIRegResetButton,8);
-  QObject::connect(unuResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(unuResetButton,9);
-  QObject::connect(MriWatcherResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
-  ResetSoftButtonMapper->setMapping(MriWatcherResetButton,10);
+    QObject::connect(ImagemathResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(ImagemathResetButton,1);
+    QObject::connect(ResampResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(ResampResetButton,2);
+    QObject::connect(CropDTIResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(CropDTIResetButton,3);
+    QObject::connect(dtiprocResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(dtiprocResetButton,4);
+    QObject::connect(BRAINSFitResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(BRAINSFitResetButton,5);
+    QObject::connect(GAResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(GAResetButton,6);
+    QObject::connect(dtiavgResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(dtiavgResetButton,7);
+    QObject::connect(DTIRegResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(DTIRegResetButton,8);
+    QObject::connect(unuResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(unuResetButton,9);
+    QObject::connect(MriWatcherResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(MriWatcherResetButton,10);
 
 /* When any value changes, the value of m_ParamSaved is set to 0 */
-  QObject::connect(TemplateLineEdit, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(OutputFolderLineEdit, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(SafetyMargincheckBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(BFAffineTfmModecomboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(OverwritecheckBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(SL4checkBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(SL2checkBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(SL1checkBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(NbLoopsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(SL4spinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(nbIter4SpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(alpha4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(beta4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(gamma4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(maxPerturbation4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(SL2spinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(nbIter2SpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(alpha2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(beta2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(gamma2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(maxPerturbation2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(SL1spinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(nbIter1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(alpha1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(beta1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(gamma1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(maxPerturbation1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(TensTfmComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(InterpolTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(TensInterpolComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(DTIRegExtraPathlineEdit, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(RegMethodcomboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_windowComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_BSplineComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_nologComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_BRegTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_TfmModeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_NbPyrLevSpin, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_PyrLevItLine, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_ARegTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_TfmStepLine, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_IterLine, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_SimMetComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_SimParamDble, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_GSigmaDble, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(m_SmoothOffCheck, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(NbThreadsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
-  QObject::connect(GridProcesscheckBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(TemplateLineEdit, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(OutputFolderLineEdit, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(SafetyMargincheckBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(BFAffineTfmModecomboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(OverwritecheckBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(SL4checkBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(SL2checkBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(SL1checkBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(NbLoopsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(SL4spinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(nbIter4SpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(alpha4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(beta4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(gamma4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(maxPerturbation4DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(SL2spinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(nbIter2SpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(alpha2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(beta2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(gamma2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(maxPerturbation2DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(SL1spinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(nbIter1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(alpha1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(beta1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(gamma1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(maxPerturbation1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(TensTfmComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(InterpolTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(TensInterpolComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(DTIRegExtraPathlineEdit, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(RegMethodcomboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_windowComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_BSplineComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_nologComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_BRegTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_TfmModeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_NbPyrLevSpin, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_PyrLevItLine, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_ARegTypeComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_TfmStepLine, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_IterLine, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_SimMetComboBox, SIGNAL(currentIndexChanged (int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_SimParamDble, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_GSigmaDble, SIGNAL(valueChanged(double)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(m_SmoothOffCheck, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(NbThreadsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
+    QObject::connect(GridProcesscheckBox, SIGNAL(stateChanged(int)), this, SLOT(WidgetHasChangedParamNoSaved()));
 
   } //if(!m_noGUI)
 
@@ -236,13 +237,22 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
 /* SET the soft config */
   // set the path to the executable directory for FindProgram
   std::string DTIABExecutablePath= itksys::SystemTools::GetRealPath( itksys::SystemTools::GetFilenamePath(commandRan).c_str() ); // get the place where the running executable is
-  if(DTIABExecutablePath=="") DTIABExecutablePath= itksys::SystemTools::GetCurrentWorkingDirectory(); // If called by itself ($ DTIAtlasBuilder) = either in the PATH or in the current directory : will be found either way by find_program
+  if(DTIABExecutablePath=="")
+  {
+    DTIABExecutablePath= itksys::SystemTools::GetCurrentWorkingDirectory(); // If called by itself ($ DTIAtlasBuilder) = either in the PATH or in the current directory : will be found either way by find_program
+  }
   m_FindProgramDTIABExecDirVec.push_back(DTIABExecutablePath); // FindProgram will search in the executable directory too
 
   // If DTIAB is built as an SlicerExtension, give the path to the folder containing external non cli tools
   // If no SicerExtension, find_program will just search there and find nothing -> not an issue
-  if((std::string)Platform == "linux" || (std::string)Platform == "win") m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../../../ExternalBin"; // the executable will be in Ext/lib/Slicer4.2/cli_modules and the tools will be in Ext/ExternalBin
-  else if((std::string)Platform == "mac") m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../ExternalBin";
+  if((std::string)Platform == "linux" || (std::string)Platform == "win")
+  {
+    m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../../../ExternalBin"; // the executable will be in Ext/lib/Slicer4.2/cli_modules and the tools will be in Ext/ExternalBin
+  }
+  else if((std::string)Platform == "mac")
+  {
+    m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../ExternalBin";
+  }
   m_FindProgramDTIABExecDirVec.push_back(m_DTIABSlicerExtensionExternalBinDir);
 
   // On Mac if Slicer Ext, paths to BRAINS (compiled within Slicer) are not set in the PATH env var, so add it to the search vector
@@ -253,37 +263,67 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   }
 
   // Because ANTS is in m_DTIABSlicerExtensionExternalBinDir when Slicer Ext
-  if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION) DTIRegExtraPathlineEdit->setText( QString( m_DTIABSlicerExtensionExternalBinDir.c_str() ));
+  if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
+  {
+    DTIRegExtraPathlineEdit->setText( QString( m_DTIABSlicerExtensionExternalBinDir.c_str() ));
+  }
 
   // look for the programs with the itk function
   ConfigDefault();
 
   // Look for the config file in the executable directory
   std::string SoftConfigPath= DTIABExecutablePath + "/DTIAtlasBuilderSoftConfig.txt";
-  if( itksys::SystemTools::GetPermissions(SoftConfigPath.c_str(),ITKmode_F_OK) ) if( LoadConfig(QString( SoftConfigPath.c_str() )) == -1 ) m_ErrorDetectedInConstructor=true; // if file exists
+  if( itksys::SystemTools::GetPermissions(SoftConfigPath.c_str(),ITKmode_F_OK) )
+  {
+    if( LoadConfig(QString( SoftConfigPath.c_str() )) == -1 )
+    {
+      m_ErrorDetectedInConstructor=true; // if file exists
+    }
+  }
 
   // Look for the config file in the current directory
   std::string CurrentPath = itksys::SystemTools::GetRealPath( itksys::SystemTools::GetCurrentWorkingDirectory().c_str() ); //GetRealPath() to remove symlinks
   SoftConfigPath = CurrentPath + "/DTIAtlasBuilderSoftConfig.txt";
-  if( itksys::SystemTools::GetPermissions( SoftConfigPath.c_str() , ITKmode_F_OK) ) if( LoadConfig(QString( SoftConfigPath.c_str() )) == -1 ) m_ErrorDetectedInConstructor=true; // if file exists
+  if( itksys::SystemTools::GetPermissions( SoftConfigPath.c_str() , ITKmode_F_OK) )
+  {
+    if( LoadConfig(QString( SoftConfigPath.c_str() )) == -1 )
+    {
+      m_ErrorDetectedInConstructor=true; // if file exists
+    }
+  }
 
   // Look for the config file in the env variable
   const char * value = itksys::SystemTools::GetEnv("DTIAtlasBuilderSoftPath"); // C function = const char * getenv(const char *)
   if (value!=NULL) 
   {
     printf ("| Environment variable read. The config file is \'%s\'\n",value);
-    if( LoadConfig(QString(value)) == -1 ) m_ErrorDetectedInConstructor=true; // replace the paths by the paths given in the config file
+    if( LoadConfig(QString(value)) == -1 )
+    {
+      m_ErrorDetectedInConstructor=true; // replace the paths by the paths given in the config file
+    }
   }
-  else std::cout<<"| No environment variable found"<<std::endl;
+  else
+  {
+    std::cout<<"| No environment variable found"<<std::endl;
+  }
 
 /* Look for the parameter file in the current directory */ // Load only if no param file given and if CSV file is given, only load the given CSV file.
   std::string ParamPath = CurrentPath + "/DTIAtlasBuilderParameters.txt";
-  if( ParamFile.empty() && itksys::SystemTools::GetPermissions( ParamPath.c_str() , ITKmode_F_OK) ) if( LoadParameters(QString( ParamPath.c_str() ), !CSVFile.empty()) == -1 ) m_ErrorDetectedInConstructor=true; 
+  if( ParamFile.empty() && itksys::SystemTools::GetPermissions( ParamPath.c_str() , ITKmode_F_OK) )
+  {
+    if( LoadParameters(QString( ParamPath.c_str() ), !CSVFile.empty()) == -1 )
+    {
+      m_ErrorDetectedInConstructor=true; 
+    }
+  }
 
 /* Load Parameters from Command Line => cmd line arguments a taking into account at last and change the parameters at last because they have priority */
   if( !ParamFile.empty() )
   {
-    if( LoadParameters(QString(ParamFile.c_str()), !CSVFile.empty()) == -1 ) m_ErrorDetectedInConstructor=true;
+    if( LoadParameters(QString(ParamFile.c_str()), !CSVFile.empty()) == -1 )
+    {
+      m_ErrorDetectedInConstructor=true;
+    }
   }
   else if(m_noGUI) // no parameters and nogui => not possible
   {
@@ -291,8 +331,20 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     m_ErrorDetectedInConstructor=true;
   }
 
-  if( !CSVFile.empty() ) if( ReadCSV( QString(CSVFile.c_str())) == -1 ) m_ErrorDetectedInConstructor=true;
-  if( !ConfigFile.empty() ) if( LoadConfig( QString(ConfigFile.c_str())) == -1 ) m_ErrorDetectedInConstructor=true;
+  if( !CSVFile.empty() )
+  {
+    if( ReadCSV( QString(CSVFile.c_str())) == -1 )
+    {
+      m_ErrorDetectedInConstructor=true;
+    }
+  }
+  if( !ConfigFile.empty() )
+  {
+    if( LoadConfig( QString(ConfigFile.c_str())) == -1 )
+    {
+      m_ErrorDetectedInConstructor=true;
+    }
+  }
 
   m_FromConstructor=0;
 
@@ -302,9 +354,9 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   std::string notFound;
 
   if(ImagemathPath->text().isEmpty()) notFound = notFound + "> ImageMath\n";
-  if(ResampPath->text().isEmpty()) notFound = notFound + "> ResampleDTIlogEuclidean\n";
-  if(CropDTIPath->text().isEmpty()) notFound = notFound + "> CropDTI\n";
-  if(dtiprocPath->text().isEmpty()) notFound = notFound + "> dtiprocess\n";
+  if(ResampPath->text().isEmpty())    notFound = notFound + "> ResampleDTIlogEuclidean\n";
+  if(CropDTIPath->text().isEmpty())   notFound = notFound + "> CropDTI\n";
+  if(dtiprocPath->text().isEmpty())   notFound = notFound + "> dtiprocess\n";
   if(BRAINSFitPath->text().isEmpty()) notFound = notFound + "> BRAINSFit\n";
   if(GAPath->text().isEmpty())
   {
@@ -327,11 +379,20 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
       std::string text = "The following programs have not been found.\nPlease enter the path manually or open a configuration file:\n" + notFound;
       QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
     }
-    else std::cout<<"| The following programs have not been found. Please give a configuration file or modify it or enter the path manually in the GUI:\n"<< notFound <<std::endl;
+    else
+    {
+      std::cout<<"| The following programs have not been found. Please give a configuration file or modify it or enter the path manually in the GUI:\n"<< notFound <<std::endl;
+    }
   }
 
-  if(GAFound) testGA(); // test the version of GreedyAtlas only if found
-  if(DTIRegFound) testDTIReg(); // test the version of DTI-Reg only if found
+  if(GAFound)
+  {
+    testGA(); // test the version of GreedyAtlas only if found
+  }
+  if(DTIRegFound)
+  {
+    testDTIReg(); // test the version of DTI-Reg only if found
+  }
 }
 
   /////////////////////////////////////////
@@ -529,7 +590,7 @@ void GUI::InitOptions()
 
 void GUI::OpenAddCaseBrowseWindow() /*SLOT*/
 {
-  QStringList CaseListBrowse=QFileDialog::getOpenFileNames(this, "Open Cases", m_lastCasePath, "NERD Images (*.nrrd *.nhdr *.*)");
+  QStringList CaseListBrowse=QFileDialog::getOpenFileNames(this, "Open Cases", m_lastCasePath, "NRRD Images (*.nrrd *.nhdr *.*)");
   CaseListWidget->addItems(CaseListBrowse);
   if(!CaseListBrowse.isEmpty())
   {
@@ -623,7 +684,7 @@ void GUI::OpenDTIRegExtraPathBrowseWindow() /*SLOT*/
 
 void GUI::OpenTemplateBrowseWindow() /*SLOT*/
 {
-  QString TemplateBrowse=QFileDialog::getOpenFileName(this, "Open Atlas Template", QString(), "NERD Image (*.nrrd *.nhdr *.*)");
+  QString TemplateBrowse=QFileDialog::getOpenFileName(this, "Open Atlas Template", QString(), "NRRD Image (*.nrrd *.nhdr *.*)");
   if(!TemplateBrowse.isEmpty())
   {
     TemplateLineEdit->setText(TemplateBrowse);
@@ -2647,10 +2708,10 @@ int GUI::LaunchScriptWriter()
     }
     else if((std::string)Platform == "win")
     {
-      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/python";
+      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/python.exe";
     }
 
-    if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // If not here -> Testing: use Slicer's python
+    if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // If not here -> Testing: use directly Slicer's python
     {
       m_PythonPath = SlicerPythonExec; // SlicerPythonExec is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
       if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // if still not here: use default python
@@ -2962,7 +3023,7 @@ void GUI::UpdateScriptRunningGUIDisplay() /*SLOT*/ // called by QTimer every sec
   QString ScriptRunningDisplay = ScriptRunningDisplayQLabel->text() + ".";
   ScriptRunningDisplayQLabel->setText(ScriptRunningDisplay);
 
-  /* TODO: Search the log file for keywords to know where the processing is */
+  /* TODO: Search the log file for keywords to know at what step the processing is */
 
 }
 
