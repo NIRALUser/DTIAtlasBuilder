@@ -74,8 +74,23 @@ class GUI : public QMainWindow, public Ui::MainWindow
     int checkImage(std::string Image); // returns 1 if not an image, 2 if not a dti, otherwise 0
 
 /*MAIN FUNCT*/
-    int LaunchScriptWriter(); // returns -1 if failed, otherwise 0
+    bool CheckCases();
+    bool CheckOutput( bool& ); // FirstComputeInOutputFolder
+    bool CheckTemplate();
+    void SetResampOptions();
+    void CheckProgram( std::string, QLineEdit*, std::string& );
+    bool CheckPrograms();
+    bool CheckProgramExecutable( QLineEdit* );
+    bool CheckProgramsExecutable();
+    bool FindPython();
+    bool CheckVoxelSizeAndCropping();
+    void SetOtherOptions();
+    void GenerateScriptFile( std::string, std::string );
+    void GenerateServerScript();
     void WriteChangeHistoryLogFile(std::string OldVersion);
+    bool CheckVersionLogFile( bool );
+
+    int LaunchScriptWriter(); // returns -1 if failed, otherwise 0
     int LaunchScriptRunner();
 
     void RunningCompleted();

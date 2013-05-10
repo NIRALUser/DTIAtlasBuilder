@@ -58,6 +58,7 @@ class ScriptWriter
   private:
 /* VALUES */
     std::vector < std::string > m_CasesPath;
+    std::vector < std::string > m_CasesIDs;
     std::string m_OutputPath;
     int m_RegType; //=0 for using template and =1 for using existing first case
     int m_nbLoops;

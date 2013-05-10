@@ -105,12 +105,12 @@ if(NOT COMPILE_PACKAGE) # ITK and SlicerExecutionModel (GenerateCLP) are recompi
     message(FATAL_ERROR "ITK not found. Please set ITK_DIR")
   endif(ITK_FOUND)
 
-  find_package(SlicerExecutionModel REQUIRED)
-  if(SlicerExecutionModel_FOUND)
-    include(${SlicerExecutionModel_USE_FILE}) # creates GenerateCLP_DIR ModuleDescriptionParser_DIR TCLAP_DIR
-  else(SlicerExecutionModel_FOUND)
-    message(FATAL_ERROR "SlicerExecutionModel not found. Please set SlicerExecutionModel_DIR")
-  endif(SlicerExecutionModel_FOUND)
+  find_package(GenerateCLP REQUIRED)
+  if(GenerateCLP_FOUND)
+    include(${GenerateCLP_USE_FILE}) # creates GenerateCLP_DIR
+  else(GenerateCLP_FOUND)
+    message(FATAL_ERROR "GenerateCLP not found. Please set GenerateCLP_DIR")
+  endif(GenerateCLP_FOUND)
 endif(NOT COMPILE_PACKAGE)
 
 find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
@@ -210,16 +210,18 @@ if(COMPILE_PACKAGE)
     endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION ) 
     configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Testing/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/Testing/DTIAtlasBuilderSoftConfig.txt)
   endif(BUILD_TESTING)
-#  message("When CMake done, run \"make\" to download and compile tools, and then run \"make install\" to copy all the needed executables in the output folder : ${INSTALL_DIR}.\nEnter e to exit this message, and then g to generate and get CMake done.")
 
 else(COMPILE_PACKAGE) # Hide unuseful variables
   foreach( proj ${ExtProjList})
+    set( COMPILE_EXTERNAL_${proj} OFF CACHE BOOL "Compile external ${proj}" FORCE ) # For installation step in DTIAtlasBuilder.cmake
     mark_as_advanced(FORCE COMPILE_EXTERNAL_${proj})
   endforeach()
-#  get_cmake_property(CacheVars CACHE_VARIABLES) # put all the cache variables in the variable "CacheVars" -> search for all TOOL* variables : avoid ToolsList
   foreach( tool ${ToolsList})
     mark_as_advanced(FORCE TOOL${tool})
     mark_as_advanced(FORCE TOOL${tool}Sys)
+  endforeach()
+  foreach( lib BatchMake VTK SlicerExecutionModel )
+    mark_as_advanced(FORCE ${lib}_DIR)
   endforeach()
 endif(COMPILE_PACKAGE)
 
@@ -233,11 +235,7 @@ ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject i
     -DInnerBuildCMakeLists:BOOL=ON
     ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
     -DITK_DIR:PATH=${ITK_DIR}
-    -DVTK_DIR:PATH=${VTK_DIR} # So the VTK path is defined in the inner build directory
-    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-    -DModuleDescriptionParser_DIR:PATH=${ModuleDescriptionParser_DIR}
-    -DTCLAP_DIR:PATH=${TCLAP_DIR}
     -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DLIBRARY_OUTPUT_PATH:PATH=${LIBRARY_OUTPUT_PATH}
@@ -275,6 +273,6 @@ ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject i
     -DMIDAS_PACKAGE_EMAIL:STRING=${MIDAS_PACKAGE_EMAIL}
     -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
   INSTALL_COMMAND ""
-  DEPENDS ${ITK_DEPEND} ${DTIAtlasBuilderExternalToolsDependencies} # DTIAtlasBuilderExternalToolsDependencies contains the names of all the recompiles softwares so DTIAB is compiled last (for install)
+  DEPENDS ${ITK_DEPEND} ${DTIAtlasBuilderExternalToolsDependencies} # DTIAtlasBuilderExternalToolsDependencies contains the names of all the recompiled softwares so DTIAB is compiled last (for install)
 )
 

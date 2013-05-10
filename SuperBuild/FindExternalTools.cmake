@@ -135,6 +135,7 @@ if(RecompileVTK) # BRAINSStandAlone/SuperBuild/External_VTK.cmake
         -DVTK_INSTALL_LIB_DIR:PATH=${Slicer_INSTALL_LIB_DIR}
       )
     set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/vtk-5.10)
+    mark_as_advanced(CLEAR VTK_DIR)
     set(VTK_DEPEND VTK)
 endif(RecompileVTK)
 
@@ -257,10 +258,12 @@ if(RecompileSEM)
     DEPENDS ${ITK_DEPEND} # either ITKv4 if recompiled, or empty
     )
   set(SlicerExecutionModel_DIR ${CMAKE_CURRENT_BINARY_DIR}/SlicerExecutionModel-build) # Use the downloaded SlicerExecutionModel for all tools
+  mark_as_advanced(CLEAR SlicerExecutionModel_DIR)
   set(GenerateCLP_DIR ${SlicerExecutionModel_DIR}/GenerateCLP)
   set(ModuleDescriptionParser_DIR ${SlicerExecutionModel_DIR}/ModuleDescriptionParser)
   set(TCLAP_DIR ${SlicerExecutionModel_DIR}/tclap)
   list(APPEND ITK_DEPEND SlicerExecutionModel)
+
 endif(RecompileSEM)
 
 # BatchMake for DTI-Reg (after ITK)
@@ -278,32 +281,48 @@ else(COMPILE_EXTERNAL_DTIReg)
 endif(COMPILE_EXTERNAL_DTIReg)
 
 if(RecompileBatchMake)
-    ExternalProject_Add(BatchMake
-      GIT_REPOSITORY ${git_protocol}://batchmake.org/BatchMake.git
-      GIT_TAG "8addbdb62f0135ba01ffe12ddfc32121b6d66ef5" # 01-30-2013 # "0abb2faca1251f808ab3d0b820cc27b570a994f1" # 08-26-2012 updated for ITKv4 # "43d21fcccd09e5a12497bc1fb924bc6d5718f98c" # used in DTI-Reg 12-21-2012
-      SOURCE_DIR BatchMake
-      BINARY_DIR BatchMake-build
-      CMAKE_GENERATOR ${gen}
-      CMAKE_ARGS
-        ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
-        -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-        -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-        -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-        -DBUILD_SHARED_LIBS:BOOL=OFF
-        -DBUILD_TESTING:BOOL=OFF
-        -DUSE_FLTK:BOOL=OFF
-        -DDASHBOARD_SUPPORT:BOOL=OFF
-        -DGRID_SUPPORT:BOOL=OFF
-        -DUSE_SPLASHSCREEN:BOOL=OFF
-        -DITK_DIR:PATH=${ITK_DIR}
-      INSTALL_COMMAND ""
-      PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/BatchMakePatchedZip.c ${CMAKE_CURRENT_BINARY_DIR}/BatchMake/Utilities/Zip/zip.c # No "" # Patch for windows compilation error (declaration of variable after beginning of block - "uLong year")
-      DEPENDS ${ITK_DEPEND}
-      )
-    set(BatchMake_DIR ${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build)
-    set(BatchMake_ITK_DIR ${ITK_DIR}) # If batchmake recompiled, no include(${BatchMake_USE_FILE}) has been done so BatchMake_ITK_DIR does not exist, and we used ${ITK_DIR} to compile it.
-    set(BatchMake_DEPEND BatchMake)
+  # If SlicerExtension, Use BatchMake CURL_SPECIAL_LIBZ var to compile bmcurl with zlib from Slicer because tries to link with zlib from Slicer (names mangled for Slicer: slicer_zlib_... see SlicerBuildTree/zlib-install/include/zlib_mangle.h)
+  # Otherwise compiles with zlib from ITK (mangled itk_zlib_... see BatchMake/Utilities/Zip/itk_zlib_mangle.h) and try to link with zlib from Slicer => FAIL
+  set( BatchMakeCURLCmakeArg "" )
+  if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )  
+    find_library( PathToSlicerZlib
+    NAMES zlib
+    PATHS ${Slicer_HOME}/../zlib-install/lib # ${Slicer_HOME} is <topofbuildtree>/Slicer-build: defined in SlicerConfig.cmake
+    PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel # For Windows, it can be any one of these
+    NO_DEFAULT_PATH
+    NO_SYSTEM_ENVIRONMENT_PATH
+    )
+    set( BatchMakeCURLCmakeArg -DCURL_SPECIAL_LIBZ:PATH=${PathToSlicerZlib} )
+  endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+
+  ExternalProject_Add(BatchMake
+    GIT_REPOSITORY ${git_protocol}://batchmake.org/BatchMake.git
+    GIT_TAG "8addbdb62f0135ba01ffe12ddfc32121b6d66ef5" # 01-30-2013 # "0abb2faca1251f808ab3d0b820cc27b570a994f1" # 08-26-2012 updated for ITKv4 # "43d21fcccd09e5a12497bc1fb924bc6d5718f98c" # used in DTI-Reg 12-21-2012
+    SOURCE_DIR BatchMake
+    BINARY_DIR BatchMake-build
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
+      -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
+      -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
+      -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
+      -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
+      -DBUILD_SHARED_LIBS:BOOL=OFF
+      -DBUILD_TESTING:BOOL=OFF
+      -DUSE_FLTK:BOOL=OFF
+      -DDASHBOARD_SUPPORT:BOOL=OFF
+      -DGRID_SUPPORT:BOOL=OFF
+      -DUSE_SPLASHSCREEN:BOOL=OFF
+      -DITK_DIR:PATH=${ITK_DIR}
+      ${BatchMakeCURLCmakeArg}
+    INSTALL_COMMAND ""
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/BatchMakePatchedZip.c ${CMAKE_CURRENT_BINARY_DIR}/BatchMake/Utilities/Zip/zip.c # No "" # Patch for windows compilation error (declaration of variable after beginning of block - "uLong year")
+    DEPENDS ${ITK_DEPEND}
+  )
+  set(BatchMake_DIR ${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build)
+  mark_as_advanced(CLEAR BatchMake_DIR)
+  set(BatchMake_ITK_DIR ${ITK_DIR}) # If batchmake recompiled, no include(${BatchMake_USE_FILE}) has been done so BatchMake_ITK_DIR does not exist, and we used ${ITK_DIR} to compile it.
+  set(BatchMake_DEPEND BatchMake)
 endif(RecompileBatchMake)
 
 
