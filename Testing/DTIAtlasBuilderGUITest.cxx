@@ -8,7 +8,7 @@ int main(int argc, char * argv[] )
 {
   QApplication app(argc, argv); // create a QApplication
 
-  GUI TestGUI("",argv[1],"",false,false,argv[0]); // create a GUI object : GUI(ParamFile,ConfigFile,CSVFile,Overwrite,noGUI,argv[0])
+  GUI TestGUI( "", argv[1], "", false, false, true, argv[0] ); // create a GUI object : GUI( ParamFile, ConfigFile, CSVFile, Overwrite, noGUI, Testing, argv[0] )
 
   TestGUI.show(); // open the window
 

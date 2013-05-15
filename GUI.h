@@ -35,7 +35,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
   public:
     
 /*CONSTRUCTOR*/
-    GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, bool overwrite, bool noGUI, std::string commandRan); //constructor
+    GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, bool overwrite, bool noGUI, bool Testing, std::string commandRan); //constructor
 
 /*INIT*/
     void InitOptions();
@@ -107,6 +107,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
 
 /*OUTPUT*/
     void OpenOutputBrowseWindow();
+    void CleanOutputFolder();
 
 /*DTIREG*/
     void OpenDTIRegExtraPathBrowseWindow();
@@ -172,6 +173,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
   private:
 
     bool m_noGUI;
+    bool m_Testing;
     bool m_ErrorDetectedInConstructor; // useful in --nogui mode to exit the program without trying the compute function
     bool m_ScriptRunning;
     std::vector< std::string > m_FindProgramDTIABExecDirVec;

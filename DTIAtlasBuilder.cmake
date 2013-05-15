@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 CMAKE_POLICY(VERSION 2.8)
 
+#======================================================================================
 # As the external project gives this CMakeLists the paths to the needed libraries (*_DIR), find_package will just use the existing *_DIR
 find_package(ITK REQUIRED)
 if(ITK_FOUND)
@@ -24,45 +25,6 @@ if(QT_USE_FILE)
 else(QT_USE_FILE)
   message(FATAL_ERROR, "QT not found. Please set QT_DIR.")
 endif(QT_USE_FILE)
-
-#======================================================================================
-# Compile step for DTIAtlasBuilder
-if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION) # to configure GUI.cxx
-  set(SlicerExtCXXVar "true")
-else(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
-  set(SlicerExtCXXVar "false")
-endif(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
-
-# Add the compilation date in xml file for it to appear in --help
-if(WIN32)
-  execute_process(COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE TODAY)
-  string(REGEX REPLACE "....(..)/(..)/(....).*" "\\1/\\2/\\3" TODAY ${TODAY}) # to remove the end of line and the name of day at the beginning
-else() # Unix
-  execute_process(COMMAND "date" "+%m/%d/%Y" OUTPUT_VARIABLE TODAY)
-  string(REGEX REPLACE "(..)/(..)/(....).*" "\\1/\\2/\\3" TODAY ${TODAY}) # to remove the end of line
-endif()
-configure_file(DTIAtlasBuilder.xml.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml)
-
-# Send python path to the program by preprocessor definition: For testing, c++ program needs to know where Slicer's python is
-if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-  # Python # Needed to use the python compiled with Slicer # "PYTHON_EXECUTABLE" given in SlicerConfig.cmake when find_package(Slicer REQUIRED)
-  set(SlicerPythonExec ${PYTHON_EXECUTABLE})
-  install(PROGRAMS ${SlicerPythonExec} DESTINATION ${NOCLI_INSTALL_DIR})
-else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-  set(SlicerPythonExec "")
-endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
-configure_file( GUI.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ) # to set SlicerPythonExec
-
-# DTIAtlasBuilder target
-QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
-QT4_WRAP_UI(UI_FILES GUIwindow.ui)
-set(DTIABsources DTIAtlasBuilder.cxx GUI.h ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES})
-GENERATECLP(DTIABsources ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml) # include the GCLP file to the project
-add_executable(DTIAtlasBuilder ${DTIABsources})  # add the files contained by "DTIABsources" to the project
-set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}")# Add preprocessor definitions
-target_link_libraries(DTIAtlasBuilder ${QT_LIBRARIES} ${ITK_LIBRARIES})
-install(TARGETS DTIAtlasBuilder DESTINATION ${INSTALL_DIR}) # same if Slicer Ext or not
 
 #======================================================================================
 # For Slicer Extension -> will create target "ExperimentalUpload" inside inner build. !! Needs to be before add testing
@@ -93,6 +55,45 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   endif(APPLE)
 
 endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+
+#======================================================================================
+# Compile step for DTIAtlasBuilder
+if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION) # to configure GUI.cxx
+  set(SlicerExtCXXVar "true")
+else(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
+  set(SlicerExtCXXVar "false")
+endif(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
+
+# Add the compilation date in xml file for it to appear in --help
+if(WIN32)
+  execute_process(COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE TODAY)
+  string(REGEX REPLACE "....(..)/(..)/(....).*" "\\1/\\2/\\3" TODAY ${TODAY}) # to remove the end of line and the name of day at the beginning
+else() # Unix
+  execute_process(COMMAND "date" "+%m/%d/%Y" OUTPUT_VARIABLE TODAY)
+  string(REGEX REPLACE "(..)/(..)/(....).*" "\\1/\\2/\\3" TODAY ${TODAY}) # to remove the end of line
+endif()
+configure_file(DTIAtlasBuilder.xml.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml)
+
+# Send python path to the program by configuring GUI.cxx: For testing, c++ program needs to know where Slicer's python is
+if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  # Python # Needed to use the python compiled with Slicer # "PYTHON_EXECUTABLE" given in SlicerConfig.cmake when find_package(Slicer REQUIRED)
+  set(SlicerPythonExec ${PYTHON_EXECUTABLE})
+  install(PROGRAMS ${SlicerPythonExec} DESTINATION ${NOCLI_INSTALL_DIR})
+else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  set(SlicerPythonExec "")
+endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+
+configure_file( GUI.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ) # to set SlicerPythonExec
+
+# DTIAtlasBuilder target
+QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
+QT4_WRAP_UI(UI_FILES GUIwindow.ui)
+set(DTIABsources DTIAtlasBuilder.cxx GUI.h ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES})
+GENERATECLP(DTIABsources ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml) # include the GCLP file to the project
+add_executable(DTIAtlasBuilder ${DTIABsources})  # add the files contained by "DTIABsources" to the project
+set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}")# Add preprocessor definitions
+target_link_libraries(DTIAtlasBuilder ${QT_LIBRARIES} ${ITK_LIBRARIES})
+install(TARGETS DTIAtlasBuilder DESTINATION ${INSTALL_DIR}) # same if Slicer Ext or not
 
 #===== Macro install tool ===============================================
 macro( InstallToolMacro Proj CLI)
