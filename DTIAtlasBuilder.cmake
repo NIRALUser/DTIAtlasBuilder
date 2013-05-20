@@ -2,50 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 CMAKE_POLICY(VERSION 2.8)
 
 #======================================================================================
-# As the external project gives this CMakeLists the paths to the needed libraries (*_DIR), find_package will just use the existing *_DIR
-find_package(ITK REQUIRED)
-if(ITK_FOUND)
-  include(${ITK_USE_FILE}) # creates ITK_DIR
-else(ITK_FOUND)
-  message(FATAL_ERROR "ITK not found. Please set ITK_DIR")
-endif(ITK_FOUND)
-
-find_package(GenerateCLP REQUIRED)
-if(GenerateCLP_FOUND)
-  include(${GenerateCLP_USE_FILE}) # creates GenerateCLP_DIR ModuleDescriptionParser_DIR TCLAP_DIR
-else(GenerateCLP_FOUND)
-  message(FATAL_ERROR "GenerateCLP not found. Please set GenerateCLP_DIR")
-endif(GenerateCLP_FOUND)
-
-find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
-if(QT_USE_FILE)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${QT_INCLUDE_DIR})
-  include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
-  add_definitions(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
-else(QT_USE_FILE)
-  message(FATAL_ERROR, "QT not found. Please set QT_DIR.")
-endif(QT_USE_FILE)
-
-#======================================================================================
 # For Slicer Extension -> will create target "ExperimentalUpload" inside inner build. !! Needs to be before add testing
-if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-  # Unset variables because Slicer will try to set it again and ERROR
-  set( ITK_DIR_TMP ${ITK_DIR} )
-  unset( ITK_DIR CACHE )
-  unset( ITK_DIR )
-  set( ITK_LIBRARIES_TMP ${ITK_LIBRARIES} )
-  unset( ITK_LIBRARIES CACHE )
-  unset( ITK_LIBRARIES )
-  set( SlicerExecutionModel_DIR_TMP ${SlicerExecutionModel_DIR} )
-  unset( SlicerExecutionModel_DIR )
-  unset( SlicerExecutionModel_DIR CACHE )
-
+if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-
-  set( ITK_DIR ${ITK_DIR_TMP} CACHE PATH "ITK PATH" FORCE )
-  set( ITK_LIBRARIES ${ITK_LIBRARIES_TMP} CACHE PATH "ITK PATH" FORCE )
-  set( SlicerExecutionModel_DIR ${SlicerExecutionModel_DIR_TMP} CACHE PATH "SlicerExecutionModel PATH" FORCE )
 
   # Create sym links during install step
   if(APPLE)
@@ -54,7 +14,24 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${INSTALL_DIR}/../share)
   endif(APPLE)
 
-endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+endif(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
+
+#======================================================================================
+# As the external project gives this CMakeLists the paths to the needed libraries (*_DIR), find_package will just use the existing *_DIR
+
+if(NOT ITK_FOUND)
+  find_package(ITK REQUIRED)
+  include(${ITK_USE_FILE})
+endif(NOT ITK_FOUND)
+
+
+find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
+include(${QT_USE_FILE})
+
+find_package(GenerateCLP REQUIRED)
+include(${GenerateCLP_USE_FILE})
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 #======================================================================================
 # Compile step for DTIAtlasBuilder
@@ -202,4 +179,3 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
     include(${Slicer_EXTENSION_CPACK}) # So we can make package
   endif()
 endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
