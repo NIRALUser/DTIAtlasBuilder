@@ -98,29 +98,17 @@ set( COMPILE_PACKAGE ON CACHE BOOL "Compiles all the external projects and tools
 #===================================================================================
 # Search needed libraries and packages for DTIAtlasBuilder : ITK_DIR GenerateCLP_DIR ModuleDescriptionParser_DIR TCLAP_DIR QT_QMAKE_EXECUTABLE
 if(NOT COMPILE_PACKAGE) # ITK and SlicerExecutionModel (GenerateCLP) are recompiled in the package
+
   find_package(ITK REQUIRED)
-  if(ITK_FOUND)
-    include(${ITK_USE_FILE}) # creates ITK_DIR
-  else(ITK_FOUND)
-    message(FATAL_ERROR "ITK not found. Please set ITK_DIR")
-  endif(ITK_FOUND)
+  include(${ITK_USE_FILE}) # creates ITK_DIR
 
   find_package(GenerateCLP REQUIRED)
-  if(GenerateCLP_FOUND)
-    include(${GenerateCLP_USE_FILE}) # creates GenerateCLP_DIR
-  else(GenerateCLP_FOUND)
-    message(FATAL_ERROR "GenerateCLP not found. Please set GenerateCLP_DIR")
-  endif(GenerateCLP_FOUND)
+  include(${GenerateCLP_USE_FILE}) # creates GenerateCLP_DIR
+
 endif(NOT COMPILE_PACKAGE)
 
 find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
-if(QT_USE_FILE)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${QT_INCLUDE_DIR})
-  include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
-  add_definitions(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
-else(QT_USE_FILE)
-  message(FATAL_ERROR, "QT not found. Please set QT_DIR.")
-endif(QT_USE_FILE)
+include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
 
 find_package(Git REQUIRED) # So error while configuring and not building if Git missing -> sets GIT_EXECUTABLE
 

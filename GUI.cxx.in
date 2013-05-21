@@ -937,7 +937,7 @@ void GUI::SaveCSVDatasetBrowse() /*SLOT*/
 
   QFile file(CSVBrowseName);
 
-  if ( file.open( IO_WriteOnly | IO_Translate ) )
+  if ( file.open( QFile::WriteOnly ) )
   {
     std::cout<<"| Generating Dataset csv file..."; // command line display
 
@@ -961,7 +961,7 @@ void GUI::SaveCSVResults(int Crop, int nbLoops) // Crop = 0 if no cropping , 1 i
   csvPath = m_OutputPath + QString("/DTIAtlas/DTIAtlasBuilderResults.csv");
   QFile file(csvPath);
 
-  if ( file.open( IO_WriteOnly | IO_Translate ) )
+  if ( file.open( QFile::WriteOnly ) )
   {
     std::cout<<"| Generating Results csv file..."; // command line display
 
@@ -1026,7 +1026,7 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
   {
 
   QFile file(ParamBrowseName);
-  if ( file.open( IO_WriteOnly | IO_Translate ) )
+  if ( file.open( QFile::WriteOnly ) )
   {
     std::cout<<"| Saving Parameters file..."; // command line display
 
@@ -1086,7 +1086,7 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
     std::cout<<"DONE"<<std::endl; // command line display
 
     QFile filecsv(CSVFileName);
-    if ( filecsv.open( IO_WriteOnly | IO_Translate ) )
+    if ( filecsv.open( QFile::WriteOnly ) )
     {
       std::cout<<"| Generating Dataset csv file..."; // command line display
 
@@ -1567,7 +1567,7 @@ void GUI::GenerateXMLForGA()
   }
 
   QFile file(xmlFileName);
-  if ( file.open( IO_WriteOnly | IO_Translate ) )
+  if ( file.open( QFile::WriteOnly ) )
   {
     std::cout<<"| Saving XML file for GreedyAtlas..."<<std::endl; // command line display
     QTextStream stream( &file );
@@ -1870,7 +1870,7 @@ void GUI::SaveConfig() /*SLOT*/
 /* getting the values and generating the config file */
 
     QFile file(ConfigBrowseName);
-    if ( file.open( IO_WriteOnly | IO_Translate ) )
+    if ( file.open( QFile::WriteOnly ) )
     {
       std::cout<<"| Generating config file..."; // command line display
 
@@ -2752,7 +2752,7 @@ void GUI::GenerateScriptFile( std::string ScriptName, std::string ScriptText )
   QString ScriptPath = m_OutputPath + QString("/DTIAtlas/Script/DTIAtlasBuilder_") + QString(ScriptName.c_str()) + QString(".py");
   QFile file(ScriptPath);
 
-  if ( file.open( IO_WriteOnly | IO_Translate ) )
+  if ( file.open( QFile::WriteOnly ) )
   {
     //file.setPermissions(QFile::ExeOwner); //make the file executable for the owner
     QTextStream stream( &file );
@@ -2772,7 +2772,7 @@ void GUI::GenerateServerScript()
     QString ScriptPath = m_OutputPath + QString("/DTIAtlas/Script/RunCommandOnServer.py");
     QFile fileMain(ScriptPath);
 
-    if ( fileMain.open( IO_WriteOnly | IO_Translate ) )
+    if ( fileMain.open( QFile::WriteOnly ) )
     {
       QTextStream stream( &fileMain );
 
