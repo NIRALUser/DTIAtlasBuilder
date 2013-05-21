@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 2.8)
 CMAKE_POLICY(VERSION 2.8)
 
 #======================================================================================
+# Generation of moc_GUI.cxx does not need all Slicer libs so do it first to avoid processing long cmd line with all libs
+
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
+
+QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
+QT4_WRAP_UI(UI_FILES GUIwindow.ui)
+
+#======================================================================================
 # For Slicer Extension -> will create target "ExperimentalUpload" inside inner build. !! Needs to be before add testing
 if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
   find_package(Slicer REQUIRED)
@@ -23,10 +32,6 @@ if(NOT ITK_FOUND)
   find_package(ITK REQUIRED)
   include(${ITK_USE_FILE})
 endif(NOT ITK_FOUND)
-
-
-find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
-include(${QT_USE_FILE})
 
 find_package(GenerateCLP REQUIRED)
 include(${GenerateCLP_USE_FILE})
@@ -63,8 +68,6 @@ endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 configure_file( GUI.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ) # to set SlicerPythonExec
 
 # DTIAtlasBuilder target
-QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
-QT4_WRAP_UI(UI_FILES GUIwindow.ui)
 set(DTIABsources DTIAtlasBuilder.cxx GUI.h ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES})
 GENERATECLP(DTIABsources ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml) # include the GCLP file to the project
 add_executable(DTIAtlasBuilder ${DTIABsources})  # add the files contained by "DTIABsources" to the project
