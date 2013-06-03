@@ -4,7 +4,6 @@ CMAKE_POLICY(VERSION 2.8)
 set(BUILD_TESTING ON CACHE BOOL "Build, configure and copy testing files")
 
 project(DTIAtlasBuilder)
-set(Slicer_SKIP_PROJECT_COMMAND ON) # Useful for Slicer Extension because include(${Slicer_USE_FILE}) wants to make a project() too
 
 # External Projects
 include(ExternalProject) # "ExternalProject" is the module that will allow to compile tools
@@ -243,7 +242,6 @@ ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject i
     # Slicer extension
     -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION:BOOL=${DTIAtlasBuilder_BUILD_SLICER_EXTENSION}
     -DSlicer_DIR:PATH=${Slicer_DIR}
-    -DSlicer_SKIP_PROJECT_COMMAND:BOOL=ON
     -DCLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
     -DCLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
     -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
