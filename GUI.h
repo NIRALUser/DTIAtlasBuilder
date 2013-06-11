@@ -41,10 +41,14 @@ class GUI : public QMainWindow, public Ui::MainWindow
     void InitOptions();
 
 /*CASES*/
+    bool FileIsParameterFile( std::string );
+    bool FileIsSoftConfigFile( std::string );
+    void AddCasesToListWidget(QStringList, QString);
     void CheckCasesIndex();
 
 /* QC */
-    void DisableQC(); // <=> disable QC buttons
+    void DisableQC();
+    void EnableQC();
 
 /*DATASET*/
     int ReadCSV(QString CSVfile); // returns -1 if fails, otherwise 0
@@ -74,7 +78,8 @@ class GUI : public QMainWindow, public Ui::MainWindow
     int checkImage(std::string Image); // returns 1 if not an image, 2 if not a dti, otherwise 0
 
 /*MAIN FUNCT*/
-    bool CheckCases();
+    bool CheckCase( std::string, bool );
+    bool CheckAllCases();
     bool CheckOutput( bool& ); // FirstComputeInOutputFolder
     bool CheckTemplate();
     void SetResampOptions();
@@ -142,6 +147,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
 
 /*READ ME*/
     void ReadMe();
+    void KeyShortcuts();
 
 /*RESAMP PARAM*/
     void InterpolTypeComboBoxChanged(int);
@@ -155,6 +161,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
 /*WIDGETCHANGE*/
     void WidgetHasChangedParamNoSaved();
     void GridProcesscheckBoxHasChanged(int);
+    void OutputFolderLineEditHasChanged(QString);
 
 /*MAIN FUNCT*/
     int Compute();
@@ -166,6 +173,10 @@ class GUI : public QMainWindow, public Ui::MainWindow
   signals: // none
 
   protected :
+
+/*CASES*/
+    void dragEnterEvent(QDragEnterEvent*event);
+    void dropEvent(QDropEvent* event);
 
 /*EXIT*/
     void closeEvent(QCloseEvent* event);
