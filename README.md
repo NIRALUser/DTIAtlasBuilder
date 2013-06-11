@@ -1,3 +1,5 @@
+<p align="right"><img width="15%" src="http://www.nitrc.org/project/screenshot.php?group_id=636&screenshot_id=607"/></p>
+
 #DTIAtlasBuilder
 
 Current stable release: [**1.2**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.2) (05/01/2013)
@@ -5,6 +7,8 @@ Current stable release: [**1.2**](http://github.com/NIRALUser/DTIAtlasBuilder/tr
 ##What is it?
 
 A tool to create an atlas from several DTI images
+
+<img width="100%" src="http://adrienkaiser.fr/data/dtiabshortpipe.png"/>
 
 ##Where is it?
 
@@ -74,3 +78,5 @@ If you do not have these softwares installed on your machine, you can use the CO
 If a parameter file fails to open in DTIAtlasBuilder (Parameter file is corrupted), you need to recreate it by loading only the corresponding dataset file and setting your options again.
 
 ####Contact : akaiser[at]unc[dot]edu
+
+Slicer extension build status: [Open the dashboard](http://slicer.cdash.org/index.php?project=Slicer4) and search "DTIAtlasBuilder" in the build name using the filters.
