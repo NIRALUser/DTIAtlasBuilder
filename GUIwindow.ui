@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>1196</width>
-    <height>645</height>
+    <height>671</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>DTI Atlas Builder 1.2</string>
@@ -52,7 +58,7 @@
              <item>
               <widget class="QLabel" name="label_15">
                <property name="text">
-                <string>Select Cases :</string>
+                <string>&lt;p&gt;&lt;b&gt;Select Cases :&lt;/b&gt;&lt;/p&gt;</string>
                </property>
               </widget>
              </item>
@@ -157,12 +163,19 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
+              <widget class="QLabel" name="label_30">
+               <property name="text">
+                <string>[optional]</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="TemplateBrowsePushButton">
                <property name="toolTip">
                 <string>Use of a FA Template</string>
                </property>
                <property name="text">
-                <string>[optional] Give a template for the registration</string>
+                <string>Give a template for the registration</string>
                </property>
               </widget>
              </item>
@@ -248,7 +261,7 @@
            <string>Add 2 voxels at each side of the volume</string>
           </property>
           <property name="text">
-           <string>Add Safety Margin</string>
+           <string>Add Safety Margin (2 slices on each side of the volume)</string>
           </property>
          </widget>
         </item>
@@ -1144,224 +1157,218 @@ as an Affine transform already computed, it will be used as an input for the Aff
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <item>
-           <layout class="QVBoxLayout" name="ButtonverticalLayout">
-            <item>
-             <widget class="QPushButton" name="ImagemathButton">
-              <property name="text">
-               <string>ImageMath</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="ResampButton">
-              <property name="text">
-               <string>ResampleDTIlogEuclidean</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="CropDTIButton">
-              <property name="text">
-               <string>CropDTI</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="dtiprocButton">
-              <property name="text">
-               <string>dtiprocess</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="BRAINSFitButton">
-              <property name="text">
-               <string>BRAINSFit</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="GAButton">
-              <property name="text">
-               <string>GreedyAtlas</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="dtiavgButton">
-              <property name="text">
-               <string>dtiaverage</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="DTIRegButton">
-              <property name="text">
-               <string>DTI-Reg</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="unuButton">
-              <property name="text">
-               <string>unu</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="MriWatcherButton">
-              <property name="text">
-               <string>MriWatcher</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="ImagemathButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>ImageMath</string>
+            </property>
+           </widget>
           </item>
-          <item>
-           <layout class="QVBoxLayout" name="PathverticalLayout">
-            <item>
-             <widget class="QLineEdit" name="ImagemathPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="ResampPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="CropDTIPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="dtiprocPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="BRAINSFitPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="GAPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="dtiavgPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="DTIRegPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="unuPath"/>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="MriWatcherPath"/>
-            </item>
-           </layout>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="ResampButton">
+            <property name="text">
+             <string>ResampleDTIlogEuclidean</string>
+            </property>
+           </widget>
           </item>
-          <item>
-           <layout class="QVBoxLayout" name="ResetverticalLayout">
-            <item>
-             <widget class="QPushButton" name="ImagemathResetButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="ResampResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="CropDTIResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="dtiprocResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="BRAINSFitResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="GAResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="dtiavgResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="DTIRegResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="unuResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="MriWatcherResetButton">
-              <property name="toolTip">
-               <string>Reset Software Path</string>
-              </property>
-              <property name="text">
-               <string>R</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="ImagemathPath"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="ResampPath"/>
+          </item>
+          <item row="0" column="2">
+           <widget class="QPushButton" name="ImagemathResetButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="ResampResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="CropDTIButton">
+            <property name="text">
+             <string>CropDTI</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="CropDTIPath"/>
+          </item>
+          <item row="2" column="2">
+           <widget class="QPushButton" name="CropDTIResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="dtiprocButton">
+            <property name="text">
+             <string>dtiprocess</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="BRAINSFitButton">
+            <property name="text">
+             <string>BRAINSFit</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QPushButton" name="GAButton">
+            <property name="text">
+             <string>GreedyAtlas</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QPushButton" name="dtiavgButton">
+            <property name="text">
+             <string>dtiaverage</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QPushButton" name="DTIRegButton">
+            <property name="text">
+             <string>DTI-Reg</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QPushButton" name="unuButton">
+            <property name="text">
+             <string>unu</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QPushButton" name="MriWatcherButton">
+            <property name="text">
+             <string>MriWatcher</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="dtiprocPath"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="BRAINSFitPath"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="GAPath"/>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="dtiavgPath"/>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="DTIRegPath"/>
+          </item>
+          <item row="9" column="1">
+           <widget class="QLineEdit" name="unuPath"/>
+          </item>
+          <item row="10" column="1">
+           <widget class="QLineEdit" name="MriWatcherPath"/>
+          </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="dtiprocResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QPushButton" name="BRAINSFitResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QPushButton" name="GAResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QPushButton" name="dtiavgResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QPushButton" name="DTIRegResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QPushButton" name="unuResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2">
+           <widget class="QPushButton" name="MriWatcherResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -1555,14 +1562,14 @@ paths configured.</string>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="ComputehorizontalLayout">
-      <item>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
+         <enum>QSizePolicy::Minimum</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -1572,20 +1579,26 @@ paths configured.</string>
         </property>
        </spacer>
       </item>
-      <item>
-       <widget class="QPushButton" name="StoppushButton">
-        <property name="toolTip">
-         <string>Abort Script</string>
+      <item row="2" column="0">
+       <spacer name="horizontalSpacer_20">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-        <property name="text">
-         <string>Stop</string>
+        <property name="sizeType">
+         <enum>QSizePolicy::Minimum</enum>
         </property>
-       </widget>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
-      <item>
+      <item row="0" column="3">
        <widget class="QPushButton" name="ComputepushButton">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1598,15 +1611,34 @@ paths configured.</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QCheckBox" name="OverwritecheckBox">
+      <item row="2" column="3">
+       <widget class="QPushButton" name="StoppushButton">
+        <property name="toolTip">
+         <string>Abort Script</string>
+        </property>
         <property name="text">
-         <string>Overwrite on compute</string>
+         <string>Stop</string>
         </property>
        </widget>
       </item>
-      <item>
-       <spacer name="horizontalSpacer_15">
+      <item row="2" column="5">
+       <widget class="QProgressBar" name="progressBar">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -1621,7 +1653,68 @@ paths configured.</string>
         </property>
        </spacer>
       </item>
-      <item>
+      <item row="0" column="4">
+       <spacer name="horizontalSpacer_19">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="5">
+       <widget class="QCheckBox" name="OverwritecheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Overwrite on compute</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
+       <spacer name="horizontalSpacer_15">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Minimum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="6">
+       <spacer name="horizontalSpacer_16">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Minimum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="7">
        <widget class="QPushButton" name="AffineQCButton">
         <property name="toolTip">
          <string>QC with MriWatcher</string>
@@ -1631,7 +1724,7 @@ paths configured.</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="8">
        <widget class="QPushButton" name="DeformQCButton">
         <property name="toolTip">
          <string>QC with MriWatcher</string>
@@ -1641,7 +1734,7 @@ paths configured.</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="9">
        <widget class="QPushButton" name="ResampQCButton">
         <property name="toolTip">
          <string>QC with MriWatcher</string>
@@ -1651,23 +1744,7 @@ paths configured.</string>
         </property>
        </widget>
       </item>
-      <item>
-       <spacer name="horizontalSpacer_16">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
+      <item row="2" column="8">
        <widget class="QPushButton" name="CleanOutputPushButton">
         <property name="toolTip">
          <string>Remove all useless temporary images</string>
@@ -1676,62 +1753,6 @@ paths configured.</string>
          <string>Clean Output Folder</string>
         </property>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_15">
-      <item>
-       <spacer name="horizontalSpacer_18">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QProgressBar" name="progressBar">
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_19">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </item>

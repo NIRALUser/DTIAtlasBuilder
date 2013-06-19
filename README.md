@@ -73,9 +73,20 @@ If you do not have these softwares installed on your machine, you can use the CO
 
 ##Troubleshooting:
 
-####Load a parameter file
+####Final Atlas is bad
+
+If you see in the QC windows that the Affine and Diffeomorphic Atlases and registered images look OK, and that the Final Atlas and images look bad for all or most cases, that means that something went wrong during the FINAL registration.  
+If this final registration was done using BRAINS, try to recompute it using ANTS (in the Final Resampling tab > Registration Method), which gives a better registration.
+
+
+####Loading parameter file fail
 
 If a parameter file fails to open in DTIAtlasBuilder (Parameter file is corrupted), you need to recreate it by loading only the corresponding dataset file and setting your options again.
+
+####QC does not show up
+
+If the QC windows do not appear when pushing the QC buttons, it might mean that you need to install the GLUT library to get MriWatcher to work.  
+You can find the GLUT library [here](http://www.opengl.org/resources/libraries/glut/glut_downloads.php)
 
 ####Contact : akaiser[at]unc[dot]edu
 
