@@ -61,6 +61,13 @@ to display a warning if a new compute is done afterwards with a newer version
 // DTIAtlasBuilder_BUILD_SLICER_EXTENSION is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
 #define SlicerPythonExec "${SlicerPythonExec}" // configured in DTIAtlasBuilder.cmake
 
+template< class T > std::string IntOrDoubleToStr(T IntOrDoubleVar) // T is int or double
+{
+  std::ostringstream oss;
+  oss << IntOrDoubleVar;
+  return oss.str();
+}
+
   /////////////////////////////////////////
  //            CONSTRUCTOR              //
 /////////////////////////////////////////
@@ -134,6 +141,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     RemovePushButton->setEnabled(false);
     ComputepushButton->setEnabled(false);
     StoppushButton->setEnabled(false);
+    CleanOutputPushButton->setEnabled(false);
     DisableQC(); // will be enable when cases are loaded
 
     QObject::connect(actionLoad_parameters, SIGNAL(triggered()), this, SLOT(LoadParametersSlot()));
@@ -796,12 +804,8 @@ void GUI::CheckCasesIndex() /* Check duplicates Change ids at the begining of th
   std::string text;
   for(int i=0; i < CaseListWidget->count() ;i++)
   {
-    std::ostringstream outi;
-    outi << i+1;
-    std::string i_str = outi.str();
-
-    if( CaseListWidget->item(i)->text().contains(": ") ) text = i_str + ": " + CaseListWidget->item(i)->text().toStdString().substr( CaseListWidget->item(i)->text().split(":").at(0).size()+2 ); // from pos to the end
-    else text = i_str + ": " + CaseListWidget->item(i)->text().toStdString();
+    if( CaseListWidget->item(i)->text().contains(": ") ) text = IntOrDoubleToStr<int>(i+1) + ": " + CaseListWidget->item(i)->text().toStdString().substr( CaseListWidget->item(i)->text().split(":").at(0).size()+2 ); // from pos to the end
+    else text = IntOrDoubleToStr<int>(i+1) + ": " + CaseListWidget->item(i)->text().toStdString();
 
     CaseListWidget->item(i)->setText( QString( text.c_str() ) );
   }
@@ -861,7 +865,8 @@ void GUI::CleanOutputFolder() /*SLOT*/
 {
   // Remove all useless temporary images
 
-  int ret = QMessageBox::warning(this, "Remove Files", QString("This action will remove the content of all these folders:\n- <output folder>/DTIAtlas/1_Affine_Registration\n- <output folder>/DTIAtlas/2_NonLinear_Registration\n- <output folder>/DTIAtlas/3_Diffeomorphic_Atlas\n- <output folder>/DTIAtlas/4_Final_Resampling/First_Resampling\n\nDo you really want to remove them?"), QMessageBox::No | QMessageBox::Yes );
+  std::string PopupText = "This action will remove the content of all these folders:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/2_NonLinear_Registration\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/First_Resampling\n\nDo you really want to remove them?";
+  int ret = QMessageBox::warning(this, "Remove Files", QString( PopupText.c_str() ), QMessageBox::No | QMessageBox::Yes );
 
   if (ret == QMessageBox::Yes) 
   {
@@ -920,20 +925,22 @@ void GUI::OpenTemplateBrowseWindow() /*SLOT*/
 
 void GUI::DisplayAffineQC() /*SLOT*/
 {
-  std::ostringstream out;
-  out << NbLoopsSpinBox->value();
-
   std::string program = MriWatcherPath->text().toStdString() + " --viewAll";
   std::string pathList="";
   std::string path;
   for(int i=0; i < CaseListWidget->count() ;i++) 
   {
-    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + out.str() + "/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_Loop" + out.str() + "_FinalFA.nrrd";
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "_FinalFA.nrrd";
     if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
   }
-  std::ostringstream out1;
-  out1 << NbLoopsSpinBox->value()-1;
-  path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + out1.str() + "/Loop" + out1.str() + "_FAAverage.nrrd";
+  if(NbLoopsSpinBox->value()>0)
+  {
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()-1) + "/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()-1) + "_FAAverage.nrrd";
+  }
+  else // if no looping (NbLoopsSpinBox->value()==0), an average is computed anyway for QC
+  {
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop0/Loop0_FAAverage.nrrd";
+  }
   if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
 
   if( pathList != "" )
@@ -948,12 +955,12 @@ void GUI::DisplayAffineQC() /*SLOT*/
   {
     if(!m_noGUI && !m_Testing) 
     {
-      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + out.str() + "/*_Loop" + out.str() + "_FinalFA.nrrd";
+      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "/*_Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "_FinalFA.nrrd";
       QMessageBox::warning(this, "No images found", text.c_str() );
     }
     else
     {
-      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/1_Affine_Registration/Loop" << out.str() << "/*_Loop" << out.str() << "_FinalFA.nrrd" <<std::endl;
+      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) << "/*_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) << "_FinalFA.nrrd" <<std::endl;
     }
   }
 }
@@ -1805,7 +1812,7 @@ void GUI::GenerateXMLForGA()
   QFile file(xmlFileName);
   if ( file.open( QFile::WriteOnly ) )
   {
-    std::cout<<"| Saving XML file for GreedyAtlas..."<<std::endl; // command line display
+    std::cout<<"| Saving XML file for GreedyAtlas..."; // command line display
     QTextStream stream( &file );
 
     stream <<"<!--top-level node-->"<< endl;
@@ -1815,19 +1822,13 @@ void GUI::GenerateXMLForGA()
     stream <<"    <InputImageFormatString>"<< endl;
     stream <<"      <FormatString val=\"\" />"<< endl;
     stream <<"      <Base val=\"0\" />"<< endl;
-    std::ostringstream out;
-    out << m_CasesPath.size();
-    std::string nbcases_str = out.str();
-    stream <<"      <NumFiles val=\"" << nbcases_str.c_str() << "\" />"<< endl;
+    stream <<"      <NumFiles val=\"" << IntOrDoubleToStr<int>(m_CasesPath.size()).c_str() << "\" />"<< endl;
     stream <<"      <Weight val=\"1\" />"<< endl;
     stream <<"    </InputImageFormatString>"<< endl;
-    std::ostringstream out1;
-    out1 << NbLoopsSpinBox->value();
-    std::string nbLoops_str = out1.str();
     for (unsigned int i=0;i<m_CasesPath.size();i++)
     {
       stream <<"    <WeightedImage>"<< endl;
-      stream <<"      <Filename val=\"" << m_OutputPath << "/DTIAtlas/1_Affine_Registration/Loop" << nbLoops_str.c_str() << "/" << itksys::SystemTools::GetFilenameWithoutExtension( m_CasesPath[i] ).c_str() << "_Loop" << nbLoops_str.c_str() << "_FinalFA.nrrd\" />"<< endl;
+      stream <<"      <Filename val=\"" << m_OutputPath << "/DTIAtlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "/" << itksys::SystemTools::GetFilenameWithoutExtension( m_CasesPath[i] ).c_str() << "_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "_FinalFA.nrrd\" />"<< endl;
       stream <<"      <ItkTransform val=\"1\" />"<< endl;
       stream <<"    </WeightedImage>"<< endl;
     }
@@ -1839,28 +1840,16 @@ void GUI::GenerateXMLForGA()
       stream <<"  <GreedyScaleLevel>"<< endl;
       stream <<"    <ScaleLevel>"<< endl;
       stream <<"      <!--factor by which to downsample images-->"<< endl;
-      std::ostringstream outSL46;
-      outSL46 << SL4spinBox->value();
-      stream <<"      <DownsampleFactor val=\"" << outSL46.str().c_str() << "\" />"<< endl;
+      stream <<"      <DownsampleFactor val=\"" << IntOrDoubleToStr<int>(SL4spinBox->value()).c_str() << "\" />"<< endl;
       stream <<"    </ScaleLevel>"<< endl;
       stream <<"    <!--Scale factor on the maximum velocity in a given deformation for computing delta-->"<< endl;
-      std::ostringstream outSL42;
-      outSL42 << nbIter4SpinBox->value();
-      stream <<"    <NIterations val=\"" << outSL42.str().c_str() << "\" />"<< endl;
+      stream <<"    <NIterations val=\"" << IntOrDoubleToStr<int>(nbIter4SpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"    <Iterator>"<< endl;
-      std::ostringstream outSL4;
-      outSL4 << maxPerturbation4DoubleSpinBox->value();
-      stream <<"      <MaxPert val=\"" << outSL4.str().c_str() << "\" />"<< endl;
+      stream <<"      <MaxPert val=\"" << IntOrDoubleToStr<double>(maxPerturbation4DoubleSpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"      <DiffOper>"<< endl;
-      std::ostringstream outSL43;
-      outSL43 << alpha4DoubleSpinBox->value();
-      stream <<"        <Alpha val=\"" << outSL43.str().c_str() << "\" />"<< endl;
-      std::ostringstream outSL44;
-      outSL44 << beta4DoubleSpinBox->value();
-      stream <<"        <Beta val=\"" << outSL44.str().c_str() << "\" />"<< endl;
-      std::ostringstream outSL45;
-      outSL45 << gamma4DoubleSpinBox->value();
-      stream <<"        <Gamma val=\"" << outSL45.str().c_str() << "\" />"<< endl;
+      stream <<"        <Alpha val=\"" << IntOrDoubleToStr<double>(alpha4DoubleSpinBox->value()).c_str() << "\" />"<< endl;
+      stream <<"        <Beta val=\"" << IntOrDoubleToStr<double>(beta4DoubleSpinBox->value()).c_str() << "\" />"<< endl;
+      stream <<"        <Gamma val=\"" << IntOrDoubleToStr<double>(gamma4DoubleSpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"      </DiffOper>"<< endl;
       stream <<"    </Iterator>"<< endl;
       stream <<"  </GreedyScaleLevel>"<< endl;
@@ -1871,28 +1860,16 @@ void GUI::GenerateXMLForGA()
       stream <<"  <GreedyScaleLevel>"<< endl;
       stream <<"    <ScaleLevel>"<< endl;
       stream <<"      <!--factor by which to downsample images-->"<< endl;
-      std::ostringstream outSL26;
-      outSL26 << SL2spinBox->value();
-      stream <<"      <DownsampleFactor val=\"" << outSL26.str().c_str() << "\" />"<< endl;
+      stream <<"      <DownsampleFactor val=\"" << IntOrDoubleToStr<int>(SL2spinBox->value()).c_str() << "\" />"<< endl;
       stream <<"    </ScaleLevel>"<< endl;
       stream <<"    <!--Scale factor on the maximum velocity in a given deformation for computing delta-->"<< endl;
-      std::ostringstream outSL22;
-      outSL22 << nbIter2SpinBox->value();
-      stream <<"    <NIterations val=\"" << outSL22.str().c_str() << "\" />"<< endl;
+      stream <<"    <NIterations val=\"" << IntOrDoubleToStr<int>(nbIter2SpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"    <Iterator>"<< endl;
-      std::ostringstream outSL2;
-      outSL2 << maxPerturbation2DoubleSpinBox->value();
-      stream <<"      <MaxPert val=\"" << outSL2.str().c_str() << "\" />"<< endl;
+      stream <<"      <MaxPert val=\"" << IntOrDoubleToStr<double>(maxPerturbation2DoubleSpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"      <DiffOper>"<< endl;
-      std::ostringstream outSL23;
-      outSL23 << alpha2DoubleSpinBox->value();
-      stream <<"        <Alpha val=\"" << outSL23.str().c_str() << "\" />"<< endl;
-      std::ostringstream outSL24;
-      outSL24 << beta2DoubleSpinBox->value();
-      stream <<"        <Beta val=\"" << outSL24.str().c_str() << "\" />"<< endl;
-      std::ostringstream outSL25;
-      outSL25 << gamma2DoubleSpinBox->value();
-      stream <<"        <Gamma val=\"" << outSL25.str().c_str() << "\" />"<< endl;
+      stream <<"        <Alpha val=\"" << IntOrDoubleToStr<double>(alpha2DoubleSpinBox->value()).c_str() << "\" />"<< endl;
+      stream <<"        <Beta val=\"" << IntOrDoubleToStr<double>(beta2DoubleSpinBox->value()).c_str() << "\" />"<< endl;
+      stream <<"        <Gamma val=\"" << IntOrDoubleToStr<double>(gamma2DoubleSpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"      </DiffOper>"<< endl;
       stream <<"    </Iterator>"<< endl;
       stream <<"  </GreedyScaleLevel>"<< endl;
@@ -1903,29 +1880,16 @@ void GUI::GenerateXMLForGA()
       stream <<"  <GreedyScaleLevel>"<< endl;
       stream <<"    <ScaleLevel>"<< endl;
       stream <<"      <!--factor by which to downsample images-->"<< endl;
-      std::ostringstream outSL16;
-      outSL16 << SL1spinBox->value();
-      stream <<"      <DownsampleFactor val=\"" << outSL16.str().c_str() << "\" />"<< endl;
+      stream <<"      <DownsampleFactor val=\"" << IntOrDoubleToStr<int>(SL1spinBox->value()).c_str() << "\" />"<< endl;
       stream <<"    </ScaleLevel>"<< endl;
       stream <<"    <!--Scale factor on the maximum velocity in a given deformation for computing delta-->"<< endl;
-      std::ostringstream outSL12;
-      outSL12 << nbIter1SpinBox->value();
-      stream <<"    <NIterations val=\"" << outSL12.str().c_str() << "\" />"<< endl;
-      std::ostringstream outSL1;
-      outSL1 << maxPerturbation1DoubleSpinBox->value();
-      std::string SL1_str = outSL1.str();
+      stream <<"    <NIterations val=\"" << IntOrDoubleToStr<int>(nbIter1SpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"    <Iterator>"<< endl;
-      stream <<"      <MaxPert val=\"" << SL1_str.c_str() << "\" />"<< endl;
+      stream <<"      <MaxPert val=\"" << IntOrDoubleToStr<double>(maxPerturbation1DoubleSpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"      <DiffOper>"<< endl;
-      std::ostringstream outSL13;
-      outSL13 << alpha1DoubleSpinBox->value();
-      stream <<"        <Alpha val=\"" << outSL13.str().c_str() << "\" />"<< endl;
-      std::ostringstream outSL14;
-      outSL14 << beta1DoubleSpinBox->value();
-      stream <<"        <Beta val=\"" << outSL14.str().c_str() << "\" />"<< endl;
-      std::ostringstream outSL15;
-      outSL15 << gamma1DoubleSpinBox->value();
-      stream <<"        <Gamma val=\"" << outSL15.str().c_str() << "\" />"<< endl;
+      stream <<"        <Alpha val=\"" << IntOrDoubleToStr<double>(alpha1DoubleSpinBox->value()).c_str() << "\" />"<< endl;
+      stream <<"        <Beta val=\"" << IntOrDoubleToStr<double>(beta1DoubleSpinBox->value()).c_str() << "\" />"<< endl;
+      stream <<"        <Gamma val=\"" << IntOrDoubleToStr<double>(gamma1DoubleSpinBox->value()).c_str() << "\" />"<< endl;
       stream <<"      </DiffOper>"<< endl;
       stream <<"    </Iterator>"<< endl;
       stream <<"  </GreedyScaleLevel>"<< endl;
@@ -1938,14 +1902,14 @@ void GUI::GenerateXMLForGA()
     }
     else
     {
-      std::ostringstream outNThreads;
-      outNThreads << NbThreadsSpinBox->value();
-      stream <<"  <nThreads val=\""<< outNThreads.str().c_str() <<"\" />"<< endl;
+      stream <<"  <nThreads val=\""<< IntOrDoubleToStr<int>(NbThreadsSpinBox->value()).c_str() <<"\" />"<< endl;
     }
 
     stream <<"  <OutputPrefix val=\"" << m_OutputPath << "/DTIAtlas/2_NonLinear_Registration/\" />"<< endl;
     stream <<"  <OutputSuffix val=\"mhd\" />"<< endl;
     stream <<"</ParameterFile>"<< endl;
+
+    std::cout<<"DONE"<<std::endl; // command line display
   } // if ( file.open() )
   else qDebug( "Could not create xml file");
 
@@ -2329,8 +2293,9 @@ int GUI::testGA() /*SLOT*/ // returns 0 if version ok, -1 if bad version
 
   std::cout<<"| Checking the version of GreedyAtlas...";
 
+  Process->setProcessChannelMode(QProcess::MergedChannels);
   Process->start( program.c_str() ); // try to find the version => returns nothing if not the right version
-
+  Process->waitForFinished();
   Process->waitForReadyRead();
   QByteArray BA =  Process->readAllStandardOutput(); // int BA.size() // std::string s = BA.data(); std::cout<<s<<std::endl;
 
@@ -2359,8 +2324,9 @@ int GUI::testDTIReg() /*SLOT*/ // returns 0 if version ok, -1 if bad version
 
   std::cout<<"| Checking the version of DTI-Reg...";
 
+  Process->setProcessChannelMode(QProcess::MergedChannels);
   Process->start( program.c_str() ); // try to find the version => returns nothing if not the right version
-
+  Process->waitForFinished();
   Process->waitForReadyRead();
   QByteArray BA =  Process->readAllStandardOutput();
 
@@ -2521,13 +2487,18 @@ void GUI::GridProcesscheckBoxHasChanged(int state) /*SLOT*/ // called when Gid P
 
 void GUI::OutputFolderLineEditHasChanged( QString NewOutputFolder )
 {
-  if( NewOutputFolder!="" && CaseListWidget->count()>0 )
+  if( NewOutputFolder!="" )
   {
-    EnableQC();
+    if( CaseListWidget->count()>0 )
+    {
+      EnableQC();
+    }
+    CleanOutputPushButton->setEnabled(true);
   }
   else
   {
     DisableQC();
+    CleanOutputPushButton->setEnabled(false);
   }
 }
 
@@ -2588,9 +2559,10 @@ int GUI::Compute() /*SLOT*/
       {
         int WritingOutStatus = LaunchScriptWriter();
 
-        std::cout<<"| Clearing previous cases in vectors..."<<std::endl; // command line display
+        std::cout<<"| Clearing previous cases in vectors..."; // command line display
         m_CasesPath.clear();
         m_scriptwriter->clearCasesPath();
+        std::cout<<"DONE"<<std::endl; // command line display
 
         if(WritingOutStatus==-1) 
         {
@@ -2791,15 +2763,8 @@ void GUI::SetResampOptions()
     DTIRegOptions.push_back(m_IterLine->text().toStdString());
     DTIRegOptions.push_back(m_SimMetComboBox->currentText().toStdString());
 
-    std::ostringstream out;
-    out << m_SimParamDble->value();
-    std::string SimParam_str = out.str();
-    DTIRegOptions.push_back(SimParam_str);
-
-    std::ostringstream out1;
-    out1 << m_GSigmaDble->value();
-    std::string GSigma_str = out1.str();
-    DTIRegOptions.push_back(GSigma_str);
+    DTIRegOptions.push_back( IntOrDoubleToStr<double>(m_SimParamDble->value()) );
+    DTIRegOptions.push_back( IntOrDoubleToStr<double>(m_GSigmaDble->value()) );
 
     if(m_SmoothOffCheck->isChecked()) DTIRegOptions.push_back("1");
     else DTIRegOptions.push_back("0");
@@ -2809,10 +2774,7 @@ void GUI::SetResampOptions()
     DTIRegOptions.push_back(m_BRegTypeComboBox->currentText().toStdString());
     DTIRegOptions.push_back(m_TfmModeComboBox->currentText().toStdString());
 
-    std::ostringstream out1;
-    out1 << m_NbPyrLevSpin->value();
-    std::string NbPyrLev_str = out1.str();
-    DTIRegOptions.push_back(NbPyrLev_str);
+    DTIRegOptions.push_back( IntOrDoubleToStr<int>(m_NbPyrLevSpin->value()) );
 
     DTIRegOptions.push_back(m_PyrLevItLine->text().toStdString());
   }
@@ -2979,18 +2941,40 @@ bool GUI::FindPython()
     m_PythonPath = itksys::SystemTools::FindProgram("python",m_FindProgramDTIABExecDirVec);
     if(m_PythonPath.empty())
     {
+      std::string PythonNotFoundtext = "Python has not been found. Please install python before running DTIAtlasBuilder.";
       if(!m_noGUI && !m_Testing)
       {
-        std::string PythonNotFoundtext = "Python has not been found. Please install python before running DTIAtlasBuilder.";
         QMessageBox::critical(this, "Python not found", QString(PythonNotFoundtext.c_str()) );
       }
-      else std::cout<<"| Python has not been found. Please install python before running DTIAtlasBuilder." << std::endl;
+      else std::cout<<"| "<< PythonNotFoundtext << std::endl;
       return false;
     }
   }
 
-  m_scriptwriter->setPythonPath(m_PythonPath);
+  // Check python version (need > 2.5)
+  QProcess * Process = new QProcess;
+  std::string program = m_PythonPath + " --version";
+  std::cout<<"| Checking the version of python...";
+  Process->setProcessChannelMode(QProcess::MergedChannels);
+  Process->start( program.c_str(), QIODevice::ReadWrite  );
+  Process->waitForFinished();
+  Process->waitForReadyRead();
+  QString PythonVersion = QString( Process->readAllStandardOutput().data() ).split(" ").at(1).split("\n").at(0); // "Python X.X.X\n"
+  std::cout<<"DONE"<<std::endl;
 
+  if( PythonVersion.isEmpty() || PythonVersion.split(".").at(0).toInt()<2 || (PythonVersion.split(".").at(0).toInt()<3 && PythonVersion.split(".").at(1).toInt()<5) )
+  {
+    std::string PythonBadVersiontext = "The version of python found (" + m_PythonPath + ", version " + PythonVersion.toStdString() + ") is too old. DTIAtlasBuilder needs a version older than 2.5.";
+    if(!m_noGUI && !m_Testing)
+    {
+      QMessageBox::critical(this, "Python version issue", QString(PythonBadVersiontext.c_str()) );
+    }
+    else std::cout<<"| "<< PythonBadVersiontext << std::endl;
+    return false;
+  }
+
+  std::cout<<"| Found python version "<< PythonVersion.toStdString() << std::endl;
+  m_scriptwriter->setPythonPath(m_PythonPath);
   return true;
 } // FindPython
 
@@ -3158,7 +3142,7 @@ int GUI::LaunchScriptWriter()
   }
 
   return 0;
-}
+} // LaunchScriptWriter()
 
 int GUI::LaunchScriptRunner()
 {
@@ -3260,7 +3244,7 @@ void GUI::ScriptQProcessDone(int ExitCode) /*SLOT*/ // called
 
   if(!m_noGUI)
   {
-    std::string LogFileText = "| Log file written in: \"" + m_OutputPath.toStdString() + "/DTIAtlas/Script/DTIAtlasBuilder.log\"";
+    std::string LogFileText = "| Log file written in: " + m_OutputPath.toStdString() + "/DTIAtlas/Script/DTIAtlasBuilder.log";
     std::cout<<LogFileText<<std::endl;
     ScriptRunningDisplayQLabel->setText(ScriptRunningDisplayQLabel->text() + QString(LogFileText.c_str()));
   }
@@ -3271,12 +3255,12 @@ void GUI::RunningCompleted()
   ScriptRunningDisplayQLabel->setText("Running Completed ");
 
   std::cout<< "| Running Completed !"<<std::endl;
-  std::cout<< "| Final Atlas is in: \"" << m_OutputPath.toStdString() << "/DTIAtlas/4_Final_Resampling/FinalAtlasDTI.nrrd\""<<std::endl;
-  std::cout<< "| Final Displacement Fields for each case are in: \"" << m_OutputPath.toStdString() << "/DTIAtlas/4_Final_Resampling/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd\"" <<std::endl;
+  std::cout<< "| Final Atlas is in: " << m_OutputPath.toStdString() << "/DTIAtlas/4_Final_Resampling/FinalAtlasDTI.nrrd"<<std::endl;
+  std::cout<< "| Final Displacement Fields for each case are in: " << m_OutputPath.toStdString() << "/DTIAtlas/4_Final_Resampling/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd" <<std::endl;
 
   if(!m_noGUI && !m_Testing)
   {
-    std::string RunningCompletedTextPopup = "Running Completed !\n\nFinal Atlas is in:\n\"" + m_OutputPath.toStdString() + "/DTIAtlas/4_Final_Resampling/FinalAtlasDTI.nrrd\"\n\nFinal Displacement Fields for each case are in:\n\"" + m_OutputPath.toStdString() + "/DTIAtlas/4_Final_Resampling/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd\"";
+    std::string RunningCompletedTextPopup = "Running Completed !\n\nFinal Atlas is in:\n" + m_OutputPath.toStdString() + "/DTIAtlas/4_Final_Resampling/FinalAtlasDTI.nrrd\n\nFinal Displacement Fields for each case are in:\n" + m_OutputPath.toStdString() + "/DTIAtlas/4_Final_Resampling/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd";
     QMessageBox::information(this, "Running Completed", QString(RunningCompletedTextPopup.c_str()));
   }
 }
@@ -3287,14 +3271,5 @@ void GUI::RunningFailed()
 
   if(!m_noGUI && !m_Testing) QMessageBox::information(this, "Running Failed", "Running Failed...");
   std::cout<<"| Running Failed..."<<std::endl; // command line display
-}
-
-  /////////////////////////////////////////
- //            PROGRESS BAR             //
-/////////////////////////////////////////
-
-void GUI::ProgressBar(int Progress) // value sent by python script in signal
-{
-  std::cout<<Progress<<"/100 complete"<<std::endl;
 }
 
