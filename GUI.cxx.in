@@ -2358,7 +2358,7 @@ void GUI::ReadMe()  /*SLOT*/ /////to UPDATE
   QDialog *dlg = new QDialog(this);
   dlg->setWindowTitle ("Read Me");
 
-  std::string info = "<p><b>DTIAtlasBuilder</b><br>";
+  std::string info = "<p><b>DTIAtlasBuilder v1.3 (06/26/2013)</b><br>";
   info = info + "<i>A tool to create an atlas from several DTI images</i><br><br>";
   info = info + "Homepage: <a href=\"http://www.nitrc.org/projects/dtiatlasbuilder\" target=\"_blank\">On NITRC</a><br><br>";
   info = info + "For any question, suggestion or remark, please contact <a href=\"mailto:akaiser@unc.edu\" target=\"_blank\">akaiser@unc.edu</a>.<br><br>";

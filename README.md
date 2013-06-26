@@ -2,7 +2,7 @@
 
 #DTIAtlasBuilder
 
-Current stable release: [**1.2**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.2) (05/01/2013)
+Current stable release: [**1.3**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.3) (06/26/2013)
 
 ##What is it?
 
@@ -35,6 +35,23 @@ These Softwares need to be installed before executing the tool :
 If you do not have these softwares installed on your machine, you can use the COMPILE_PACKAGE CMake option to download and compile aumatically the tools you need. If you do so, please run "make install" after the compilation to copy the tools into the CMAKE_INSTALL_PREFIX.
 
 ##Change Log:
+
+####[v1.3](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.3) (06/26/2013)
+
+- File/Folder management:
+  - Keep original subject names instead of using "CaseX"
+  - Put final files in specific folders (FinalTensors and FinalDeformationFields)  
+  - Automatically update files/folders names if running DTIAtlasBuilder over a previous computation done with an older version  
+- Add step at the beginning to filter and set to zero negative values in tensors to avoid issues in registration  
+- New Interface features:
+  - Drag & Drop images and text files (CSV, parameters and software configuration files)
+  - "Clean output folder" button
+  - Keyboard shortcuts
+  - Remove duplicated cases
+  - Improve enable/disable buttons
+- Other minor bug fixes
+
+- Python version 2.5 minimum required
 
 ####[v1.2](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.2) (05/01/2013)
 
