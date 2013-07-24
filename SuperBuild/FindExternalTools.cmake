@@ -102,7 +102,7 @@ endmacro( AddToolMacro )
 # VTK
 set(RecompileVTK OFF)
 set(VTK_DEPEND "")
-if(COMPILE_EXTERNAL_dtiprocessTK OR COMPILE_EXTERNAL_AtlasWerks OR COMPILE_EXTERNAL_BRAINS OR COMPILE_EXTERNAL_ANTS OR COMPILE_EXTERNAL_NIRALUtilities)
+if(COMPILE_EXTERNAL_dtiprocessTK OR COMPILE_EXTERNAL_AtlasWerks OR COMPILE_EXTERNAL_BRAINS OR COMPILE_EXTERNAL_NIRALUtilities)
   find_package(VTK QUIET)
   if (VTK_FOUND)
     set(VTK_USE_QVTK TRUE)
@@ -486,7 +486,7 @@ set( SourceCodeArgs
   # SVN_REPOSITORY "http://advants.svn.sourceforge.net/svnroot/advants/trunk"
   # SVN_REVISION -r 1685 # 12/13/2012
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
-  GIT_TAG 0d8c4939b38199e1ef2bf691189bd0991563ff7c # 2013-07-22 Update to fix comp error due to ITK # "49a8e5911cc5cbd180f15c63ee8c545ebd3828f9" # 2013-04-11 Prevent Boost from compiling libs
+  GIT_TAG 6d082e02310077d17e84b6c3c9126759a96b87bc # 2013-05-02 Update to fix comp error due to new ITK # "49a8e5911cc5cbd180f15c63ee8c545ebd3828f9" # 2013-04-11 Prevent Boost from compiling libs
   )
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
