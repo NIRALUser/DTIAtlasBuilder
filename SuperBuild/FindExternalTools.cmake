@@ -600,7 +600,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/niral_utilities/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 41 # 01/29/2013
+  SVN_REVISION -r 50 # 08/15/2013
   )
 set( CMAKE_ExtraARGS
   -DCOMPILE_CONVERTITKFORMATS:BOOL=OFF
