@@ -2138,8 +2138,8 @@ void GUI::ConfigDefault() /*SLOT*/
   else dtiavgPath->setText(QString(program.c_str()));
 
   bool DTIRegToTest=false;
-  program = itksys::SystemTools::FindProgram("DTI-Reg_1.1.2",m_FindProgramDTIABExecDirVec);
-  if(program.empty()) program = itksys::SystemTools::FindProgram("DTI-Reg",m_FindProgramDTIABExecDirVec); // if 1.1.2 not found, look for "DTI-Reg" alone
+  program = itksys::SystemTools::FindProgram("DTI-Reg_1.1.3",m_FindProgramDTIABExecDirVec);
+  if(program.empty()) program = itksys::SystemTools::FindProgram("DTI-Reg",m_FindProgramDTIABExecDirVec); // if 1.1.3 not found, look for "DTI-Reg" alone
   if(program.empty()) { if(DTIRegPath->text().isEmpty()) notFound = notFound + "> DTI-Reg\n"; }
   else
   {
@@ -2232,7 +2232,7 @@ void GUI::ResetSoft(int softindex) /*SLOT*/ //softwares: 1=ImageMath, 2=Resample
     break;
   case 7: soft="dtiaverage";
     break;
-  case 8: soft="DTI-Reg_1.1.2";
+  case 8: soft="DTI-Reg_1.1.3";
     break;
   case 9: soft="unu";
     break;
@@ -2244,7 +2244,7 @@ void GUI::ResetSoft(int softindex) /*SLOT*/ //softwares: 1=ImageMath, 2=Resample
 
   std::string program = itksys::SystemTools::FindProgram(soft.c_str(),m_FindProgramDTIABExecDirVec);
 
-  if(program.empty() && soft=="DTI-Reg_1.1.2") program = itksys::SystemTools::FindProgram("DTI-Reg",m_FindProgramDTIABExecDirVec); // if 1.1.2 not found, look for "DTI-Reg"
+  if(program.empty() && soft=="DTI-Reg_1.1.3") program = itksys::SystemTools::FindProgram("DTI-Reg",m_FindProgramDTIABExecDirVec); // if 1.1.3 not found, look for "DTI-Reg"
 
 
   bool GAToTest=false;
@@ -2334,14 +2334,14 @@ int GUI::testDTIReg() /*SLOT*/ // returns 0 if version ok, -1 if bad version
 
   std::cout<<"DONE"<<std::endl;
 
-  if( BA.size()==0 || text.contains("1.0") || ( text.contains("1.1") && !text.contains("1.1.") ) || text.contains("1.1.1") ) //old version -> NOK
+  if( BA.size()==0 || text.contains("1.0") || ( text.contains("1.1") && !text.contains("1.1.") ) || text.contains("1.1.1") || text.contains("1.1.2") ) //old version -> NOK
   {
     if(!m_noGUI && !m_Testing) 
     {
-      std::string text = "The version of DTI-Reg \'" + DTIRegPath->text().toStdString() + "\' is not the right one.\nPlease give the version 1.1.2. or older\n";
+      std::string text = "The version of DTI-Reg \'" + DTIRegPath->text().toStdString() + "\' is not the right one.\nPlease give the version 1.1.3. or older\n";
       QMessageBox::warning(this, "Wrong version", QString(text.c_str()) );
     }
-    else std::cout<<"| The version of DTI-Reg \'" << DTIRegPath->text().toStdString() << "\' is not the right one. Please give the version 1.1.2. or older"<<std::endl;
+    else std::cout<<"| The version of DTI-Reg \'" << DTIRegPath->text().toStdString() << "\' is not the right one. Please give the version 1.1.3. or older"<<std::endl;
 
     return -1;
   }

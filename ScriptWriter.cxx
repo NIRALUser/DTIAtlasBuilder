@@ -1092,6 +1092,7 @@ void ScriptWriter::AtlasBuilding()
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --ANTSGaussianSigma " + m_DTIRegOptions[6] + "\"\n";
     if( m_DTIRegOptions[7].compare("1")==0 ) Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --ANTSGaussianSmoothingOff\"\n";
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --initialAffine \" + alltfms[case]\n";
+    Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --ANTSUseHistogramMatching \"\n";
     Script = Script + "  ANTSTempFileBase = FinalResampPath + \"/First_Resampling/\" + allcasesIDs[case] + \"_FA_\"\n"; // so that nothing is stored in the same dir than the Atlas
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --ANTSOutbase \" + ANTSTempFileBase\n"; // no --outputTfm for ANTS because --ANTSOutbase is used for the tfm
   }
