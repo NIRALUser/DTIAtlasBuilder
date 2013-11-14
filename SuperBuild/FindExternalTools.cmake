@@ -564,7 +564,7 @@ AddToolMacro( DTIReg ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraA
 
 # ===== teem (unu) =====================================================================
 set( SourceCodeArgs
-  SVN_REPOSITORY "http://teem.svn.sourceforge.net/svnroot/teem/teem/trunk"
+  SVN_REPOSITORY "http://svn.code.sf.net/p/teem/code/teem/trunk"  
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
   SVN_REVISION -r 5888 # 12/13/2012
