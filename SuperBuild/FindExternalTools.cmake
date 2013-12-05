@@ -298,10 +298,10 @@ endif(RecompileSEM)
 
 # ===== dtiprocessTK ==============================================================
 set( SourceCodeArgs
-  SVN_REPOSITORY "http://www.nitrc.org/svn/dtiprocess/branches/Slicer4Extension" # /dtiprocess"
+  SVN_REPOSITORY "http://www.nitrc.org/svn/dtiprocess/trunk" # /dtiprocess"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 149 # 01/31/2013 # 144 # 01/30/2013 version modified by Adrien for windows compilation # 137 # 01/16/2013 # 113 # 12/20/2012 updated for ITKv4.4.0
+  SVN_REVISION -r 206
   )
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
@@ -474,7 +474,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 47 # 10/28/2013
+  SVN_REVISION -r 48
   )
 set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
