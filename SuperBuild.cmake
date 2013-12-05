@@ -205,7 +205,7 @@ else(COMPILE_PACKAGE) # Hide unuseful variables
     mark_as_advanced(FORCE TOOL${tool})
     mark_as_advanced(FORCE TOOL${tool}Sys)
   endforeach()
-  foreach( lib BatchMake VTK SlicerExecutionModel )
+  foreach( lib VTK SlicerExecutionModel )
     mark_as_advanced(FORCE ${lib}_DIR)
   endforeach()
 endif(COMPILE_PACKAGE)

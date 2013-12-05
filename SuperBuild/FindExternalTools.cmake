@@ -203,7 +203,6 @@ else(ITK_FOUND)
 endif(ITK_FOUND)
 
 set(ITK_DEPEND "")
-set(RecompileBatchMake OFF)
 if(RecompileITK)
   message("ITKv4 not found. It will be downloaded and recompiled, unless a path is manually specified in the ITK_DIR variable.") # Not a Warning = just info
   # Download and compile ITKv4
@@ -234,7 +233,6 @@ if(RecompileITK)
   set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-i/lib/cmake/ITK-4.4 FORCE) # Use the downloaded ITK for all tools # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
   set(ITK_DEPEND I4)
   set(RecompileSEM ON) # If recompile ITK, recompile SlicerExecutionModel
-  set(RecompileBatchMake ON) # If recompile ITK, recompile BatchMake
 endif(RecompileITK)
 
 if(RecompileSEM)
@@ -265,65 +263,6 @@ if(RecompileSEM)
   list(APPEND ITK_DEPEND SlicerExecutionModel)
 
 endif(RecompileSEM)
-
-# BatchMake for DTI-Reg (after ITK)
-set(BatchMake_DEPEND "")
-if(COMPILE_EXTERNAL_DTIReg) # BatchMake only needed for DTIReg
-  find_package(BatchMake QUIET) # Not required because will be recompiled if not found # No warning displaid
-  if(BatchMake_FOUND)
-    include(${BatchMake_USE_FILE})
-  else(BatchMake_FOUND)
-    message("BatchMake not found. It will be downloaded and recompiled, unless a path is manually specified in the BatchMake_DIR variable.") # Not a Warning = just info
-    set(RecompileBatchMake ON) # If not found, recompile it
-  endif(BatchMake_FOUND )
-else(COMPILE_EXTERNAL_DTIReg)
-  set(RecompileBatchMake OFF) # if has been enabled by if(RecompileITK): No DTI-Reg = No BatchMake
-endif(COMPILE_EXTERNAL_DTIReg)
-
-if(RecompileBatchMake)
-  # If SlicerExtension, Use BatchMake CURL_SPECIAL_LIBZ var to compile bmcurl with zlib from Slicer because tries to link with zlib from Slicer (names mangled for Slicer: slicer_zlib_... see SlicerBuildTree/zlib-install/include/zlib_mangle.h)
-  # Otherwise compiles with zlib from ITK (mangled itk_zlib_... see BatchMake/Utilities/Zip/itk_zlib_mangle.h) and try to link with zlib from Slicer => FAIL
-  set( BatchMakeCURLCmakeArg "" )
-  if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )  
-    find_library( PathToSlicerZlib
-    NAMES zlib
-    PATHS ${Slicer_HOME}/../zlib-install/lib # ${Slicer_HOME} is <topofbuildtree>/Slicer-build: defined in SlicerConfig.cmake
-    PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel # For Windows, it can be any one of these
-    NO_DEFAULT_PATH
-    NO_SYSTEM_ENVIRONMENT_PATH
-    )
-    set( BatchMakeCURLCmakeArg -DCURL_SPECIAL_LIBZ:PATH=${PathToSlicerZlib} )
-  endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
-  ExternalProject_Add(BatchMake
-    GIT_REPOSITORY ${git_protocol}://batchmake.org/BatchMake.git
-    GIT_TAG "8addbdb62f0135ba01ffe12ddfc32121b6d66ef5" # 01-30-2013 # "0abb2faca1251f808ab3d0b820cc27b570a994f1" # 08-26-2012 updated for ITKv4 # "43d21fcccd09e5a12497bc1fb924bc6d5718f98c" # used in DTI-Reg 12-21-2012
-    SOURCE_DIR BatchMake
-    BINARY_DIR BatchMake-build
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
-      -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-      -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-      -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-      -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build/bin
-      -DBUILD_SHARED_LIBS:BOOL=OFF
-      -DBUILD_TESTING:BOOL=OFF
-      -DUSE_FLTK:BOOL=OFF
-      -DDASHBOARD_SUPPORT:BOOL=OFF
-      -DGRID_SUPPORT:BOOL=OFF
-      -DUSE_SPLASHSCREEN:BOOL=OFF
-      -DITK_DIR:PATH=${ITK_DIR}
-      ${BatchMakeCURLCmakeArg}
-    INSTALL_COMMAND ""
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/BatchMakePatchedZip.c ${CMAKE_CURRENT_BINARY_DIR}/BatchMake/Utilities/Zip/zip.c # No "" # Patch for windows compilation error (declaration of variable after beginning of block - "uLong year")
-    DEPENDS ${ITK_DEPEND}
-  )
-  set(BatchMake_DIR ${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build)
-  mark_as_advanced(CLEAR BatchMake_DIR)
-  set(BatchMake_ITK_DIR ${ITK_DIR}) # If batchmake recompiled, no include(${BatchMake_USE_FILE}) has been done so BatchMake_ITK_DIR does not exist, and we used ${ITK_DIR} to compile it.
-  set(BatchMake_DEPEND BatchMake)
-endif(RecompileBatchMake)
 
 
 ## GLUT for MriWatcher -> disable MriWatcher if Slicer Ext for the moment
@@ -541,21 +480,14 @@ set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
   -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
   -DBRAINSFitTOOL:PATH=${BRAINSFitPath}
-  -DBatchMake_DIR:PATH=${BatchMake_DIR}
-  -DITK_DIR:PATH=${BatchMake_ITK_DIR} # Compile DTI-Reg with the same ITK than Batchmake (BatchMake_ITK_DIR is in BatchMake_USE_FILE) -> BatchMakeLib and ITK_LIBRARIES contain the same ITK libs
-  -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-  -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-  -DModuleDescriptionParser_DIR:PATH=${ModuleDescriptionParser_DIR}
-  -DTCLAP_DIR:PATH=${TCLAP_DIR}
   -DCOMPILE_EXTERNAL_dtiprocess:BOOL=OFF
-  -DOPT_USE_SYSTEM_BatchMake:BOOL=ON
-  -DOPT_USE_SYSTEM_ITK:BOOL=ON
-  -DOPT_USE_SYSTEM_SlicerExecutionModel:BOOL=ON
+  -DOPT_USE_SYSTEM_BatchMake:BOOL=OFF
+  -DOPT_USE_SYSTEM_ITK:BOOL=OFF
+  -DOPT_USE_SYSTEM_SlicerExecutionModel:BOOL=OFF
   -DResampleDTITOOL:PATH=${ResampleDTIlogEuclideanPath}
   -DWARPIMAGEMULTITRANSFORMTOOL:PATH=${WarpImageMultiTransformPath}
   -DWARPTENSORIMAGEMULTITRANSFORMTOOL:PATH=${WarpTensorImageMultiTransformPath}
   -DdtiprocessTOOL:PATH=${dtiprocessPath}
-  DEPENDS ${ITK_DEPEND} ${BatchMake_DEPEND}
   )
 set( Tools
   DTI-Reg
