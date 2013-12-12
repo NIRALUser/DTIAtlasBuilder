@@ -16,14 +16,6 @@ QT4_WRAP_UI(UI_FILES GUIwindow.ui)
 if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-
-  # Create sym links during install step
-  if(APPLE)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/lib DESTINATION ${INSTALL_DIR}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/Frameworks DESTINATION ${INSTALL_DIR}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${INSTALL_DIR}/../share)
-  endif(APPLE)
-
 endif(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
 
 #======================================================================================
@@ -94,14 +86,7 @@ macro( InstallToolMacro Proj CLI)
 
     # Find the tools and install commands
     foreach( tool ${Tools} )
-       find_program( path_to_${tool} # Here all tools will be found because DTIAB is compiled after all tools
-       NAMES ${tool}
-       PATHS ${CMAKE_CURRENT_BINARY_DIR}/${Proj}-build/bin  # Here ${CMAKE_CURRENT_BINARY_DIR} is the inner build directory (build/DTIAtlasBuilder-build)
-       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel # For Windows, it can be any one of these
-       NO_DEFAULT_PATH
-       NO_SYSTEM_ENVIRONMENT_PATH
-      )
-      install(PROGRAMS ${path_to_${tool}} DESTINATION ${MacroInstallDir})
+      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${Proj}-install/bin/${tool} DESTINATION ${MacroInstallDir})
     endforeach()
 
   endif(COMPILE_EXTERNAL_${Proj})

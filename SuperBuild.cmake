@@ -13,6 +13,54 @@ else()
   set(gen "${CMAKE_GENERATOR}")
 endif()
 
+
+#===================================================================================
+# Slicer Extension
+option( DTIAtlasBuilder_BUILD_SLICER_EXTENSION "Build DTIAtlasBuilder as a Slicer extension" OFF )
+if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+
+  set(EXTENSION_NAME DTIAtlasBuilder)
+  set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dtiatlasbuilder")
+  set(EXTENSION_CATEGORY "Diffusion")
+  set(EXTENSION_CONTRIBUTORS "Adrien Kaiser (UNC)")
+  set(EXTENSION_DESCRIPTION "A tool to create a DTI Atlas Image from a set of DTI Images")
+  set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=636&screenshot_id=607")
+  set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/0/02/DTIAtlasBuilder_Interface.png")
+  set(EXTENSION_STATUS Beta)
+  set(EXTENSION_BUILD_SUBDIRECTORY DTIAtlasBuilder-build)
+
+  set(MODULE_NAME DTIAtlasBuilder)
+
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+
+  # SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY and SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION defined in Slicer_USE_FILE
+  # SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION is [sthg]/cli_module : must contain only CLIs
+  # If build as Slicer Extension, CMAKE_INSTALL_PREFIX is set to [ExtensionsFolder]/DTIAtlaBuilder
+  set(INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) # Set for DTIAtlasBuilder and other cli modules
+  if(APPLE) # On mac, Ext/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../ExternalBin
+    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin)
+  elseif(WIN32) # On Windows : idem Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
+    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
+  else() # Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
+    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
+  endif()
+  if( APPLE )
+    set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../ )
+  endif()
+else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+
+  option( FORCE_BUILD_ON_MAC_OR_WIN "Force Building on Known failing platforms" OFF )
+  if(NOT FORCE_BUILD_ON_MAC_OR_WIN AND ( APPLE OR WIN32 ) ) # If not Slicer ext, not compile because will fail at run time
+    message(FATAL_ERROR "DTIAtlasBuilder has known issues and will not run on Mac or Windows\nSet -DFORCE_BUILD_ON_MAC_OR_WIN:BOOL=ON to override")
+  endif()
+
+  set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
+
+endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+
+set( COMPILE_PACKAGE ON CACHE BOOL "Compiles all the external projects and tools" )
+
 set(COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES
   -DMAKECOMMAND:STRING=${MAKECOMMAND}
   -DCMAKE_SKIP_RPATH:BOOL=${CMAKE_SKIP_RPATH}
@@ -41,58 +89,9 @@ set(COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES
   -DMEMORYCHECK_COMMAND_OPTIONS:STRING=${MEMORYCHECK_COMMAND_OPTIONS}
   -DMEMORYCHECK_COMMAND:PATH=${MEMORYCHECK_COMMAND}
   -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
-  -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
   -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
 )
 
-#===================================================================================
-# Slicer Extension
-option( DTIAtlasBuilder_BUILD_SLICER_EXTENSION "Build DTIAtlasBuilder as a Slicer extension" OFF )
-if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
-  if(NOT Slicer_SOURCE_DIR)
-    set(EXTENSION_NAME DTIAtlasBuilder)
-    set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dtiatlasbuilder")
-    set(EXTENSION_CATEGORY "Diffusion")
-    set(EXTENSION_CONTRIBUTORS "Adrien Kaiser (UNC)")
-    set(EXTENSION_DESCRIPTION "A tool to create a DTI Atlas Image from a set of DTI Images")
-    set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=636&screenshot_id=607")
-    set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/0/02/DTIAtlasBuilder_Interface.png")
-    set(EXTENSION_STATUS Beta)
-    set(EXTENSION_BUILD_SUBDIRECTORY DTIAtlasBuilder-build)
-  endif()
-
-  set(MODULE_NAME DTIAtlasBuilder)
-
-  if(NOT Slicer_SOURCE_DIR)
-    find_package(Slicer REQUIRED)
-    include(${Slicer_USE_FILE})
-  endif()
-
-  # SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY and SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION defined in Slicer_USE_FILE
-  # SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION is [sthg]/cli_module : must contain only CLIs
-  # If build as Slicer Extension, CMAKE_INSTALL_PREFIX is set to [ExtensionsFolder]/DTIAtlaBuilder
-  set(INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) # Set for DTIAtlasBuilder and other cli modules
-  if(APPLE) # On mac, Ext/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../ExternalBin
-    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin)
-  elseif(WIN32) # On Windows : idem Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
-    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
-  else() # Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
-    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
-  endif()
-
-else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
-  option( FORCE_BUILD_ON_MAC_OR_WIN "Force Building on Known failing platforms" OFF )
-  if(NOT FORCE_BUILD_ON_MAC_OR_WIN AND ( APPLE OR WIN32 ) ) # If not Slicer ext, not compile because will fail at run time
-    message(FATAL_ERROR "DTIAtlasBuilder has known issues and will not run on Mac or Windows\nSet -DFORCE_BUILD_ON_MAC_OR_WIN:BOOL=ON to override")
-  endif()
-
-  set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-
-endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
-set( COMPILE_PACKAGE ON CACHE BOOL "Compiles all the external projects and tools" )
 
 #===================================================================================
 # Search needed libraries and packages for DTIAtlasBuilder : ITK_DIR GenerateCLP_DIR ModuleDescriptionParser_DIR TCLAP_DIR QT_QMAKE_EXECUTABLE

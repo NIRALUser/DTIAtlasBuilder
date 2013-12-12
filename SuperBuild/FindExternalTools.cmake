@@ -70,24 +70,23 @@ macro( AddToolMacro Proj )
     endif()
 
   endif(COMPILE_EXTERNAL_${Proj})
-
   # After the main if() because we could need to recompile after not having found all tools on system
   if(COMPILE_EXTERNAL_${Proj})
     # Add project
     ExternalProject_Add(${Proj}
       ${SourceCodeArgs} # No difference between args passed separated with ';', spaces or return to line
-      BINARY_DIR DTIAtlasBuilder-build/${Proj}-build
-      SOURCE_DIR DTIAtlasBuilder-build/${Proj} # creates the folder if it doesn't exist
+      BINARY_DIR ${Proj}-build
+      SOURCE_DIR ${Proj} # creates the folder if it doesn't exist
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
-       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
-       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
-       -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
-       -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
-       -DCMAKE_INSTALL_PREFIX:PATH=DTIAtlasBuilder-build/${Proj}-install
+#       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
+#       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
+#       -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
+#       -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
+       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-install
        ${CMAKE_ExtraARGS}
-      INSTALL_COMMAND "" # So the install step of the external project is not done
+     #INSTALL_COMMAND "" # So the install step of the external project is not done
     )
 
     list(APPEND DTIAtlasBuilderExternalToolsDependencies ${Proj})
@@ -301,7 +300,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtiprocess/trunk" # /dtiprocess"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 206
+  SVN_REVISION -r 207
   )
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
@@ -312,6 +311,9 @@ set( CMAKE_ExtraARGS
   -DTCLAP_DIR:PATH=${TCLAP_DIR}
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=OFF
+  -DEXECUTABLES_ONLY:BOOL=ON
+  -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/dtiprocessTK-install/bin
+  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} -C DTIProcess-build install
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
   )
 set( Tools
@@ -439,6 +441,7 @@ set( CMAKE_ExtraARGS
   -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   -DUSE_VTK:BOOL=OFF
+  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} -C ANTS-build install
   DEPENDS ${ITK_DEPEND}
   )
 set( Tools
@@ -451,7 +454,8 @@ AddToolMacro( ANTS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARG
 # ===== ResampleDTIlogEuclidean =====================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/ResampleDTIlogEuclidean.git"
-  GIT_TAG a2afcd57c931d224b91e6ce026cb499648e4f017 # 04-22-2013 addition of MatrixOffsetTransformBase support (ANTS affine tfm for DTIReg)
+  GIT_TAG 0cc1b5c9aae868a46917f52dcb3f1e28f0b82e0f #12-12-2013 addition of an install rule
+#  a2afcd57c931d224b91e6ce026cb499648e4f017 # 04-22-2013 addition of MatrixOffsetTransformBase support (ANTS affine tfm for DTIReg)
 # "84e691a0600128dbe1e9d41a80336e7083e73fa7" # 02/04/2013 fix comp with ITK4.4 + stat lib windows linkage error
 # "e78a9ea00d73a11cc52b3c457e32f1302a3403d4" # 12/20/2012
 # URL "http://www.insight-journal.org/download/sourcecode/742/11/SourceCode11_ResampleDTIInsightJournal2.tar.gz"
@@ -474,20 +478,33 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 48
+  SVN_REVISION -r 50
   )
-set( CMAKE_ExtraARGS
+if( APPLE )
+  set( CMAKE_ExtraARGS
+    -DUSE_SYSTEM_ITK:BOOL=OFF
+    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=OFF
+    )
+else()
+  set( CMAKE_ExtraARGS
+    -DUSE_SYSTEM_ITK:BOOL=ON
+    -DITK_DIR:PATH=${ITK_DIR}
+    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+    )
+endif()
+list(APPEND CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
   -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
   -DBRAINSFitTOOL:PATH=${BRAINSFitPath}
   -DCOMPILE_EXTERNAL_dtiprocess:BOOL=OFF
-  -DOPT_USE_SYSTEM_BatchMake:BOOL=OFF
-  -DOPT_USE_SYSTEM_ITK:BOOL=OFF
-  -DOPT_USE_SYSTEM_SlicerExecutionModel:BOOL=OFF
+  -DUSE_SYSTEM_BatchMake:BOOL=OFF
+  -DBUILD_SHARED_LIBS:BOOL=OFF
   -DResampleDTITOOL:PATH=${ResampleDTIlogEuclideanPath}
   -DWARPIMAGEMULTITRANSFORMTOOL:PATH=${WarpImageMultiTransformPath}
   -DWARPTENSORIMAGEMULTITRANSFORMTOOL:PATH=${WarpTensorImageMultiTransformPath}
   -DdtiprocessTOOL:PATH=${dtiprocessPath}
+  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} -C DTIReg-build install
   )
 set( Tools
   DTI-Reg
