@@ -61,12 +61,23 @@ endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 configure_file( GUI.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ) # to set SlicerPythonExec
 
 # DTIAtlasBuilder target
-set(DTIABsources DTIAtlasBuilder.cxx GUI.h ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
 GENERATECLP(DTIABsources ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml) # include the GCLP file to the project
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  if( WIN32 OR APPLE )
+    add_executable( DTIAtlasBuilderLauncher Launcher.cxx ${DTIABsources} )
+    install( TARGETS DTIAtlasBuilderLauncher DESTINATION ${INSTALL_DIR} )
+    set( BUILD_LAUNCHER TRUE )
+  endif()
+endif()
+list( APPEND DTIABsources DTIAtlasBuilder.cxx GUI.h ${CMAKE_CURRENT_BINARY_DIR}/GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
 add_executable(DTIAtlasBuilder ${DTIABsources})  # add the files contained by "DTIABsources" to the project
 set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}")# Add preprocessor definitions
 target_link_libraries(DTIAtlasBuilder ${QT_LIBRARIES} ${ITK_LIBRARIES})
-install(TARGETS DTIAtlasBuilder DESTINATION ${INSTALL_DIR}) # same if Slicer Ext or not
+if( BUILD_LAUNCHER )
+  install(TARGETS DTIAtlasBuilder DESTINATION ${INSTALL_DIR}/../hidden-cli-modules)
+else()
+  install(TARGETS DTIAtlasBuilder DESTINATION ${INSTALL_DIR}) # same if Slicer Ext or not
+endif()
 
 #===== Macro install tool ===============================================
 macro( InstallToolMacro Proj CLI)
@@ -83,10 +94,12 @@ macro( InstallToolMacro Proj CLI)
     else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
        set(MacroInstallDir ${INSTALL_DIR})
     endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
+    if( WIN32 )
+      set( EXT .exe )
+    endif()
     # Find the tools and install commands
     foreach( tool ${Tools} )
-      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${Proj}-install/bin/${tool} DESTINATION ${MacroInstallDir})
+      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${Proj}-install/bin/${tool}${EXT} DESTINATION ${MacroInstallDir})
     endforeach()
 
   endif(COMPILE_EXTERNAL_${Proj})

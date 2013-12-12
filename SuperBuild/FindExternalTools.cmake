@@ -302,6 +302,11 @@ set( SourceCodeArgs
   SVN_PASSWORD slicer
   SVN_REVISION -r 207
   )
+if( MSVC )
+  set( INSTALL_CONFIG DTIProcess-build/DTIProcess.sln /Build Release /Project INSTALL.vcproj )
+else()
+  set( INSTALL_CONFIG -C DTIProcess-build install )
+endif()
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
@@ -313,7 +318,7 @@ set( CMAKE_ExtraARGS
   -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=OFF
   -DEXECUTABLES_ONLY:BOOL=ON
   -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/dtiprocessTK-install/bin
-  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} -C DTIProcess-build install
+  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
   )
 set( Tools
@@ -429,6 +434,11 @@ set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
   GIT_TAG 6d082e02310077d17e84b6c3c9126759a96b87bc # 2013-05-02 Update to fix comp error due to new ITK # "49a8e5911cc5cbd180f15c63ee8c545ebd3828f9" # 2013-04-11 Prevent Boost from compiling libs
   )
+if( MSVC )
+  set( INSTALL_CONFIG ANTS-build/ANTS.sln /Build Release /Project INSTALL.vcproj )
+else()
+  set( INSTALL_CONFIG -C ANTS-build install )
+endif()
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -441,7 +451,7 @@ set( CMAKE_ExtraARGS
   -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   -DUSE_VTK:BOOL=OFF
-  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} -C ANTS-build install
+  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
   DEPENDS ${ITK_DEPEND}
   )
 set( Tools
@@ -493,6 +503,11 @@ else()
     -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     )
 endif()
+if( MSVC )
+  set( INSTALL_CONFIG DTIReg-build/DTIReg.sln /Build Release /Project INSTALL.vcproj )
+else()
+  set( INSTALL_CONFIG -C DTIReg-build install )
+endif()
 list(APPEND CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
   -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
@@ -504,7 +519,7 @@ list(APPEND CMAKE_ExtraARGS
   -DWARPIMAGEMULTITRANSFORMTOOL:PATH=${WarpImageMultiTransformPath}
   -DWARPTENSORIMAGEMULTITRANSFORMTOOL:PATH=${WarpTensorImageMultiTransformPath}
   -DdtiprocessTOOL:PATH=${dtiprocessPath}
-  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} -C DTIReg-build install
+  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
   )
 set( Tools
   DTI-Reg
