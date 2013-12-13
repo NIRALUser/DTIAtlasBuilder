@@ -360,7 +360,7 @@ set( CMAKE_ExtraARGS
   -DatlasWerks_COMPILE_APP_TX_WERKS:BOOL=OFF
   -DatlasWerks_COMPILE_APP_UTILITIES:BOOL=OFF
   #There is no install in AtlasWerks. We only care about GreedyAtlas so we just copy it. We only do that on Linux since AtlasWerks does not work on the other plateform
-  INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/ && ${CMAKE_COMMAND} -E copy Applications/Greedy/GreedyAtlas ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/ && ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-build/Applications/Greedy/GreedyAtlas ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} FFTW CLAPACK # Not CMake Arg -> directly after CMakeArg in ExternalProject_Add()
   )
 set( Tools
