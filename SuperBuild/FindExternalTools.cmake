@@ -359,6 +359,8 @@ set( CMAKE_ExtraARGS
   -DatlasWerks_COMPILE_APP_TX_APPLY:BOOL=OFF
   -DatlasWerks_COMPILE_APP_TX_WERKS:BOOL=OFF
   -DatlasWerks_COMPILE_APP_UTILITIES:BOOL=OFF
+  #There is no install in AtlasWerks. We only care about GreedyAtlas so we just copy it. We only do that on Linux since AtlasWerks does not work on the other plateform
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/ && ${CMAKE_COMMAND} -E copy Applications/Greedy/GreedyAtlas ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} FFTW CLAPACK # Not CMake Arg -> directly after CMakeArg in ExternalProject_Add()
   )
 set( Tools
@@ -490,7 +492,7 @@ set( SourceCodeArgs
   SVN_PASSWORD slicer
   SVN_REVISION -r 50
   )
-if( APPLE )
+if( UNIX )
   set( CMAKE_ExtraARGS
     -DUSE_SYSTEM_ITK:BOOL=OFF
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=OFF
@@ -553,6 +555,7 @@ set( CMAKE_ExtraARGS
   -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
   -DITK_DIR:PATH=${ITK_DIR}
   DEPENDS ${ITK_DEPEND}
+  PATCH_COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/MriWatcher-CMakeLists-patch-install.txt ${CMAKE_CURRENT_BINARY_DIR}/MriWatcher/CMakeLists.txt
   )
 set( Tools
   MriWatcher
@@ -564,7 +567,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/niral_utilities/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 50 # 08/15/2013
+  SVN_REVISION -r 56 # 12/13/2013
   )
 set( CMAKE_ExtraARGS
   -DCOMPILE_CONVERTITKFORMATS:BOOL=OFF
@@ -577,6 +580,7 @@ set( CMAKE_ExtraARGS
   -DCOMPILE_POLYDATAMERGE:BOOL=OFF
   -DCOMPILE_POLYDATATRANSFORM:BOOL=OFF
   -DCOMPILE_TRANSFORMDEFORMATIONFIELD:BOOL=OFF
+  -DCOMPILE_MULTIATLASSEG:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
   -DVTK_DIR:PATH=${VTK_DIR}
   -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
