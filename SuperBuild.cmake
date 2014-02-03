@@ -5,6 +5,20 @@ set(BUILD_TESTING ON CACHE BOOL "Build, configure and copy testing files")
 
 project(DTIAtlasBuilder)
 
+
+# So error while configuring and not building if Git missing -> sets GIT_EXECUTABLE
+find_package(Git REQUIRED)
+
+option(USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
+if(NOT USE_GIT_PROTOCOL)
+  set(git_protocol "http")
+else(NOT USE_GIT_PROTOCOL)
+  set(git_protocol "git")
+endif()
+
+# Sets Subversion_SVN_EXECUTABLE
+find_package(Subversion REQUIRED)
+
 # External Projects
 include(ExternalProject) # "ExternalProject" is the module that will allow to compile tools
 if(CMAKE_EXTRA_GENERATOR) # CMake Generator = make, nmake..
@@ -39,6 +53,8 @@ set(COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES
   -DMEMORYCHECK_COMMAND:PATH=${MEMORYCHECK_COMMAND}
   -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
   -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
+  -DGIT_EXECUTABLE:PATH=${GIT_EXECUTABLE} # needed when does include(Slicer) for Slicer ext
+  -DSubversion_SVN_EXECUTABLE:FILEPATH=${Subversion_SVN_EXECUTABLE}# needed when does include(Slicer) for Slicer ext
 )
 
 #===================================================================================
@@ -110,18 +126,7 @@ endif(NOT COMPILE_PACKAGE)
 find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
 include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
 
-# So error while configuring and not building if Git missing -> sets GIT_EXECUTABLE
-find_package(Git REQUIRED)
 
-option(USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
-if(NOT USE_GIT_PROTOCOL)
-  set(git_protocol "http")
-else(NOT USE_GIT_PROTOCOL)
-  set(git_protocol "git")
-endif()
-
-# Sets Subversion_SVN_EXECUTABLE
-find_package(Subversion REQUIRED)
 #======================================================================================
 # Compile package
 set( ExtProjList # External packages to compile
@@ -230,13 +235,12 @@ ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject i
   CMAKE_ARGS
     -DInnerBuildCMakeLists:BOOL=ON
     ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
+    -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
     -DITK_DIR:PATH=${ITK_DIR}
     -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
     -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DLIBRARY_OUTPUT_PATH:PATH=${LIBRARY_OUTPUT_PATH}
-    -DGIT_EXECUTABLE:PATH=${GIT_EXECUTABLE} # needed when does include(Slicer) for Slicer ext
-    -DSubversion_SVN_EXECUTABLE:FILEPATH=${Subversion_SVN_EXECUTABLE}# needed when does include(Slicer) for Slicer ext
     # Installation step
     -DINSTALL_DIR:PATH=${INSTALL_DIR}
     -DNOCLI_INSTALL_DIR:PATH=${NOCLI_INSTALL_DIR}

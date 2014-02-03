@@ -291,7 +291,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtiprocess/trunk" # /dtiprocess"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 207
+  SVN_REVISION -r 214
   )
 if( MSVC )
   set( INSTALL_CONFIG DTIProcess-build/DTIProcess.sln /Build Release /Project INSTALL.vcproj )
@@ -502,6 +502,7 @@ else()
   set( INSTALL_CONFIG -C DTIReg-build install )
 endif()
 list(APPEND CMAKE_ExtraARGS
+  -DUSE_GIT_PROTOCOL_SuperBuild_DTIReg:BOOL=${USE_GIT_PROTOCOL}
   -DANTSTOOL:PATH=${ANTSPath}
   -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
   -DBRAINSFitTOOL:PATH=${BRAINSFitPath}
