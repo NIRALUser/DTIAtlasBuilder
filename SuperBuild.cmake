@@ -110,8 +110,18 @@ endif(NOT COMPILE_PACKAGE)
 find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
 include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
 
-find_package(Git REQUIRED) # So error while configuring and not building if Git missing -> sets GIT_EXECUTABLE
+# So error while configuring and not building if Git missing -> sets GIT_EXECUTABLE
+find_package(Git REQUIRED)
 
+option(USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
+if(NOT USE_GIT_PROTOCOL)
+  set(git_protocol "http")
+else(NOT USE_GIT_PROTOCOL)
+  set(git_protocol "git")
+endif()
+
+# Sets Subversion_SVN_EXECUTABLE
+find_package(Subversion REQUIRED)
 #======================================================================================
 # Compile package
 set( ExtProjList # External packages to compile
@@ -226,6 +236,7 @@ ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject i
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DLIBRARY_OUTPUT_PATH:PATH=${LIBRARY_OUTPUT_PATH}
     -DGIT_EXECUTABLE:PATH=${GIT_EXECUTABLE} # needed when does include(Slicer) for Slicer ext
+    -DSubversion_SVN_EXECUTABLE:FILEPATH=${Subversion_SVN_EXECUTABLE}# needed when does include(Slicer) for Slicer ext
     # Installation step
     -DINSTALL_DIR:PATH=${INSTALL_DIR}
     -DNOCLI_INSTALL_DIR:PATH=${NOCLI_INSTALL_DIR}
