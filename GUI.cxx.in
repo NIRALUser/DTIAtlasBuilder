@@ -61,6 +61,18 @@ to display a warning if a new compute is done afterwards with a newer version
 // DTIAtlasBuilder_BUILD_SLICER_EXTENSION is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
 #define SlicerPythonExec "${SlicerPythonExec}" // configured in DTIAtlasBuilder.cmake
 
+//We want to search the extension path first, and then we look for the tools on the system
+std::string FindProgram( const char* name , std::vector< std::string > m_FindProgramDTIABExecDirVec )
+{
+std::string path ;
+path = itksys::SystemTools::FindProgram( name , m_FindProgramDTIABExecDirVec , true ) ;
+if( path.empty() )
+  {
+  path = itksys::SystemTools::FindProgram( name ) ;
+  }
+return path ;
+}
+
 template< class T > std::string IntOrDoubleToStr(T IntOrDoubleVar) // T is int or double
 {
   std::ostringstream oss;
@@ -285,14 +297,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
 
   // If DTIAB is built as an SlicerExtension, give the path to the folder containing external non cli tools
   // If no SicerExtension, find_program will just search there and find nothing -> not an issue
-  if((std::string)Platform == "linux" || (std::string)Platform == "win")
-  {
-    m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../../../ExternalBin"; // the executable will be in Ext/lib/Slicer4.2/cli_modules and the tools will be in Ext/ExternalBin
-  }
-  else if((std::string)Platform == "mac")
-  {
-    m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../ExternalBin";
-  }
+  m_DTIABSlicerExtensionExternalBinDir = DTIABExecutablePath + "/../ExternalBin";
   m_FindProgramDTIABExecDirVec.push_back(m_DTIABSlicerExtensionExternalBinDir);
 
   // On Mac if Slicer Ext, paths to BRAINS (compiled within Slicer) are not set in the PATH env var, so add it to the search vector
@@ -733,7 +738,7 @@ void GUI::AddCasesToListWidget(QStringList CaseList, QString CSVfiletext) // cal
   bool SomeFilesAreNotImages = false;
 
   // Add REAL PATH of cases to list
-  for(unsigned int i=0; i<CaseList.count() ; i++)
+  for(int i=0; i<CaseList.count() ; i++)
   {
     std::string CaseRealPath = itksys::SystemTools::GetRealPath( CaseList.at(i).toStdString().c_str() );
     if( CheckCase( CaseRealPath, true ) ) // true for no display if error: just not add file
@@ -2104,28 +2109,28 @@ void GUI::ConfigDefault() /*SLOT*/
   std::string program;
   std::string notFound;
 
-  program = itksys::SystemTools::FindProgram("ImageMath",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("ImageMath",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(ImagemathPath->text().isEmpty()) notFound = notFound + "> ImageMath\n"; }
   else ImagemathPath->setText(QString(program.c_str()));
 
-  program = itksys::SystemTools::FindProgram("ResampleDTIlogEuclidean",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("ResampleDTIlogEuclidean",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(ResampPath->text().isEmpty()) notFound = notFound + "> ResampleDTIlogEuclidean\n"; }
   else ResampPath->setText(QString(program.c_str()));
 
-  program = itksys::SystemTools::FindProgram("CropDTI",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("CropDTI",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(CropDTIPath->text().isEmpty()) notFound = notFound + "> CropDTI\n"; }
   else CropDTIPath->setText(QString(program.c_str()));
 
-  program = itksys::SystemTools::FindProgram("dtiprocess",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("dtiprocess",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(dtiprocPath->text().isEmpty()) notFound = notFound + "> dtiprocess\n"; }
   else dtiprocPath->setText(QString(program.c_str()));
 
-  program = itksys::SystemTools::FindProgram("BRAINSFit",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("BRAINSFit",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(BRAINSFitPath->text().isEmpty()) notFound = notFound + "> BRAINSFit\n"; }
   else BRAINSFitPath->setText(QString(program.c_str()));
 
   bool GAToTest=false;
-  program = itksys::SystemTools::FindProgram("GreedyAtlas",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("GreedyAtlas",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(GAPath->text().isEmpty()) notFound = notFound + "> GreedyAtlas\n"; }
   else
   {
@@ -2133,25 +2138,37 @@ void GUI::ConfigDefault() /*SLOT*/
     GAPath->setText(QString(program.c_str()));  
   }
 
-  program = itksys::SystemTools::FindProgram("dtiaverage",m_FindProgramDTIABExecDirVec);
-  if(program.empty()) { if(dtiavgPath->text().isEmpty()) notFound = notFound + "> dtiaverage\n"; }
-  else dtiavgPath->setText(QString(program.c_str()));
-
+  program = FindProgram("dtiaverage",m_FindProgramDTIABExecDirVec);
+  if(program.empty())
+  {
+    if( dtiavgPath->text().isEmpty() )
+    {
+      notFound = notFound + "> dtiaverage\n" ;
+    }
+  }
+  else
+  {
+    dtiavgPath->setText( QString( program.c_str() ) ) ;
+  }
   bool DTIRegToTest=false;
-  program = itksys::SystemTools::FindProgram("DTI-Reg_1.1.3",m_FindProgramDTIABExecDirVec);
-  if(program.empty()) program = itksys::SystemTools::FindProgram("DTI-Reg",m_FindProgramDTIABExecDirVec); // if 1.1.3 not found, look for "DTI-Reg" alone
-  if(program.empty()) { if(DTIRegPath->text().isEmpty()) notFound = notFound + "> DTI-Reg\n"; }
+  program = FindProgram( "DTI-Reg" , m_FindProgramDTIABExecDirVec ) ;
+  if( program.empty() )
+  {
+     if( DTIRegPath->text().isEmpty() )
+     {
+       notFound = notFound + "> DTI-Reg\n" ;
+     }
+  }
   else
   {
     DTIRegToTest=true; // call testDTIReg after the display of "DONE"
-    DTIRegPath->setText(QString(program.c_str()));  
+    DTIRegPath->setText( QString(program.c_str() ) ) ;  
   }
-
-  program = itksys::SystemTools::FindProgram("unu",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("unu",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(unuPath->text().isEmpty()) notFound = notFound + "> unu\n"; }
   else unuPath->setText(QString(program.c_str()));
 
-  program = itksys::SystemTools::FindProgram("MriWatcher",m_FindProgramDTIABExecDirVec);
+  program = FindProgram("MriWatcher",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(MriWatcherPath->text().isEmpty()) notFound = notFound + "> MriWatcher (Program will work, but QC will not be available)\n"; }
   else MriWatcherPath->setText(QString(program.c_str()));
 
@@ -2232,7 +2249,7 @@ void GUI::ResetSoft(int softindex) /*SLOT*/ //softwares: 1=ImageMath, 2=Resample
     break;
   case 7: soft="dtiaverage";
     break;
-  case 8: soft="DTI-Reg_1.1.3";
+  case 8: soft="DTI-Reg";
     break;
   case 9: soft="unu";
     break;
@@ -2242,10 +2259,7 @@ void GUI::ResetSoft(int softindex) /*SLOT*/ //softwares: 1=ImageMath, 2=Resample
 
   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
 
-  std::string program = itksys::SystemTools::FindProgram(soft.c_str(),m_FindProgramDTIABExecDirVec);
-
-  if(program.empty() && soft=="DTI-Reg_1.1.3") program = itksys::SystemTools::FindProgram("DTI-Reg",m_FindProgramDTIABExecDirVec); // if 1.1.3 not found, look for "DTI-Reg"
-
+  std::string program = FindProgram(soft.c_str(),m_FindProgramDTIABExecDirVec);
 
   bool GAToTest=false;
   bool DTIRegToTest=false;
@@ -2787,7 +2801,7 @@ void GUI::CheckProgram( std::string ProgramName, QLineEdit *ProgramPath, std::st
 {
   if( ProgramPath->text().isEmpty() )
   {
-    std::string FoundprogramPath = itksys::SystemTools::FindProgram( ProgramName.c_str(), m_FindProgramDTIABExecDirVec );
+    std::string FoundprogramPath = FindProgram( ProgramName.c_str(), m_FindProgramDTIABExecDirVec );
     if(FoundprogramPath.empty()) notFound = notFound + "> " + ProgramName + "\n";
     else ProgramPath->setText(QString(FoundprogramPath.c_str()));
   }
@@ -2826,7 +2840,7 @@ bool GUI::CheckPrograms()
 
     if(MriWatcherPath->text().isEmpty()) // MriWatcher special because not in notFound -> just warning no QC
     {
-      std::string programPath = itksys::SystemTools::FindProgram("MriWatcher",m_FindProgramDTIABExecDirVec);
+      std::string programPath = FindProgram("MriWatcher",m_FindProgramDTIABExecDirVec);
       if(programPath.empty()) DisableQC(); // notFound = notFound + "> MriWatcher (Program will work, but QC will not be available)\n";
       else MriWatcherPath->setText(QString(programPath.c_str()));
     }
@@ -2938,7 +2952,7 @@ bool GUI::FindPython()
 
   if( m_PythonPath.empty() ) // Find Python version used // If not slicer ext -> empty, if slicer ext and test and not found -> empty
   {
-    m_PythonPath = itksys::SystemTools::FindProgram("python",m_FindProgramDTIABExecDirVec);
+    m_PythonPath = FindProgram("python",m_FindProgramDTIABExecDirVec);
     if(m_PythonPath.empty())
     {
       std::string PythonNotFoundtext = "Python has not been found. Please install python before running DTIAtlasBuilder.";
