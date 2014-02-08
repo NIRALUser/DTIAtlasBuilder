@@ -369,7 +369,6 @@ set( SourceCodeArgs
   )
 
 set( CMAKE_ExtraARGS
-  -DBUILD_TESTING:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=OFF
   -DINTEGRATE_WITH_SLICER:BOOL=OFF
   -DBRAINSTools_SUPERBUILD:BOOL=OFF
@@ -433,7 +432,6 @@ else()
   set( INSTALL_CONFIG -C ANTS-build install )
 endif()
 set( CMAKE_ExtraARGS
-  -DBUILD_TESTING:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=OFF
   -DBUILD_EXTERNAL_APPLICATIONS:BOOL=OFF
   -DANTS_SUPERBUILD:BOOL=ON
@@ -476,49 +474,6 @@ set( Tools
   )
 AddToolMacro( ResampleDTI ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
 
-# ===== DTI-Reg =====================================================================
-set( SourceCodeArgs
-  SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
-  SVN_USERNAME slicerbot
-  SVN_PASSWORD slicer
-  SVN_REVISION -r 50
-  )
-if( UNIX )
-  set( CMAKE_ExtraARGS
-    -DUSE_SYSTEM_ITK:BOOL=OFF
-    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=OFF
-    )
-else()
-  set( CMAKE_ExtraARGS
-    -DUSE_SYSTEM_ITK:BOOL=ON
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
-    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-    )
-endif()
-if( MSVC )
-  set( INSTALL_CONFIG DTIReg-build/DTIReg.sln /Build Release /Project INSTALL.vcproj )
-else()
-  set( INSTALL_CONFIG -C DTIReg-build install )
-endif()
-list(APPEND CMAKE_ExtraARGS
-  -DUSE_GIT_PROTOCOL_SuperBuild_DTIReg:BOOL=${USE_GIT_PROTOCOL}
-  -DANTSTOOL:PATH=${ANTSPath}
-  -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
-  -DBRAINSFitTOOL:PATH=${BRAINSFitPath}
-  -DCOMPILE_EXTERNAL_dtiprocess:BOOL=OFF
-  -DUSE_SYSTEM_BatchMake:BOOL=OFF
-  -DBUILD_SHARED_LIBS:BOOL=OFF
-  -DResampleDTITOOL:PATH=${ResampleDTIlogEuclideanPath}
-  -DWARPIMAGEMULTITRANSFORMTOOL:PATH=${WarpImageMultiTransformPath}
-  -DWARPTENSORIMAGEMULTITRANSFORMTOOL:PATH=${WarpTensorImageMultiTransformPath}
-  -DdtiprocessTOOL:PATH=${dtiprocessPath}
-  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
-  )
-set( Tools
-  DTI-Reg
-  )
-AddToolMacro( DTIReg ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
 
 # ===== teem (unu) =====================================================================
 set( SourceCodeArgs
@@ -585,4 +540,30 @@ set( Tools
   CropDTI
   )
 AddToolMacro( NIRALUtilities ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
+
+# ===== DTI-Reg =====================================================================
+set( SourceCodeArgs
+  SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
+  SVN_USERNAME slicerbot
+  SVN_PASSWORD slicer
+  SVN_REVISION -r 57
+  )
+set( CMAKE_ExtraARGS
+  -DANTSTOOL:PATH=${ANTSPath}
+  -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
+  -DBRAINSFitTOOL:PATH=${BRAINSFitPath}
+  -DCOMPILE_EXTERNAL_dtiprocess:BOOL=OFF
+  -DCOMPILE_EXTERNAL_ITKTransformTools:BOOL=ON
+  -DBUILD_SHARED_LIBS:BOOL=OFF
+  -DResampleDTITOOL:PATH=${ResampleDTIlogEuclideanPath}
+  -DWARPIMAGEMULTITRANSFORMTOOL:PATH=${WarpImageMultiTransformPath}
+  -DWARPTENSORIMAGEMULTITRANSFORMTOOL:PATH=${WarpTensorImageMultiTransformPath}
+  -DdtiprocessTOOL:PATH=${dtiprocessPath}
+  -DUSE_GIT_PROTOCOL_SuperBuild_DTIReg:STRING=${USE_GIT_PROTOCOL}
+  -DSLICER_EXTENSION:BOOL=ON
+  )
+set( Tools
+  DTI-Reg
+  )
+AddToolMacro( DTIReg ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
 

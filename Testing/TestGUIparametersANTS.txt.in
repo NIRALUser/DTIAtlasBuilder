@@ -11,7 +11,7 @@ Scale Level =1,1,100,0.1,0.1,0.01,0.1
 Resampling Interpolation Algorithm=Linear
 Tensor interpolation=Log Euclidean
 Tensor transformation=Preservation of the Principal Direction (PPD)
-DTIReg Extra Path=${CMAKE_CURRENT_BINARY_DIR}/../ANTS-build/bin
+DTIReg Extra Path=${CMAKE_BINARY_DIR}/DTIReg-install/bin,${CMAKE_BINARY_DIR}/ANTS-install/bin
 DTIRegMethod=ANTS=SpatioTempDiffeo (SyN);0.25;100x50x25;Cross-Correlation (CC);2;3;0
 GridProcessing=
 NbThreads=1

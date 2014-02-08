@@ -1046,7 +1046,7 @@ as an Affine transform already computed, it will be used as an input for the Aff
              <item>
               <widget class="QLineEdit" name="DTIRegExtraPathlineEdit">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DTI-Reg also needs BRAINS, dtiprocess and ResampleDTIlogEuclidean, which will be automatically given to DTI-Reg from the paths set in DTIAtlasBuilder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DTI-Reg also needs BRAINS, dtiprocess and ResampleDTIlogEuclidean, ANTS tools and ITKTransformTools, which will be automatically given to DTI-Reg from the paths set in DTIAtlasBuilder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
               </widget>
              </item>
