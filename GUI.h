@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <sstream>
 
 /*itk classes*/
 #include "itkImage.h"
@@ -100,6 +101,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
 
     void RunningCompleted();
     void RunningFailed();
+    static bool testVersion( std::string givenVersion , std::string comparedVersion ) ;
 
   public slots:
 
@@ -179,7 +181,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
     void closeEvent(QCloseEvent* event);
 
   private:
-
+    static std::vector<int> ConvertStringVersionToVector( std::string version ) ;
     bool m_noGUI;
     bool m_Testing;
     bool m_ErrorDetectedInConstructor; // useful in --nogui mode to exit the program without trying the compute function

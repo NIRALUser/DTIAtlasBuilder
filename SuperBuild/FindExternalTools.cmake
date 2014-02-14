@@ -541,12 +541,15 @@ set( Tools
   )
 AddToolMacro( NIRALUtilities ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
 
+if( Slicer_CLIMODULES_BIN_DIR )
+  set( Slicer_CLIMODULES_BIN_DIR_OPTION -DSlicer_CLIMODULES_BIN_DIR:STRING=${Slicer_CLIMODULES_BIN_DIR} )
+endif()
 # ===== DTI-Reg =====================================================================
 set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 57
+  SVN_REVISION -r 61
   )
 set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
@@ -560,7 +563,7 @@ set( CMAKE_ExtraARGS
   -DWARPTENSORIMAGEMULTITRANSFORMTOOL:PATH=${WarpTensorImageMultiTransformPath}
   -DdtiprocessTOOL:PATH=${dtiprocessPath}
   -DUSE_GIT_PROTOCOL_SuperBuild_DTIReg:STRING=${USE_GIT_PROTOCOL}
-  -DSLICER_EXTENSION:BOOL=ON
+  ${Slicer_CLIMODULES_BIN_DIR_OPTION}
   )
 set( Tools
   DTI-Reg

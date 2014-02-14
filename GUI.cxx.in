@@ -2235,6 +2235,68 @@ void GUI::BrowseSoft(int soft)  /*SLOT*/ //softwares: 1=ImageMath, 2=ResampleDTI
   }
 }
 
+//Converts software number from string to vector<int>
+//Splits string at '.'
+//eg: "1.1.3" to vector<int>={1,1,3}
+std::vector<int> GUI::ConvertStringVersionToVector( std::string version )
+{
+  std::vector<int> vecVersion ;
+  std::size_t posOrig = 0 ;
+  std::size_t posDot ;
+  do
+  {
+    posDot = version.find( "." , posOrig ) ;
+    if( posDot == std::string::npos )
+    {
+      posDot = version.size() ;
+    }
+    std::istringstream extractString( version.substr( posOrig , posDot - posOrig ) ) ;
+    int convert ;
+    extractString >> convert ;
+    if( !extractString )
+    {
+      convert = -1 ;
+    }
+    vecVersion.push_back( convert ) ;
+    posOrig = posDot + 1 ;
+  } while( posDot != version.size() ) ;
+  return vecVersion ;
+}
+
+//Compares 2 softare version number and returns 'true' if
+//givenVersion is larger than comparedVersion
+//eg: givenVersion = 1.3
+//    comparedVersion = 1.0.1
+//    returns true
+//returns true if versions are equal
+//eg: givenVersion = 2.0
+//    comparedVersion = 2.0
+//    returns true
+//returns false if comparedVersion is larger than givenVersion
+//eg: givenVersion = 3.2
+//    comparedVersion = 4.5.2
+//    returns false
+bool GUI::testVersion( std::string givenVersion , std::string comparedVersion )
+{
+  std::vector<int> givenVersionVec = ConvertStringVersionToVector( givenVersion ) ;
+  std::vector<int> comparedVersionVec = ConvertStringVersionToVector( comparedVersion ) ;
+  std::size_t max = std::max( givenVersionVec.size() , comparedVersionVec.size() ) ;
+  givenVersionVec.resize( max , 0 ) ;
+  comparedVersionVec.resize( max , 0 ) ;
+  for( std::size_t i = 0 ; i < max ; i++ )
+  {
+    if( givenVersionVec[ i ] > comparedVersionVec[ i ] )
+    {
+      return true ;
+    }
+    else if( givenVersionVec[ i ] < comparedVersionVec[ i ] )
+    {
+      return false ;
+    }
+  }
+  return true ; //If we are here, the 2 versions are equal
+}
+
 void GUI::ResetSoft(int softindex) /*SLOT*/ //softwares: 1=ImageMath, 2=ResampleDTIlogEuclidean, 3=CropDTI, 4=dtiprocess, 5=BRAINSFit, 6=GreedyAtlas, 7=dtiaverage, 8=DTI-Reg, 9=unu, 10=MriWatcher
 {
   std::string soft;
@@ -2349,19 +2411,25 @@ int GUI::testDTIReg() /*SLOT*/ // returns 0 if version ok, -1 if bad version
   Process->waitForFinished();
   Process->waitForReadyRead();
   QByteArray BA =  Process->readAllStandardOutput();
-
   QString text = QString( BA.data() );
-
-  std::cout<<"DONE"<<std::endl;
-
-  if( BA.size()==0 || text.contains("1.0") || ( text.contains("1.1") && !text.contains("1.1.") ) || text.contains("1.1.1") || text.contains("1.1.2") ) //old version -> NOK
+  if( BA.size() == 0 )//If no version number, we call it version 0
   {
-    if(!m_noGUI && !m_Testing) 
+      text = "0" ;
+  }
+  std::cout << "DONE" << std::endl ;
+  std::string currentVersion = text.toStdString() ;
+  std::size_t pos = currentVersion.find( "version:" ) + 9 ;//+9 is to remove "version: ", it should keep just the version number
+  currentVersion = currentVersion.substr( pos , currentVersion.size() - pos ) ;
+  currentVersion.erase( std::remove( currentVersion.begin() , currentVersion.end() , '\n' ) , currentVersion.end() ) ;//remove newlines
+  std::string minDTIRegVersion = "1.1.3" ;//Set which minimum version of DTI-Reg to use
+  if( !testVersion( currentVersion , minDTIRegVersion )  ) //old version -> Not OK ->print error message
+  {
+    if(!m_noGUI && !m_Testing)
     {
-      std::string text = "The version of DTI-Reg \'" + DTIRegPath->text().toStdString() + "\' is not the right one.\nPlease give the version 1.1.3. or older\n";
+      std::string text = "The version of DTI-Reg \'" + DTIRegPath->text().toStdString() + "\' is not the right one.\nPlease give the version " + minDTIRegVersion +" or newer";
       QMessageBox::warning(this, "Wrong version", QString(text.c_str()) );
     }
-    else std::cout<<"| The version of DTI-Reg \'" << DTIRegPath->text().toStdString() << "\' is not the right one. Please give the version 1.1.3. or older"<<std::endl;
+    else std::cout<<"| The version of DTI-Reg \'" << DTIRegPath->text().toStdString() << "\' is not the right one. Please give the version " + minDTIRegVersion +" or newer"<<std::endl;
 
     return -1;
   }
