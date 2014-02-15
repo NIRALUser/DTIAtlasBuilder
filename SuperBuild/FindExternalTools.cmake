@@ -549,7 +549,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 61
+  SVN_REVISION -r 63
   )
 set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
@@ -564,6 +564,8 @@ set( CMAKE_ExtraARGS
   -DdtiprocessTOOL:PATH=${dtiprocessPath}
   -DUSE_GIT_PROTOCOL_SuperBuild_DTIReg:STRING=${USE_GIT_PROTOCOL}
   ${Slicer_CLIMODULES_BIN_DIR_OPTION}
+  -DEXTERNAL_SOURCE_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}
+  -DEXTERNAL_BINARY_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}
   )
 set( Tools
   DTI-Reg
