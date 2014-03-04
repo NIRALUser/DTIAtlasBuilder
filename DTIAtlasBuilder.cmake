@@ -47,7 +47,17 @@ else() # Unix
   execute_process(COMMAND "date" "+%m/%d/%Y" OUTPUT_VARIABLE TODAY)
   string(REGEX REPLACE "(..)/(..)/(....).*" "\\1/\\2/\\3" TODAY ${TODAY}) # to remove the end of line
 endif()
+
 configure_file(DTIAtlasBuilder.xml.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml)
+# xml info in GUI
+file(READ ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml var)
+
+string(REGEX MATCH "<version>.*</version>" ext "${var}")
+string(REPLACE "<version>" "" version_number ${ext} )
+string(REPLACE "</version>" "" version_number ${version_number})
+
+ADD_DEFINITIONS(-DDTIAtlasBuilder_VERSION="${version_number}")
+
 
 # Send python path to the program by configuring GUI.cxx: For testing, c++ program needs to know where Slicer's python is
 if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )

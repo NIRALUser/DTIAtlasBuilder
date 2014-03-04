@@ -35,6 +35,10 @@ mode_t ITKmode_W_OK = 2;
 mode_t ITKmode_R_OK = 4;
 mode_t ITKmode_X_OK = 1;
 
+#ifndef DTIAtlasBuilder_VERSION
+#define DTIAtlasBuilder_VERSION "Unknown version"
+#endif
+
 /* DTIAB version check:
 Version will be written in a log file when computing
 to display a warning if a new compute is done afterwards with a newer version
@@ -88,7 +92,8 @@ template< class T > std::string IntOrDoubleToStr(T IntOrDoubleVar) // T is int o
 GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, bool overwrite, bool noGUI, bool Testing, std::string commandRan) : QMainWindow()
 {
   setupUi(this);
-
+  QStringList version = QString(DTIAtlasBuilder_VERSION).split("|");
+  setWindowTitle( "DTI Atlas Builder: " + version[0] ) ;
   this->setAcceptDrops(true);
 
   m_ErrorDetectedInConstructor=false;
@@ -2456,7 +2461,7 @@ void GUI::ReadMe()  /*SLOT*/ /////to UPDATE
   QDialog *dlg = new QDialog(this);
   dlg->setWindowTitle ("Read Me");
 
-  std::string info = "<p><b>DTIAtlasBuilder v1.3 (06/26/2013)</b><br>";
+  std::string info = "<p><b>DTIAtlasBuilder: "+std::string(DTIAtlasBuilder_VERSION)+"</b><br>";
   info = info + "<i>A tool to create an atlas from several DTI images</i><br><br>";
   info = info + "Homepage: <a href=\"http://www.nitrc.org/projects/dtiatlasbuilder\" target=\"_blank\">On NITRC</a><br><br>";
   info = info + "For any question, suggestion or remark, please contact <a href=\"mailto:akaiser@unc.edu\" target=\"_blank\">akaiser@unc.edu</a>.<br><br>";
