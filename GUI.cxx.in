@@ -2096,7 +2096,7 @@ void GUI::SaveConfig() /*SLOT*/
       stream << "dtiaverage=" << dtiavgPath->text() << endl;
       stream << "DTI-Reg=" << DTIRegPath->text() << endl;
       stream << "unu=" << unuPath->text() << endl;
-      stream << "MriWatcher=" << unuPath->text() << endl;
+      stream << "MriWatcher=" << MriWatcherPath->text() << endl;
 
       std::cout<<"DONE"<<std::endl; // command line display
     }
@@ -2419,21 +2419,31 @@ int GUI::testDTIReg() /*SLOT*/ // returns 0 if version ok, -1 if bad version
   std::cout << "DONE" << std::endl ;
   std::string currentVersion = text.toStdString() ;
   std::size_t pos = currentVersion.find( "version:" ) + 9 ;//+9 is to remove "version: ", it should keep just the version number
-  currentVersion = currentVersion.substr( pos , currentVersion.size() - pos ) ;
-  currentVersion.erase( std::remove( currentVersion.begin() , currentVersion.end() , '\n' ) , currentVersion.end() ) ;//remove newlines
+  bool errorReadingVersion = false ;
   std::string minDTIRegVersion = "1.1.3" ;//Set which minimum version of DTI-Reg to use
-  if( !testVersion( currentVersion , minDTIRegVersion )  ) //old version -> Not OK ->print error message
+  //Making sure we are not trying to go to far in the string containing the version number
+  if( currentVersion.size() < pos )
+  {
+      errorReadingVersion = true ;
+  }
+  else
+  {
+    currentVersion = currentVersion.substr( pos , currentVersion.size() - pos ) ;
+    currentVersion.erase( std::remove( currentVersion.begin() , currentVersion.end() , '\n' ) , currentVersion.end() ) ;//remove newlines
+  }
+  if( errorReadingVersion || !testVersion( currentVersion , minDTIRegVersion )  ) //old version -> Not OK ->print error message
   {
     if(!m_noGUI && !m_Testing)
     {
       std::string text = "The version of DTI-Reg \'" + DTIRegPath->text().toStdString() + "\' is not the right one.\nPlease give the version " + minDTIRegVersion +" or newer";
       QMessageBox::warning(this, "Wrong version", QString(text.c_str()) );
     }
-    else std::cout<<"| The version of DTI-Reg \'" << DTIRegPath->text().toStdString() << "\' is not the right one. Please give the version " + minDTIRegVersion +" or newer"<<std::endl;
-
+    else
+    {
+      std::cout<<"| The version of DTI-Reg \'" << DTIRegPath->text().toStdString() << "\' is not the right one. Please give the version " + minDTIRegVersion +" or newer"<<std::endl;
+    }
     return -1;
   }
-
   return 0;
 }
 
