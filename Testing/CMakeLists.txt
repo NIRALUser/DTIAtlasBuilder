@@ -55,6 +55,7 @@ if(NOT WIN32 AND NOT APPLE) # DTIAtlasBuilder pipeline does not work on Win and 
 
   set(DTIABParameters
     --nogui # no need if ITKv4 -> already in DTIAtlasBuilderTest.cxx
+    --overwrite
     --parameter_file ${TestingBINdirectory}/TestGUIparametersBRAINS.txt
     --configuration_file ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilderSoftConfig.txt # Testing config file
   )
