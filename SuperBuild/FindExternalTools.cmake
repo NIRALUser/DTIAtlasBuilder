@@ -455,9 +455,7 @@ AddToolMacro( ANTS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARG
 # ===== ResampleDTIlogEuclidean =====================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/ResampleDTIlogEuclidean.git"
-  GIT_TAG 09a0676bc4befa3a1b9c2384fedf37b21e193797
-# URL "http://www.insight-journal.org/download/sourcecode/742/11/SourceCode11_ResampleDTIInsightJournal2.tar.gz"
-# http://github.com/midas-journal/midas-journal-742/tree/master/ResampleDTIInsightJournal
+  GIT_TAG 09a0676bc4befa3a1b9c2384fedf37b21e193797 #04-02-2014 ENH: update install rules 
   )
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
