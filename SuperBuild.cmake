@@ -21,6 +21,8 @@ find_package(Subversion REQUIRED)
 
 # External Projects
 include(ExternalProject) # "ExternalProject" is the module that will allow to compile tools
+include(CMakeDependentOption)
+
 if(CMAKE_EXTRA_GENERATOR) # CMake Generator = make, nmake..
   set(gen "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
 else()

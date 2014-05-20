@@ -92,7 +92,8 @@ endmacro( AddToolMacro )
 # VTK
 set(RecompileVTK OFF)
 set(VTK_DEPEND "")
-if(COMPILE_EXTERNAL_dtiprocessTK OR COMPILE_EXTERNAL_AtlasWerks OR COMPILE_EXTERNAL_BRAINS OR COMPILE_EXTERNAL_NIRALUtilities)
+
+if(COMPILE_EXTERNAL_dtiprocessTK OR COMPILE_EXTERNAL_AtlasWerks OR COMPILE_EXTERNAL_BRAINS )
   find_package(VTK QUIET)
   if (VTK_FOUND)
     set(VTK_USE_QVTK TRUE)
@@ -104,27 +105,52 @@ if(COMPILE_EXTERNAL_dtiprocessTK OR COMPILE_EXTERNAL_AtlasWerks OR COMPILE_EXTER
   endif(VTK_FOUND)
 endif()
 
+set(VTK_VERSION_MAJOR 5 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
+# Set the possible values of VTK major version for cmake-gui
+set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
+if(NOT "${VTK_VERSION_MAJOR}" STREQUAL "5" AND NOT "${VTK_VERSION_MAJOR}" STREQUAL "6")
+  set(VTK_VERSION_MAJOR 5 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6)." FORCE)
+  message(WARNING "Setting VTK_VERSION_MAJOR to '5' as an valid value was specified.")
+endif()
+
+set(USE_VTKv5 ON)
+set(USE_VTKv6 OFF)
+if(${VTK_VERSION_MAJOR} STREQUAL "6")
+  set(USE_VTKv5 OFF)
+  set(USE_VTKv6 ON)
+endif()
+
 if(RecompileVTK) # BRAINSStandAlone/SuperBuild/External_VTK.cmake
-    ExternalProject_Add(VTK
-      GIT_REPOSITORY ${git_protocol}://vtk.org/VTK.git
-      GIT_TAG "v5.10.0"
-      SOURCE_DIR VTK
-      BINARY_DIR VTK-build
-      CMAKE_GENERATOR ${gen}
-      CMAKE_ARGS
-        ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
-        -DBUILD_EXAMPLES:BOOL=OFF
-        -DBUILD_TESTING:BOOL=OFF
-        -DBUILD_SHARED_LIBS:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/VTK-install
-        -DVTK_USE_PARALLEL:BOOL=ON
-        -DVTK_LEGACY_REMOVE:BOOL=OFF
-        -DVTK_WRAP_TCL:BOOL=OFF
-        #-DVTK_USE_RPATH:BOOL=ON # Unused
-        -DVTK_WRAP_PYTHON:BOOL=${VTK_WRAP_PYTHON}
-        -DVTK_INSTALL_LIB_DIR:PATH=${Slicer_INSTALL_LIB_DIR}
-      )
-    set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/vtk-5.10)
+  if(USE_VTKv6)
+    set(VTK_GIT_TAG "v6.1.0")
+    set(VTK_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
+  else()
+    set(VTK_REPOSITORY ${git_protocol}://github.com/BRAINSia/VTK.git)
+    set(VTK_GIT_TAG "FixClangFailure_VTK5.10_release")
+  endif()
+  ExternalProject_Add(VTK
+    GIT_REPOSITORY ${VTK_REPOSITORY}
+    GIT_TAG ${VTK_GIT_TAG}
+    SOURCE_DIR VTK
+    BINARY_DIR VTK-build
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
+      -DBUILD_EXAMPLES:BOOL=OFF
+      -DBUILD_TESTING:BOOL=OFF
+      -DBUILD_SHARED_LIBS:BOOL=OFF
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/VTK-install
+      -DVTK_USE_PARALLEL:BOOL=ON
+      -DVTK_LEGACY_REMOVE:BOOL=OFF
+      -DVTK_WRAP_TCL:BOOL=OFF
+      -DVTK_WRAP_PYTHON:BOOL=${VTK_WRAP_PYTHON}
+      -DVTK_INSTALL_LIB_DIR:PATH=${Slicer_INSTALL_LIB_DIR}
+    )
+    if(USE_VTKv6)
+      set(VTK_DIR ${EXTERNAL_BINARY_DIRECTORY}/VTK-install/lib/cmake/vtk-6.1)
+    else()
+      set(VTK_DIR ${EXTERNAL_BINARY_DIRECTORY}/VTK-install/lib/vtk-5.10)
+    endif()
     mark_as_advanced(CLEAR VTK_DIR)
     set(VTK_DEPEND VTK)
 endif(RecompileVTK)
@@ -198,7 +224,7 @@ if(RecompileITK)
   # Download and compile ITKv4
   ExternalProject_Add(I4 # BRAINSStandAlone/SuperBuild/External_ITKv4.cmake # !! All args needed as they are # Name shorten from ITKv4 because Windows ITKv4 path limited to 50 chars
     GIT_REPOSITORY "${git_protocol}://itk.org/ITK.git"
-    GIT_TAG 35b90133a793ffd884820e499175db19366fe627 # 2013-07-12 (from Slicer) # 1866ef42887df677a6197ad11ed0ef6e9b239567 # 2013-04-03 (from Slicer)
+    GIT_TAG 5e2b1bfee965a5a4f0dfdf3f7eefbc79989adce8 #2014-05-19 (from BRAINSTools)# 2013-07-12 (from Slicer) # 1866ef42887df677a6197ad11ed0ef6e9b239567 # 2013-04-03 (from Slicer)
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4 # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-b # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
     CMAKE_GENERATOR ${gen}
@@ -211,7 +237,8 @@ if(RecompileITK)
       -DBUILD_TESTING:BOOL=OFF
       -DITK_LEGACY_REMOVE:BOOL=OFF
       -DITKV3_COMPATIBILITY:BOOL=ON
-      -DITK_BUILD_ALL_MODULES:BOOL=ON
+      -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
+      -DModule_ITKReview:BOOL=ON
       -DITK_USE_REVIEW:BOOL=OFF # ON ok with BRAINSFit and ANTS not with dtiprocess and ResampleDTI # OFF ok with BRAINSFit
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DUSE_WRAP_ITK:BOOL=OFF ## HACK:  QUICK CHANGE
@@ -220,7 +247,7 @@ if(RecompileITK)
 #      -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/ITKv4-build/lib # Needed for BRAINSTools to compile
 #      -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/ITKv4-build/bin # Needed for BRAINSTools to compile
     )
-  set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-i/lib/cmake/ITK-4.4 FORCE) # Use the downloaded ITK for all tools # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
+  set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-i/lib/cmake/ITK-4.6 FORCE) # Use the downloaded ITK for all tools # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
   set(ITK_DEPEND I4)
   set(RecompileSEM ON) # If recompile ITK, recompile SlicerExecutionModel
 endif(RecompileITK)
@@ -291,7 +318,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtiprocess/trunk" # /dtiprocess"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 214
+  SVN_REVISION -r 220
   )
 if( MSVC )
   set( INSTALL_CONFIG DTIProcess-build/DTIProcess.sln /Build Release /Project INSTALL.vcproj )
@@ -321,8 +348,6 @@ AddToolMacro( dtiprocessTK ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_
 # ===== AtlasWerks ================================================================
 # code for external tools from http://github.com/Chaircrusher/AtlasWerksBuilder/blob/master/CMakeLists.txt
 set( SourceCodeArgs
-#  URL "http://www.sci.utah.edu/releases/atlaswerks_v0.1.4/AtlasWerks_0.1.4_Linux.tgz"
-#  URL_MD5 05fc867564e3340d0d448dd0daab578a
   GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/AtlasWerks.git"
   GIT_TAG "4a3e02b9e6aa9ad527c9b1df4b0ab31c737cbd78" # 02-01-2013 fix bug with clang mac build
   )
@@ -350,6 +375,8 @@ set( CMAKE_ExtraARGS
   -DatlasWerks_COMPILE_APP_TX_APPLY:BOOL=OFF
   -DatlasWerks_COMPILE_APP_TX_WERKS:BOOL=OFF
   -DatlasWerks_COMPILE_APP_UTILITIES:BOOL=OFF
+  #We only care about GreedyAtlas so we only build this target.
+  BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} GreedyAtlas
   #There is no install in AtlasWerks. We only care about GreedyAtlas so we just copy it. We only do that on Linux since AtlasWerks does not work on the other plateform
   INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/ && ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-build/Applications/Greedy/GreedyAtlas ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} FFTW CLAPACK # Not CMake Arg -> directly after CMakeArg in ExternalProject_Add()
@@ -361,8 +388,9 @@ AddToolMacro( AtlasWerks ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_Ex
 
 # ===== BRAINSFit =============================================================
 set( SourceCodeArgs
-  GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSStandAlone.git"
-  GIT_TAG "1abcb55fafc1c9b94dabd33f5fcc40e248c326ba" # 01-30-2013 fix bug with ITK4.4 # "dd7ad3926a01fbdd098ea858fb95012ca16fb236" # 12/18/2012
+  GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git"
+  GIT_TAG "b3f1b53fba2b63f6e568eae95c7f01a9a019bdce" #05-19-2014 - Update to newer version
+#  GIT_TAG "1abcb55fafc1c9b94dabd33f5fcc40e248c326ba" # 01-30-2013 fix bug with ITK4.4 # "dd7ad3926a01fbdd098ea858fb95012ca16fb236" # 12/18/2012
 # "ff94032edafbc46a95f51db4bce894f0120b5992" : Slicer4 version # /devel/linux/Slicer4_linux64/Slicer/SuperBuild/External_BRAINSTools.cmake -> compiles but segfault
 # "31dcba577ee1bac5c4680fc9d7c830d6074020a9" : 12/13/2012
 # "98a46a2b08da882d46f04cbf0d539c2b73348049" # version from http://www.nitrc.org/svn/dtiprep/trunk/SuperBuild/External_BRAINSTools.cmake -> compiles but run error "undefined symbol: ModuleEntryPoint"
@@ -388,11 +416,16 @@ set( CMAKE_ExtraARGS
   -DUSE_BRAINSResample:BOOL=OFF
   -DUSE_AutoWorkup:BOOL=OFF
   -DUSE_ANTS:BOOL=OFF
+  -DUSE_BRAINSDWICleanup:BOOL=OFF
   -DUSE_BRAINSContinuousClass:BOOL=OFF
   -DUSE_BRAINSFitEZ:BOOL=OFF
   -DUSE_BRAINSROIAuto:BOOL=OFF
   -DUSE_BRAINSSurfaceTools:BOOL=OFF
+  -DUSE_BRAINSLabelStats:BOOL=OFF
   -DUSE_DebugImageViewer:BOOL=OFF
+  -DUSE_BRAINSMultiSTAPLE:BOOL=OFF
+  -DUSE_BRAINSStripRotation:BOOL=OFF
+  -DUSE_BRAINSTalairach:BOOL=OFF
   -DUSE_BRAINSABC:BOOL=OFF
   -DUSE_BRAINSConstellationDetector:BOOL=OFF
   -DUSE_BRAINSCreateLabelMapFromProbabilityMaps:BOOL=OFF
@@ -421,10 +454,8 @@ AddToolMacro( BRAINS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraA
 
 # ===== ANTS/WarpMultiTransform =====================================================
 set( SourceCodeArgs
-  # SVN_REPOSITORY "http://advants.svn.sourceforge.net/svnroot/advants/trunk"
-  # SVN_REVISION -r 1685 # 12/13/2012
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
-  GIT_TAG 6d082e02310077d17e84b6c3c9126759a96b87bc # 2013-05-02 Update to fix comp error due to new ITK # "49a8e5911cc5cbd180f15c63ee8c545ebd3828f9" # 2013-04-11 Prevent Boost from compiling libs
+  GIT_TAG 0d75f859cbd6f1e5877f953fc00147be0dd827ca
   )
 if( MSVC )
   set( INSTALL_CONFIG ANTS-build/ANTS.sln /Build Release /Project INSTALL.vcproj )
@@ -433,6 +464,8 @@ else()
 endif()
 set( CMAKE_ExtraARGS
   -DBUILD_SHARED_LIBS:BOOL=OFF
+  -DBUILD_TESTING:BOOL=OFF
+  -DBUILD_EXAMPLES:BOOL=OFF
   -DBUILD_EXTERNAL_APPLICATIONS:BOOL=OFF
   -DANTS_SUPERBUILD:BOOL=ON
   -DSuperBuild_ANTS_USE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
@@ -441,7 +474,11 @@ set( CMAKE_ExtraARGS
   -DITK_VERSION_MAJOR:STRING=4
   -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-  -DUSE_VTK:BOOL=OFF
+  -DBoost_NO_BOOST_CMAKE:BOOL=ON #Set Boost_NO_BOOST_CMAKE to ON to disable the search for boost-cmake
+  -DBoost_DIR:PATH=${BOOST_ROOT}
+  -DBOOST_DIR:PATH=${BOOST_ROOT}
+  -DBOOST_ROOT:PATH=${BOOST_ROOT}
+  -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
   DEPENDS ${ITK_DEPEND}
   )
@@ -475,7 +512,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://svn.code.sf.net/p/teem/code/teem/trunk"  
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 5888 # 12/13/2012
+  SVN_REVISION -r 6187
   )
 set( CMAKE_ExtraARGS
   -DITK_DIR:PATH=${ITK_DIR}
@@ -491,7 +528,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/mriwatcher/branches/mriwatcher_qt4"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 16 # 12/13/2012
+  SVN_REVISION -r 23 # 12/13/2012
   )
 set( CMAKE_ExtraARGS
   -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
@@ -509,7 +546,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/niral_utilities/trunk"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 56 # 12/13/2013
+  SVN_REVISION -r 77
   )
 set( CMAKE_ExtraARGS
   -DCOMPILE_CONVERTITKFORMATS:BOOL=OFF
@@ -523,12 +560,14 @@ set( CMAKE_ExtraARGS
   -DCOMPILE_POLYDATATRANSFORM:BOOL=OFF
   -DCOMPILE_TRANSFORMDEFORMATIONFIELD:BOOL=OFF
   -DCOMPILE_MULTIATLASSEG:BOOL=OFF
+  -DCOMPILE_CORREVAL:BOOL=OFF
+  -DCOMPILE_TEXTUREBIOMARKERTOOL:BOOL=OFF
+  -DCOMPILE_DMDBIOMARKERTOOL:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
-  -DVTK_DIR:PATH=${VTK_DIR}
   -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
   -DModuleDescriptionParser_DIR:PATH=${ModuleDescriptionParser_DIR}
   -DTCLAP_DIR:PATH=${TCLAP_DIR}
-  DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
+  DEPENDS ${ITK_DEPEND}
   )
 set( Tools
   ImageMath
