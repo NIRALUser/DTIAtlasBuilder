@@ -118,11 +118,13 @@ endmacro( InstallToolMacro )
 
 ## Install step for external projects: need to be here if SlicerExtension because make ExperimentalUpload done in inner build directory
 
-set( Tools
-  dtiprocess
-  dtiaverage
-  )
-InstallToolMacro( dtiprocessTK ON) # proj CLI
+
+#We build dtiprocess to be able to run the test for DTIAtlasBuilder, but we do not package it anymore as part of DTIAtlasBuilder as it can now directly be downloaded as a dependent extension
+#set( Tools
+#  dtiprocess
+#  dtiaverage
+#  )
+#InstallToolMacro( dtiprocessTK ON) # proj CLI
 
 set( Tools
   GreedyAtlas

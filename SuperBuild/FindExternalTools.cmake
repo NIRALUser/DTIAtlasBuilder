@@ -196,10 +196,12 @@ if(COMPILE_EXTERNAL_AtlasWerks) # FFTW D + F build one on(after) another
 endif(COMPILE_EXTERNAL_AtlasWerks)
 
 # ITK and SlicerExecutionModel
-set(RecompileITK OFF)
-set(RecompileSEM OFF)
+if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  set(RecompileITK OFF)
+  set(RecompileSEM OFF)
+  find_package(ITK QUIET) # Not required because will be recompiled if not found
+endif()
 
-find_package(ITK QUIET) # Not required because will be recompiled if not found
 if(ITK_FOUND)
   include(${ITK_USE_FILE}) # set ITK_DIR and ITK_VERSION_MAJOR
   if(NOT ${ITK_VERSION_MAJOR} EQUAL 4)
@@ -318,7 +320,7 @@ set( SourceCodeArgs
   SVN_REPOSITORY "http://www.nitrc.org/svn/dtiprocess/trunk" # /dtiprocess"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  SVN_REVISION -r 220
+  SVN_REVISION -r 221
   )
 if( MSVC )
   set( INSTALL_CONFIG DTIProcess-build/DTIProcess.sln /Build Release /Project INSTALL.vcproj )
@@ -328,13 +330,14 @@ endif()
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
+  -DUSE_SYSTEM_ITK:BOOL=ON
   -DVTK_DIR:PATH=${VTK_DIR}
-  -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-  -DModuleDescriptionParser_DIR:PATH=${ModuleDescriptionParser_DIR}
-  -DTCLAP_DIR:PATH=${TCLAP_DIR}
+  -DUSE_SYSTEM_VTK:BOOL=ON
+  -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=OFF
   -DEXECUTABLES_ONLY:BOOL=ON
+  -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
   -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/dtiprocessTK-install/bin
   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
@@ -598,9 +601,17 @@ set( CMAKE_ExtraARGS
   -DdtiprocessTOOL:PATH=${dtiprocessPath}
   -DUSE_GIT_PROTOCOL_SuperBuild_DTIReg:STRING=${USE_GIT_PROTOCOL}
   ${Slicer_CLIMODULES_BIN_DIR_OPTION}
+  #To reduce path length, we put everything in current binary directory
   -DEXTERNAL_SOURCE_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}
   -DEXTERNAL_BINARY_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}
   )
+if( RecompileITK )
+list( APPEND CMAKE_ExtraARGS
+      -DUSE_SYSTEM_ITK:BOOL=ON
+      -DITK_DIR:PATH=${ITK_DIR}
+      DEPENDS ${ITK_DEPEND}
+    )
+endif()
 set( Tools
   DTI-Reg
   )

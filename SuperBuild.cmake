@@ -73,12 +73,19 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/0/02/DTIAtlasBuilder_Interface.png")
   set(EXTENSION_STATUS Beta)
   set(EXTENSION_BUILD_SUBDIRECTORY DTIAtlasBuilder-build)
-
+  set(EXTENSION_DEPENDS "DTIProcess" ) # Specified as a space separated list or 'NA' if any
   set(MODULE_NAME DTIAtlasBuilder)
 
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-
+  #ANTS needs a more recent version of ITK (4.6) than the one currently in Slicer (05.21.2014)
+  #We still use Slicer ITK_DIR to compile DTIAtlasBuilder to avoid conflicts when including Slicer_USE_FILE
+  set( ITK_DIR_Slicer ${ITK_DIR} )
+  set( GenerateCLP_Slicer ${GenerateCLP_DIR} )
+  unset( ITK_DIR CACHE )
+  unset( ITK_FOUND )
+  unset( SlicerExecutionModel_DIR CACHE )
+  unset( GenerateCLP_DIR CACHE )
   # SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY and SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION defined in Slicer_USE_FILE
   # SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION is [sthg]/cli_module : must contain only CLIs
   # If build as Slicer Extension, CMAKE_INSTALL_PREFIX is set to [ExtensionsFolder]/DTIAtlaBuilder
@@ -220,8 +227,8 @@ ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject i
     -DInnerBuildCMakeLists:BOOL=ON
     ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
     -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+    -DITK_DIR:PATH=${ITK_DIR_Slicer}
+    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR_Slicer}
     -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DLIBRARY_OUTPUT_PATH:PATH=${LIBRARY_OUTPUT_PATH}
