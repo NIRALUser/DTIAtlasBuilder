@@ -63,7 +63,8 @@ set(COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES
 # Slicer Extension
 option( DTIAtlasBuilder_BUILD_SLICER_EXTENSION "Build DTIAtlasBuilder as a Slicer extension" OFF )
 if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
+  #VTK_VERSION_MAJOR is define but not a CACHE variable
+  set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
   set(EXTENSION_NAME DTIAtlasBuilder)
   set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dtiatlasbuilder")
   set(EXTENSION_CATEGORY "Diffusion")
