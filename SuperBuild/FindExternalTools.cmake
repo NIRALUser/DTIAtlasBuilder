@@ -458,7 +458,7 @@ AddToolMacro( BRAINS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraA
 # ===== ANTS/WarpMultiTransform =====================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
-  GIT_TAG 0d75f859cbd6f1e5877f953fc00147be0dd827ca
+  GIT_TAG c704432fce49b972ed88c978365ee3b92ccbba86
   )
 if( MSVC )
   set( INSTALL_CONFIG ANTS-build/ANTS.sln /Build Release /Project INSTALL.vcproj )
