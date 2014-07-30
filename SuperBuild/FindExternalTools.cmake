@@ -421,10 +421,8 @@ AddToolMacro( BRAINS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraA
 
 # ===== ANTS/WarpMultiTransform =====================================================
 set( SourceCodeArgs
-  # SVN_REPOSITORY "http://advants.svn.sourceforge.net/svnroot/advants/trunk"
-  # SVN_REVISION -r 1685 # 12/13/2012
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
-  GIT_TAG 6d082e02310077d17e84b6c3c9126759a96b87bc # 2013-05-02 Update to fix comp error due to new ITK # "49a8e5911cc5cbd180f15c63ee8c545ebd3828f9" # 2013-04-11 Prevent Boost from compiling libs
+  GIT_TAG c704432fce49b972ed88c978365ee3b92ccbba86
   )
 if( MSVC )
   set( INSTALL_CONFIG ANTS-build/ANTS.sln /Build Release /Project INSTALL.vcproj )
