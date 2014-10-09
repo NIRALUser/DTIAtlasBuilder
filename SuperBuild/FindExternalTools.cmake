@@ -317,10 +317,8 @@ endif(RecompileSEM)
 
 # ===== dtiprocessTK ==============================================================
 set( SourceCodeArgs
-  SVN_REPOSITORY "http://www.nitrc.org/svn/dtiprocess/trunk" # /dtiprocess"
-  SVN_USERNAME slicerbot
-  SVN_PASSWORD slicer
-  SVN_REVISION -r 221
+  GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git
+  GIT_TAG a7c39e485e492bc6b72f72348939d47835cd56cc
   )
 if( MSVC )
   set( INSTALL_CONFIG DTIProcess-build/DTIProcess.sln /Build Release /Project INSTALL.vcproj )
@@ -393,10 +391,6 @@ AddToolMacro( AtlasWerks ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_Ex
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git"
   GIT_TAG "b3f1b53fba2b63f6e568eae95c7f01a9a019bdce" #05-19-2014 - Update to newer version
-#  GIT_TAG "1abcb55fafc1c9b94dabd33f5fcc40e248c326ba" # 01-30-2013 fix bug with ITK4.4 # "dd7ad3926a01fbdd098ea858fb95012ca16fb236" # 12/18/2012
-# "ff94032edafbc46a95f51db4bce894f0120b5992" : Slicer4 version # /devel/linux/Slicer4_linux64/Slicer/SuperBuild/External_BRAINSTools.cmake -> compiles but segfault
-# "31dcba577ee1bac5c4680fc9d7c830d6074020a9" : 12/13/2012
-# "98a46a2b08da882d46f04cbf0d539c2b73348049" # version from http://www.nitrc.org/svn/dtiprep/trunk/SuperBuild/External_BRAINSTools.cmake -> compiles but run error "undefined symbol: ModuleEntryPoint"
   )
 
 set( CMAKE_ExtraARGS
@@ -528,10 +522,8 @@ AddToolMacro( teem ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARG
 
 # ===== MriWatcher =====================================================================
 set( SourceCodeArgs
-  SVN_REPOSITORY "http://www.nitrc.org/svn/mriwatcher/branches/mriwatcher_qt4"
-  SVN_USERNAME slicerbot
-  SVN_PASSWORD slicer
-  SVN_REVISION -r 23 # 12/13/2012
+  GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/MriWatcher.git
+  GIT_TAG b7a4645d881269a97449b0ed9b260fde66f69a4a
   )
 set( CMAKE_ExtraARGS
   -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
@@ -546,10 +538,8 @@ AddToolMacro( MriWatcher ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_Ex
 
 # ===== NIRALUtilities ===================================================================
 set( SourceCodeArgs
-  SVN_REPOSITORY "http://www.nitrc.org/svn/niral_utilities/trunk"
-  SVN_USERNAME slicerbot
-  SVN_PASSWORD slicer
-  SVN_REVISION -r 77
+  GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/niral_utilities.git
+  GIT_TAG dea3323b99be580b6fd2a7214ce60ddb9d7baec2
   )
 set( CMAKE_ExtraARGS
   -DCOMPILE_CONVERTITKFORMATS:BOOL=OFF
@@ -583,10 +573,8 @@ if( Slicer_CLIMODULES_BIN_DIR )
 endif()
 # ===== DTI-Reg =====================================================================
 set( SourceCodeArgs
-  SVN_REPOSITORY "http://www.nitrc.org/svn/dtireg/trunk"
-  SVN_USERNAME slicerbot
-  SVN_PASSWORD slicer
-  SVN_REVISION -r 67
+  GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTI-Reg.git
+  GIT_TAG d28f6fb7de82b964321ebabe9904821ddc5342f4
   )
 set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
