@@ -18,16 +18,38 @@ if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
   include(${Slicer_USE_FILE})
 endif(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
 
-#======================================================================================
-# As the external project gives this CMakeLists the paths to the needed libraries (*_DIR), find_package will just use the existing *_DIR
-
-if(NOT ITK_FOUND)
-  find_package(ITK REQUIRED)
-  include(${ITK_USE_FILE})
-endif(NOT ITK_FOUND)
 
 find_package(GenerateCLP REQUIRED)
 include(${GenerateCLP_USE_FILE})
+
+#======================================================================================
+# As the external project gives this CMakeLists the paths to the needed libraries (*_DIR), find_package will just use the existing *_DIR
+set(ITK_IO_MODULES_USED 
+ITKIOImageBase
+ITKIONRRD
+ITKIOBMP
+ITKIOGIPL
+ITKIOHDF5
+ITKIOIPL
+ITKIOJPEG
+ITKIOLSM
+ITKIOMRC
+ITKIOMesh
+ITKIOMeta
+ITKIONIFTI
+ITKIOPNG
+ITKIORAW
+ITKIOTIFF
+ITKIOVTK
+ITKIOGDCM
+)
+
+find_package(ITK COMPONENTS
+  ITKCommon
+  ITKIOImageBase
+  ${ITK_IO_MODULES_USED}
+)
+include(${ITK_USE_FILE})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 

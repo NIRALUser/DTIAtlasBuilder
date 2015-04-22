@@ -82,7 +82,7 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   #ANTS needs a more recent version of ITK (4.6) than the one currently in Slicer (05.21.2014)
   #We still use Slicer ITK_DIR to compile DTIAtlasBuilder to avoid conflicts when including Slicer_USE_FILE
   set( ITK_DIR_Slicer ${ITK_DIR} )
-  set( GenerateCLP_Slicer ${GenerateCLP_DIR} )
+  set( GenerateCLP_DIR_Slicer ${GenerateCLP_DIR} )
   unset( ITK_DIR CACHE )
   unset( ITK_FOUND )
   unset( SlicerExecutionModel_DIR CACHE )
@@ -217,6 +217,12 @@ else(COMPILE_PACKAGE) # Hide unuseful variables
     mark_as_advanced(FORCE ${lib}_DIR)
   endforeach()
 endif(COMPILE_PACKAGE)
+
+
+if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  set( ITK_DIR_Slicer ${ITK_DIR} )
+  set( GenerateCLP_DIR_Slicer ${GenerateCLP_DIR} )
+endif()
 
 #======================================================================================
 ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject in case of SlicerExecutionModel recompiled because needs it

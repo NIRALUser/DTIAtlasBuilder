@@ -147,9 +147,9 @@ if(RecompileVTK) # BRAINSStandAlone/SuperBuild/External_VTK.cmake
       -DVTK_INSTALL_LIB_DIR:PATH=${Slicer_INSTALL_LIB_DIR}
     )
     if(USE_VTKv6)
-      set(VTK_DIR ${EXTERNAL_BINARY_DIRECTORY}/VTK-install/lib/cmake/vtk-6.1)
+      set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/cmake/vtk-6.1)
     else()
-      set(VTK_DIR ${EXTERNAL_BINARY_DIRECTORY}/VTK-install/lib/vtk-5.10)
+      set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/vtk-5.10)
     endif()
     mark_as_advanced(CLEAR VTK_DIR)
     set(VTK_DEPEND VTK)
@@ -226,7 +226,7 @@ if(RecompileITK)
   # Download and compile ITKv4
   ExternalProject_Add(I4 # BRAINSStandAlone/SuperBuild/External_ITKv4.cmake # !! All args needed as they are # Name shorten from ITKv4 because Windows ITKv4 path limited to 50 chars
     GIT_REPOSITORY "${git_protocol}://itk.org/ITK.git"
-    GIT_TAG 5e2b1bfee965a5a4f0dfdf3f7eefbc79989adce8 #2014-05-19 (from BRAINSTools)# 2013-07-12 (from Slicer) # 1866ef42887df677a6197ad11ed0ef6e9b239567 # 2013-04-03 (from Slicer)
+    GIT_TAG 8f7c404aff99f5ae3dfedce6e480701f0304864c
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4 # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-b # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
     CMAKE_GENERATOR ${gen}
@@ -237,10 +237,12 @@ if(RecompileITK)
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/I4-i # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
-      -DITK_LEGACY_REMOVE:BOOL=OFF
-      -DITKV3_COMPATIBILITY:BOOL=ON
+      -DITK_LEGACY_REMOVE:BOOL=ON
+      -DITKV3_COMPATIBILITY:BOOL=OFF
       -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DModule_ITKReview:BOOL=ON
+ -DModule_ITKIODCMTK:BOOL=ON
+ -DModule_MGHIO:BOOL=ON #To provide FreeSurfer Compatibility
       -DITK_USE_REVIEW:BOOL=OFF # ON ok with BRAINSFit and ANTS not with dtiprocess and ResampleDTI # OFF ok with BRAINSFit
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DUSE_WRAP_ITK:BOOL=OFF ## HACK:  QUICK CHANGE
@@ -249,7 +251,7 @@ if(RecompileITK)
 #      -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/ITKv4-build/lib # Needed for BRAINSTools to compile
 #      -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/ITKv4-build/bin # Needed for BRAINSTools to compile
     )
-  set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-i/lib/cmake/ITK-4.6 FORCE) # Use the downloaded ITK for all tools # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
+  set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-i/lib/cmake/ITK-4.8 FORCE) # Use the downloaded ITK for all tools # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
   set(ITK_DEPEND I4)
   set(RecompileSEM ON) # If recompile ITK, recompile SlicerExecutionModel
 endif(RecompileITK)
@@ -258,7 +260,7 @@ if(RecompileSEM)
   # Download and compile SlicerExecutionModel with the downloaded ITKv4
   ExternalProject_Add(SlicerExecutionModel # BRAINSStandAlone/SuperBuild/External_SlicerExecutionModel.cmake
     GIT_REPOSITORY "${git_protocol}://github.com/Slicer/SlicerExecutionModel.git"
-    GIT_TAG aa1a088fca42e77832d8814737735c9c9b321e9a
+    GIT_TAG e00851314ab17d4f1e8eba097e47947df13c100f
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/SlicerExecutionModel
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/SlicerExecutionModel-build
     CMAKE_GENERATOR ${gen}
@@ -279,7 +281,7 @@ if(RecompileSEM)
   set(GenerateCLP_DIR ${SlicerExecutionModel_DIR}/GenerateCLP)
   set(ModuleDescriptionParser_DIR ${SlicerExecutionModel_DIR}/ModuleDescriptionParser)
   set(TCLAP_DIR ${SlicerExecutionModel_DIR}/tclap)
-  list(APPEND ITK_DEPEND SlicerExecutionModel)
+  set( SlicerExecutionModel_DEPEND SlicerExecutionModel)
 
 endif(RecompileSEM)
 
@@ -318,7 +320,7 @@ endif(RecompileSEM)
 # ===== dtiprocessTK ==============================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git
-  GIT_TAG a7c39e485e492bc6b72f72348939d47835cd56cc
+  GIT_TAG b4957939daa58d10ee65a0038a7c223aa15bd0a9
   )
 if( MSVC )
   set( INSTALL_CONFIG DTIProcess-build/DTIProcess.sln /Build Release /Project INSTALL.vcproj )
@@ -335,10 +337,14 @@ set( CMAKE_ExtraARGS
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=OFF
   -DEXECUTABLES_ONLY:BOOL=ON
+  -DDTIProcess_SUPERBUILD:BOOL=ON
+  -DBUILD_PolyDataTransform:BOOL=OFF
+  -DBUILD_PolyDataMerge:BOOL=OFF
+  -DBUILD_CropDTI:BOOL=OFF
   -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
   -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/dtiprocessTK-install/bin
   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
-  DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
+  DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
   )
 set( Tools
   dtiprocess
@@ -349,9 +355,10 @@ AddToolMacro( dtiprocessTK ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_
 # ===== AtlasWerks ================================================================
 # code for external tools from http://github.com/Chaircrusher/AtlasWerksBuilder/blob/master/CMakeLists.txt
 set( SourceCodeArgs
-  GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/AtlasWerks.git"
-  GIT_TAG "4a3e02b9e6aa9ad527c9b1df4b0ab31c737cbd78" # 02-01-2013 fix bug with clang mac build
+  GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/AtlasWerks.git"
+  GIT_TAG 99cf362a4b92227a94f39dd34750a12608446ad4
   )
+
 set( CMAKE_ExtraARGS
   -DITK_DIR:PATH=${ITK_DIR}
   -DVTK_DIR:PATH=${VTK_DIR}
@@ -390,7 +397,7 @@ AddToolMacro( AtlasWerks ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_Ex
 # ===== BRAINSFit =============================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git"
-  GIT_TAG "b3f1b53fba2b63f6e568eae95c7f01a9a019bdce" #05-19-2014 - Update to newer version
+  GIT_TAG f8c7d5c658f8c31dec95151ec4dc9d09af42fd1c
   )
 
 set( CMAKE_ExtraARGS
@@ -441,7 +448,7 @@ set( CMAKE_ExtraARGS
   -DUSE_ImageCalculator:BOOL=OFF
   -DUSE_GTRACT:BOOL=OFF
   -DLOCAL_SEM_EXECUTABLE_ONLY:BOOL=ON # Variable used in SlicerExecutionModel/CMake/SEMMacroBuildCLI.cmake:l.120 : if true, will only create executable without shared lib lib(exec)Lib.so
-  DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} # So ITK is compiled before
+  DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}# So ITK is compiled before
   )
 set( Tools
   BRAINSFit
@@ -452,7 +459,7 @@ AddToolMacro( BRAINS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraA
 # ===== ANTS/WarpMultiTransform =====================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
-  GIT_TAG c704432fce49b972ed88c978365ee3b92ccbba86
+  GIT_TAG 4d37532aa6a73b72deedf2663a0d002b267c464f
   )
 if( MSVC )
   set( INSTALL_CONFIG ANTS-build/ANTS.sln /Build Release /Project INSTALL.vcproj )
@@ -471,13 +478,8 @@ set( CMAKE_ExtraARGS
   -DITK_VERSION_MAJOR:STRING=4
   -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-  -DBoost_NO_BOOST_CMAKE:BOOL=ON #Set Boost_NO_BOOST_CMAKE to ON to disable the search for boost-cmake
-  -DBoost_DIR:PATH=${BOOST_ROOT}
-  -DBOOST_DIR:PATH=${BOOST_ROOT}
-  -DBOOST_ROOT:PATH=${BOOST_ROOT}
-  -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
-  DEPENDS ${ITK_DEPEND}
+  DEPENDS ${ITK_DEPEND} ${SlicerExecutionModel_DEPEND}
   )
 set( Tools
   ANTS
@@ -489,7 +491,7 @@ AddToolMacro( ANTS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARG
 # ===== ResampleDTIlogEuclidean =====================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/ResampleDTIlogEuclidean.git"
-  GIT_TAG 09a0676bc4befa3a1b9c2384fedf37b21e193797 #04-02-2014 ENH: update install rules 
+  GIT_TAG 59271e41fedcd45e7b73004c0c7d303dc80302d3 
   )
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
@@ -523,13 +525,12 @@ AddToolMacro( teem ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARG
 # ===== MriWatcher =====================================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/MriWatcher.git
-  GIT_TAG b7a4645d881269a97449b0ed9b260fde66f69a4a
+  GIT_TAG bd82f023f5fbcf9ecef232698809c19708bccfe4
   )
 set( CMAKE_ExtraARGS
   -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
   -DITK_DIR:PATH=${ITK_DIR}
   DEPENDS ${ITK_DEPEND}
-  PATCH_COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/MriWatcher-CMakeLists-patch-install.txt ${CMAKE_CURRENT_BINARY_DIR}/MriWatcher/CMakeLists.txt
   )
 set( Tools
   MriWatcher
@@ -539,7 +540,7 @@ AddToolMacro( MriWatcher ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_Ex
 # ===== NIRALUtilities ===================================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/niral_utilities.git
-  GIT_TAG dea3323b99be580b6fd2a7214ce60ddb9d7baec2
+  GIT_TAG 132b3e996fa880117dfeb529339a17cf06db45f5
   )
 set( CMAKE_ExtraARGS
   -DCOMPILE_CONVERTITKFORMATS:BOOL=OFF
@@ -574,7 +575,7 @@ endif()
 # ===== DTI-Reg =====================================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTI-Reg.git
-  GIT_TAG d28f6fb7de82b964321ebabe9904821ddc5342f4
+  GIT_TAG 7948bc8983d581187c31ba8efd4069640d69492f
   )
 set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
