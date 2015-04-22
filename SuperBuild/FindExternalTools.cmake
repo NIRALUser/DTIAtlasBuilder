@@ -575,7 +575,7 @@ endif()
 # ===== DTI-Reg =====================================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTI-Reg.git
-  GIT_TAG 7948bc8983d581187c31ba8efd4069640d69492f
+  GIT_TAG 5081687ea5dbc3edb7aeb12b9ce81da4a022bb6f
   )
 set( CMAKE_ExtraARGS
   -DANTSTOOL:PATH=${ANTSPath}
