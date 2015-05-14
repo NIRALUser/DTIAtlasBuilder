@@ -1231,34 +1231,36 @@ void ScriptWriter::AtlasBuilding()
 */
   if( m_DTIRegOptions[0].compare("BRAINS")==0 )
   {
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --method useScalar-BRAINS\"\n";
-    if(m_DTIRegOptions[1].compare("GreedyDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --BRAINSRegistrationType GreedyDiffeo\"\n";
-    else if(m_DTIRegOptions[1].compare("SpatioTempDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --BRAINSRegistrationType SpatioTempDiffeo\"\n";
-    else Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --BRAINSRegistrationType " + m_DTIRegOptions[1] + "\"\n";
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --BRAINSnumberOfPyramidLevels " + m_DTIRegOptions[3] + "\"\n";
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --BRAINSarrayOfPyramidLevelIterations " + m_DTIRegOptions[4] + "\"\n";
-    if(m_DTIRegOptions[2].compare("Use computed affine transform")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --initialAffine \" + alltfms[case]\n";
-    else Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --BRAINSinitializeTransformMode " + m_DTIRegOptions[2] + "\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --method useScalar-BRAINS\"\n";
+    if(m_DTIRegOptions[1].compare("GreedyDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSRegistrationType GreedyDiffeo\"\n";
+    else if(m_DTIRegOptions[1].compare("SpatioTempDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSRegistrationType SpatioTempDiffeo\"\n";
+    else Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSRegistrationType " + m_DTIRegOptions[1] + "\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSnumberOfPyramidLevels " + m_DTIRegOptions[3] + "\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSarrayOfPyramidLevelIterations " + m_DTIRegOptions[4] + "\"\n";
+    if(m_DTIRegOptions[2].compare("Use computed affine transform")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --initialAffine \" + alltfms[case]\n";
+    else Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSinitializeTransformMode " + m_DTIRegOptions[2] + "\"\n";
     Script = Script + "  BRAINSTempTfm2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FA_AffReg.txt\"\n"; // so that nothing is stored in the same dir than the Atlas
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --outputTransform \" + BRAINSTempTfm2\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --outputTransform \" + BRAINSTempTfm2\n";
   }
   if( m_DTIRegOptions[0].compare("ANTS")==0 )
   {
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --method useScalar-ANTS\"\n";
-    if(m_DTIRegOptions[1].compare("GreedyDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSRegistrationType GreedyDiffeo\"\n";
-    else if(m_DTIRegOptions[1].compare("SpatioTempDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSRegistrationType SpatioTempDiffeo\"\n";
-    else Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSRegistrationType " + m_DTIRegOptions[1] + "\"\n";
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSTransformationStep " + m_DTIRegOptions[2] + "\"\n";
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSIterations " + m_DTIRegOptions[3] + "\"\n";
-    if(m_DTIRegOptions[4].compare("Cross-Correlation (CC)")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSSimilarityMetric CC\"\n";
-    else if(m_DTIRegOptions[4].compare("Mutual Information (MI)")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSSimilarityMetric MI\"\n";
-    else if(m_DTIRegOptions[4].compare("Mean Square Difference (MSQ)")==0) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSSimilarityMetric MSQ\"\n";
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSSimilarityParameter " + m_DTIRegOptions[5] + "\"\n";
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSGaussianSigma " + m_DTIRegOptions[6] + "\"\n";
-    if( m_DTIRegOptions[7].compare("1")==0 ) Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSGaussianSmoothingOff\"\n";
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --initialAffine \" + alltfms[case]\n";
+    Script = Script + "  InverseGlobalDefField2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_InverseGlobalDisplacementField.nrrd\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --method useScalar-ANTS\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --outputInverseDeformationFieldVolume \" + InverseGlobalDefField2\n" ;
+    if(m_DTIRegOptions[1].compare("GreedyDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSRegistrationType GreedyDiffeo\"\n";
+    else if(m_DTIRegOptions[1].compare("SpatioTempDiffeo (SyN)")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSRegistrationType SpatioTempDiffeo\"\n";
+    else Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSRegistrationType " + m_DTIRegOptions[1] + "\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSTransformationStep " + m_DTIRegOptions[2] + "\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSIterations " + m_DTIRegOptions[3] + "\"\n";
+    if(m_DTIRegOptions[4].compare("Cross-Correlation (CC)")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSSimilarityMetric CC\"\n";
+    else if(m_DTIRegOptions[4].compare("Mutual Information (MI)")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSSimilarityMetric MI\"\n";
+    else if(m_DTIRegOptions[4].compare("Mean Square Difference (MSQ)")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSSimilarityMetric MSQ\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSSimilarityParameter " + m_DTIRegOptions[5] + "\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSGaussianSigma " + m_DTIRegOptions[6] + "\"\n";
+    if( m_DTIRegOptions[7].compare("1")==0 ) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSGaussianSmoothingOff\"\n";
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --initialAffine \" + alltfms[case]\n";
     Script = Script + "  ANTSTempFileBase2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FA_\"\n"; // so that nothing is stored in the same dir than the Atlas
-    Script = Script + "  GlobalDefFieldCommand2= GlobalDefFieldCommand2 + \" --ANTSOutbase \" + ANTSTempFileBase2\n"; // no --outputTfm for ANTS because --ANTSOutbase is used for the tfm
+    Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSOutbase \" + ANTSTempFileBase2\n"; // no --outputTfm for ANTS because --ANTSOutbase is used for the tfm
   }
   Script = Script + "  print(\"\\n[\" + allcasesIDs[case] + \"] [Recomputing global deformation fields] => $ \" + GlobalDefFieldCommand2)\n";
   if(m_Overwrite==1)
@@ -1313,6 +1315,10 @@ void ScriptWriter::AtlasBuilding()
   Script = Script + "    NewGlobalDefField2 = FinalResampPath + \"/FinalDeformationFields/\" + allcasesIDs[case] + \"_GlobalDisplacementField.nrrd\"\n";
   Script = Script + "    if CheckFileExists(GlobalDefField2, case, allcasesIDs[case]) :\n";
   Script = Script + "      shutil.copy(GlobalDefField2, NewGlobalDefField2)\n";
+  Script = Script + "    InverseGlobalDefField2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_InverseGlobalDisplacementField.nrrd\"\n";
+  Script = Script + "    NewInverseGlobalDefField2 = FinalResampPath + \"/FinalDeformationFields/\" + allcasesIDs[case] + \"_InverseGlobalDisplacementField.nrrd\"\n";
+  Script = Script + "    if CheckFileExists(InverseGlobalDefField2, case, allcasesIDs[case]) :\n";
+  Script = Script + "      shutil.copy(InverseGlobalDefField2, NewInverseGlobalDefField2)\n";
   Script = Script + "    FinalDef2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FinalDeformedDTI.nrrd\"\n";
   Script = Script + "    NewFinalDef2 = FinalResampPath + \"/FinalTensors/\" + allcasesIDs[case] + \"_FinalDeformedDTI.nrrd\"\n";
   Script = Script + "    if CheckFileExists(FinalDef2, case, allcasesIDs[case]) :\n";
@@ -1539,6 +1545,8 @@ int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
 
 void ScriptWriter::setCasesPath(std::vector < std::string > CasesPath)
 {
+  m_CasesPath.clear() ;
+  m_CasesIDs.clear() ;
   for (unsigned int i=0;i<CasesPath.size();i++)
   {
     m_CasesPath.push_back( CasesPath[i] );
@@ -1548,6 +1556,7 @@ void ScriptWriter::setCasesPath(std::vector < std::string > CasesPath)
 void ScriptWriter::clearCasesPath()
 {
   m_CasesPath.clear();
+  m_CasesIDs.clear() ;
 }
 
 void ScriptWriter::setOutputPath(std::string OutputPath)
