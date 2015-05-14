@@ -337,6 +337,11 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="toolTip">
+                <string>useCenterOfHeadAlign: used for human images as a closing of 7mm (hard-coded in BRAINSFit)
+is performed and this might be too large for images of other species.
+Check the spacing of your input images.</string>
+               </property>
                <property name="currentIndex">
                 <number>2</number>
                </property>
@@ -1788,7 +1793,7 @@ paths configured.</string>
      <x>0</x>
      <y>0</y>
      <width>1196</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
