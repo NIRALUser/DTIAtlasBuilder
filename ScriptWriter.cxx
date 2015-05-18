@@ -1655,6 +1655,21 @@ void ScriptWriter::setGridProcess(bool useGridProcess)
 
 void ScriptWriter::setGridCommand(std::string GridCommand)
 {
+  size_t index = 0;
+  // from http://stackoverflow.com/questions/4643512/replace-substring-with-another-substring-c
+  while (true)
+  {
+    /* Locate the substring to replace. */
+    index = GridCommand.find("\"", index);
+    if (index == std::string::npos)
+    {
+      break ;
+    }
+    /* Make the replacement. */
+    GridCommand.replace(index, 1, "\\\"");
+    /* Advance index forward so the next iteration doesn't pick it up as well. */
+    index += 2;
+  }
   m_GridCommand = GridCommand;
 }
 

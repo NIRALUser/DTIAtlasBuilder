@@ -1755,8 +1755,10 @@ int GUI::LoadParameters(QString paramFile, bool DiscardParametersCSV) // Discard
 
     if( !list.at(1).isEmpty() )
     {
+      list.removeFirst() ;
+      QString concatenatedList = list.join("=") ;//This line likely contains "=" signs. The grid command line would then be split. We need to concatenate it back to its normal form!
       GridProcesscheckBox->setChecked(true);
-      GridProcessCmdLineEdit->setText( list.at(1) );
+      GridProcessCmdLineEdit->setText( concatenatedList );
     }
     else
     {
