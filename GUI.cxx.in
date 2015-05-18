@@ -2425,7 +2425,7 @@ int GUI::testDTIReg() /*SLOT*/ // returns 0 if version ok, -1 if bad version
   std::string currentVersion = text.toStdString() ;
   std::size_t pos = currentVersion.find( "version:" ) + 9 ;//+9 is to remove "version: ", it should keep just the version number
   bool errorReadingVersion = false ;
-  std::string minDTIRegVersion = "1.1.6" ;//Set which minimum version of DTI-Reg to use
+  std::string minDTIRegVersion = "1.1.9" ;//Set which minimum version of DTI-Reg to use
   //Making sure we are not trying to go to far in the string containing the version number
   if( currentVersion.size() < pos )
   {
