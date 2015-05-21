@@ -200,6 +200,47 @@
              </item>
             </layout>
            </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_16">
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_33">
+               <property name="text">
+                <string>Select Scalar Measurement:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="ScalarMeasurementComboBox">
+               <item>
+                <property name="text">
+                 <string>FA</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>MD</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_18">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1529,17 +1570,38 @@ It will be read at the beginning of the program.</string>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="GridProcessCmdLineEdit">
-          <property name="font">
-           <font>
-            <family>Courier 10 Pitch</family>
-            <pointsize>11</pointsize>
-           </font>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-          <property name="text">
-           <string/>
+          <item>
+           <widget class="QLabel" name="label_32">
+            <property name="text">
+             <string>General command:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="GridProcessCmdLineEdit"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_15">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-         </widget>
+          <item>
+           <widget class="QLabel" name="label_31">
+            <property name="text">
+             <string>Atlas Building command:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="GridProcessAtlasCmdLineEdit"/>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QLabel" name="label_24">

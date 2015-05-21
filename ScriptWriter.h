@@ -14,6 +14,7 @@
 class ScriptWriter
 {
   public:
+    ScriptWriter();
 
 /* SUB  WRITING FUNCTIONS */
     std::string pyExecuteCommandPreprocessCase ( std::string NameOfFileVarToTest, std::string NameOfCmdVarToExec, std::string ErrorTxtToDisplay, std::string SpacesBeforeFirstIf );
@@ -51,9 +52,12 @@ class ScriptWriter
     void setDTIRegExtraPath(std::string DTIRegExtraPath);
     void setBFAffineTfmMode(std::string BFAffineTfmMode);
     void setGridProcess(bool useGridProcess);
-    void setGridCommand(std::string GridCommand);
+    void setGridGeneralCommand(std::string GridCommand);
+    void setGridAtlasCommand(std::string GridCommand);
+    std::string setGridCommand(std::string GridCommand);
     void setPythonPath(std::string PythonPath);
     void setNbThreads(int NbThreads);
+    int setScalarMeasurement( std::string scalarMeasurement ) ;
 
   private:
 /* VALUES */
@@ -76,9 +80,11 @@ class ScriptWriter
     std::string m_DTIRegExtraPath;
     std::string m_BFAffineTfmMode;
     bool m_useGridProcess;
-    std::string m_GridCommand;
+    std::string m_GridGeneralCommand;
+    std::string m_GridAtlasCommand;
     std::string m_PythonPath;
     std::string m_NbThreadsString;
+    std::string m_ScalarMeasurement;
 
 /* SCRIPTS */
     std::string m_Script_Preprocess; //contains the whole Script for Pre processing

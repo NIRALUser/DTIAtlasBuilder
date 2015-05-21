@@ -74,7 +74,7 @@ std::string pyTestGridProcess ( bool NoCase1 )
   return Script;
 }
 
-std::string pyCheckFileExists ()
+std::string pyCheckFileExists (std::string scalarMeasurement)
 {
   std::string Script = "# Function that checks if file exist and replace old names by new names if needed\n";
 
@@ -100,14 +100,14 @@ std::string pyCheckFileExists ()
   Script = Script + "        OldFile = File.replace( caseID, \"Case\" + str(case+1) ).replace(\"DiffeomorphicDTI\", \"AWDTI\")\n";
   Script = Script + "        if os.path.isfile( OldFile ) : # old file exists: rename and return 1\n";
   Script = Script + "          os.rename(OldFile, File)\n";
-  Script = Script + "          os.rename(OldFile.replace(\"AWDTI\",\"AWFA\"), File.replace(\"DiffeomorphicDTI\",\"DiffeomorphicFA\"))\n";
+  Script = Script + "          os.rename(OldFile.replace(\"AWDTI\",\"AW" + scalarMeasurement + "\"), File.replace(\"DiffeomorphicDTI\",\"Diffeomorphic" + scalarMeasurement + "\"))\n";
   Script = Script + "          os.rename(OldFile.replace(\"AWDTI\",\"AWDTI_float\"), File.replace(\"DiffeomorphicDTI\",\"DiffeomorphicDTI_float\"))\n";
   Script = Script + "          return 1\n";
   Script = Script + "        else : # test other old name\n";
   Script = Script + "          OldFile = File.replace( caseID, \"Case\" + str(case+1) )\n";
   Script = Script + "          if os.path.isfile( OldFile ) : # old file exists: rename and return 1\n";
   Script = Script + "            os.rename(OldFile, File)\n";
-  Script = Script + "            os.rename(OldFile.replace(\"DiffeomorphicDTI\",\"DiffeomorphicFA\"), File.replace(\"DiffeomorphicDTI\",\"DiffeomorphicFA\"))\n";
+  Script = Script + "            os.rename(OldFile.replace(\"DiffeomorphicDTI\",\"Diffeomorphic" + scalarMeasurement + "\"), File.replace(\"DiffeomorphicDTI\",\"Diffeomorphic" + scalarMeasurement + "\"))\n";
   Script = Script + "            os.rename(OldFile.replace(\"DiffeomorphicDTI\",\"DiffeomorphicDTI_float\"), File.replace(\"DiffeomorphicDTI\",\"DiffeomorphicDTI_float\"))\n";
   Script = Script + "            return 1\n";
   Script = Script + "          else:\n";
@@ -117,7 +117,7 @@ std::string pyCheckFileExists ()
   Script = Script + "        OldFile = File.replace(\"DiffeomorphicAtlasDTI\", \"AWAtlasDTI\")\n";
   Script = Script + "        if os.path.isfile( OldFile ) : # old file exists: rename and return 1\n";
   Script = Script + "          os.rename(OldFile, File)\n";
-  Script = Script + "          os.rename(OldFile.replace(\"AWAtlasDTI\",\"AWAtlasFA\"), File.replace(\"DiffeomorphicAtlasDTI\",\"DiffeomorphicAtlasFA\"))\n";
+  Script = Script + "          os.rename(OldFile.replace(\"AWAtlasDTI\",\"AWAtlas" + scalarMeasurement + "\"), File.replace(\"DiffeomorphicAtlasDTI\",\"DiffeomorphicAtlas" + scalarMeasurement + "\"))\n";
   Script = Script + "          os.rename(OldFile.replace(\"AWAtlasDTI\",\"AWAtlasDTI_float\"), File.replace(\"DiffeomorphicAtlasDTI\",\"DiffeomorphicAtlasDTI_float\"))\n";
   Script = Script + "          return 1\n";
   Script = Script + "        else:\n";
@@ -162,6 +162,12 @@ std::string pyCheckFileExists ()
   Script = Script + "        return 0\n\n";
 
   return Script;
+}
+
+
+ScriptWriter::ScriptWriter()
+{
+  m_ScalarMeasurement = "FA" ;
 }
 
 std::string ScriptWriter::pyExecuteCommandPreprocessCase ( std::string NameOfFileVarToTest, std::string NameOfCmdVarToExec, std::string ErrorTxtToDisplay, std::string SpacesBeforeFirstIf )
@@ -259,11 +265,11 @@ void ScriptWriter::Preprocess ()
 
   if(m_RegType==1)
   {
-    Script = Script + "AtlasFAref= OutputPath + \"/" + m_CasesIDs[0] + "_FA.nrrd\" #the reference will be the first case for the first loop\n\n";
+    Script = Script + "AtlasScalarMeasurementref= OutputPath + \"/" + m_CasesIDs[0] + "_" + m_ScalarMeasurement + ".nrrd\" #the reference will be the first case for the first loop\n\n";
   }
   else
   {
-    Script = Script + "AtlasFAref= \"" + m_TemplatePath + "\" #the reference will be the given template for the first loop\n\n";
+    Script = Script + "AtlasScalarMeasurementref= \"" + m_TemplatePath + "\" #the reference will be the given template for the first loop\n\n";
   }
 
   /* Function to display error and quit */
@@ -273,7 +279,7 @@ void ScriptWriter::Preprocess ()
   Script = Script + "  sys.exit(1)\n\n";
 
   /* Function that checks if file exist and replace old names by new names if needed */
-  Script = Script + pyCheckFileExists();
+  Script = Script + pyCheckFileExists( m_ScalarMeasurement );
 
 /* Call script to run command on grid */
   std::string NoCase1 = IntToStr(m_RegType); // m_RegType = 0 if template (-> NoCase1=0) |  = 1 if case1=ref (-> NoCase1=1) => NoCase1 = (string) m_RegType
@@ -300,14 +306,14 @@ void ScriptWriter::Preprocess ()
   if(m_RegType==0) // with template
   {
     Script = Script + "\n# Rescaling template\n";
-    Script = Script + "RescaleTemp= OutputPath + \"/FATemplate_Rescaled.nrrd\"\n";
-    Script = Script + "RescaleTempCommand= \"" + m_SoftPath[0] + " \" + AtlasFAref + \" -outfile \" + RescaleTemp + \" -rescale 0,10000\"\n";
+    Script = Script + "RescaleTemp= OutputPath + \"/" + m_ScalarMeasurement + "Template_Rescaled.nrrd\"\n";
+    Script = Script + "RescaleTempCommand= \"" + m_SoftPath[0] + " \" + AtlasScalarMeasurementref + \" -outfile \" + RescaleTemp + \" -rescale 0,10000\"\n";
 
     if( m_useGridProcess )
     {
-      Script = Script + "RescaleTempCommand= \"" + m_GridCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/file \\'\" + RescaleTempCommand  + \"\\'\"\n";
+      Script = Script + "RescaleTempCommand= \"" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/file \\'\" + RescaleTempCommand  + \"\\'\"\n";
     }
-    Script = Script + "print(\"\\n[Rescaling FA template] => $ \" + RescaleTempCommand)\n";
+    Script = Script + "print(\"\\n[Rescaling " + m_ScalarMeasurement + " template] => $ \" + RescaleTempCommand)\n";
 
     if(m_Overwrite==1)
     {
@@ -317,7 +323,7 @@ void ScriptWriter::Preprocess ()
     {
       Script = Script + "if not CheckFileExists(RescaleTemp, 0, \"\" ) :\n";
     }
-    Script = Script + "  if os.system(RescaleTempCommand)!=0 : DisplayErrorAndQuit(\'ImageMath: Rescaling FA template\')\n";
+    Script = Script + "  if os.system(RescaleTempCommand)!=0 : DisplayErrorAndQuit(\'ImageMath: Rescaling " + m_ScalarMeasurement + " template\')\n";
 
     if( m_useGridProcess )
     {
@@ -325,11 +331,11 @@ void ScriptWriter::Preprocess ()
     }
     Script = Script + "else : print(\"=> The file \\'\" + RescaleTemp + \"\\' already exists so the command will not be executed\")\n";
 
-    Script = Script + "AtlasFAref= RescaleTemp\n\n";
+    Script = Script + "AtlasScalarMeasurementref= RescaleTemp\n\n";
 
   } // if(m_RegType==0)
 
-  else // if no given template, create the template by computing FA of case 1 (+ cropping if needed)
+  else // if no given template, create the template by computing scalar measurement of case 1 (+ cropping if needed)
   {
     Script = Script + "print(\"\")\n";
     Script = Script + "# Creating template by processing Case 1 DTI\n";
@@ -375,8 +381,8 @@ void ScriptWriter::Preprocess ()
       Script = Script + "else : print(\"=> The file \\'\" + croppedDTI + \"\\' already exists so the command will not be executed\")\n"; // not used if overwrite because "if 1 :"
     } //if(m_NeedToBeCropped==1)
 
-    // Generating case 1 FA 
-    Script = Script + "\n# Generating case 1 FA\n";
+    // Generating case 1 scalar measurement (FA or MD)
+    Script = Script + "\n# Generating case 1 " + m_ScalarMeasurement + "\n";
     if(m_NeedToBeCropped==1)
     {
       Script = Script + "DTI= OutputPath + \"/" + m_CasesIDs[0] + "_croppedDTI.nrrd\"\n";
@@ -385,9 +391,16 @@ void ScriptWriter::Preprocess ()
     {
       Script = Script + "DTI= allcases[0]\n";
     }
-    Script = Script + "FA= OutputPath + \"/" + m_CasesIDs[0] + "_FA.nrrd\"\n";
-    Script = Script + "GeneFACommand= \"" + m_SoftPath[3] + " --dti_image \" + DTI + \" -f \" + FA\n";
-    Script = Script + "print(\"[" + m_CasesIDs[0] + "] [Generating FA] => $ \" + GeneFACommand)\n";
+    Script = Script + "ScalarMeasurement= OutputPath + \"/" + m_CasesIDs[0] + "_" + m_ScalarMeasurement + ".nrrd\"\n";
+    if( m_ScalarMeasurement == "FA" )
+    {
+      Script = Script + "GeneScalarMeasurementCommand= \"" + m_SoftPath[3] + " --dti_image \" + DTI + \" -f \" + ScalarMeasurement\n";
+    }
+    else // MD
+    {
+      Script = Script + "GeneScalarMeasurementCommand= \"" + m_SoftPath[3] + " --dti_image \" + DTI + \" -m \" + ScalarMeasurement\n";
+    }
+    Script = Script + "print(\"[" + m_CasesIDs[0] + "] [Generating " + m_ScalarMeasurement + "] => $ \" + GeneScalarMeasurementCommand)\n";
 
     if(m_Overwrite==1)
     {
@@ -395,26 +408,26 @@ void ScriptWriter::Preprocess ()
     }
     else
     {
-      Script = Script + "if not CheckFileExists(FA, 0, \"" + m_CasesIDs[0] + "\" ) :\n";
+      Script = Script + "if not CheckFileExists(ScalarMeasurement, 0, \"" + m_CasesIDs[0] + "\" ) :\n";
     }
     if( ! m_useGridProcess )
     {
-      Script = Script + "  if os.system(GeneFACommand)!=0 : DisplayErrorAndQuit(\'[" + m_CasesIDs[0] + "] dtiprocess: Generating FA of DTI image\')\n";
+      Script = Script + "  if os.system(GeneScalarMeasurementCommand)!=0 : DisplayErrorAndQuit(\'[" + m_CasesIDs[0] + "] dtiprocess: Generating " + m_ScalarMeasurement + " of DTI image\')\n";
     }
-    Script = Script + "else : print(\"=> The file \\'\" + FA + \"\\' already exists so the command will not be executed\")\n\n"; // not used if overwrite because "if 1 :"
+    Script = Script + "else : print(\"=> The file \\'\" + ScalarMeasurement + \"\\' already exists so the command will not be executed\")\n\n"; // not used if overwrite because "if 1 :"
 
     // Execute commands here if grid processing (to process them together)
     if( m_useGridProcess )
     {
       Script = Script + "# Run Case1 template commands on grid\n";
-      Script = Script + "if CropDTICase1Template or GeneFACase1Template :\n";
-      Script = Script + "  GridCase1TemplateCommand= \"" + m_GridCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/file\"\n";
+      Script = Script + "if CropDTICase1Template or GeneScalarMeasurementCase1Template :\n";
+      Script = Script + "  GridCase1TemplateCommand= \"" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/file\"\n";
       Script = Script + "  GridCase1TemplateCommand = GridCase1TemplateCommand + \" \'\" + FilterDTICommand + \"\'\"\n";
       if(m_NeedToBeCropped==1)
       {
         Script = Script + "  GridCase1TemplateCommand = GridCase1TemplateCommand + \" \'\" + CropCommand + \"\'\"\n";
       }
-      Script = Script + "  GridCase1TemplateCommand = GridCase1TemplateCommand + \" \'\" + GeneFACommand + \"\'\"\n";
+      Script = Script + "  GridCase1TemplateCommand = GridCase1TemplateCommand + \" \'\" + GeneScalarMeasurementCommand + \"\'\"\n";
       Script = Script + "  print(\"[" + m_CasesIDs[0] + "] => Submitting : \" + GridCase1TemplateCommand)\n";
       Script = Script + "  if os.system(GridCase1TemplateCommand)!=0 : DisplayErrorAndQuit(\'[" + m_CasesIDs[0] + "] Grid processing script\') # Run script and collect error if so\n";
       Script = Script + "  TestGridProcess( FilesFolder, 0, 0) # stays in the function until all process is done : 0 makes the function look only for \'file\'\n\n";
@@ -435,7 +448,7 @@ void ScriptWriter::Preprocess ()
   Script = Script + "  # Cases Loop\n";
   if(m_RegType==1)
   {
-    Script = Script + "  case = (n==0) # (n==0) -> bool: =1(true) =0(false) : the first case is the reference for the first loop so it will not be normalized or registered (it is cropped and FAed before the loop)\n";
+    Script = Script + "  case = (n==0) # (n==0) -> bool: =1(true) =0(false) : the first case is the reference for the first loop so it will not be normalized or registered (it is cropped and " + m_ScalarMeasurement + "ed before the loop)\n";
   }
   else
   {
@@ -447,7 +460,7 @@ void ScriptWriter::Preprocess ()
     Script = Script + "    GridProcessCaseCommandsArray=[] # Empty the cmds array\n";
   }
 
-  Script = Script + "\n    if n==0: # Filtering and Cropping DTI and Generating FA are only part of the first loop\n";
+  Script = Script + "\n    if n==0: # Filtering and Cropping DTI and Generating " + m_ScalarMeasurement + " are only part of the first loop\n";
 /* Filter DTI */
   Script = Script + "# Filter DTI\n";
   Script = Script + "      # ResampleDTIlogEuclidean does by default a correction of tensor values by setting the negative values to zero\n";
@@ -469,8 +482,8 @@ void ScriptWriter::Preprocess ()
 
   } //if(m_NeedToBeCropped==1)
 
-/* Generating FA */
-  Script = Script + "\n# Generating FA\n";
+/* Generating m_ScalarMeasurement (FA or MD) */
+  Script = Script + "\n# Generating " + m_ScalarMeasurement + "\n";
   if(m_NeedToBeCropped==1)
   {
     Script = Script + "      DTI= OutputPath + \"/\" + allcasesIDs[case] + \"_croppedDTI.nrrd\"\n";
@@ -479,27 +492,34 @@ void ScriptWriter::Preprocess ()
   {
     Script = Script + "      DTI= allcases[case]\n";
   }
-  Script = Script + "      FA= OutputPath + \"/\" + allcasesIDs[case] + \"_FA.nrrd\"\n";
-  Script = Script + "      GeneFACommand= \"" + m_SoftPath[3] + " --dti_image \" + DTI + \" -f \" + FA\n";
-  Script = Script + "      print(\"[\" + allcasesIDs[case] + \"] [Generating FA] => $ \" + GeneFACommand)\n";
+  Script = Script + "      ScalarMeasurement= OutputPath + \"/\" + allcasesIDs[case] + \"_" + m_ScalarMeasurement + ".nrrd\"\n";
+  if( m_ScalarMeasurement == "FA" )
+  {
+    Script = Script + "      GeneScalarMeasurementCommand= \"" + m_SoftPath[3] + " --dti_image \" + DTI + \" -f \" + ScalarMeasurement\n";
+  }
+  else //m_ScalarMeasurement == "MD"
+  {
+    Script = Script + "      GeneScalarMeasurementCommand= \"" + m_SoftPath[3] + " --dti_image \" + DTI + \" -m \" + ScalarMeasurement\n";
+  }
+  Script = Script + "      print(\"[\" + allcasesIDs[case] + \"] [Generating " + m_ScalarMeasurement + "] => $ \" + GeneScalarMeasurementCommand)\n";
 
-  Script = Script + pyExecuteCommandPreprocessCase("FA", "GeneFACommand", "dtiprocess: Generating FA of DTI image", "      ");
+  Script = Script + pyExecuteCommandPreprocessCase("ScalarMeasurement", "GeneScalarMeasurementCommand", "dtiprocess: Generating " + m_ScalarMeasurement + " of DTI image", "      ");
 
 /* Normalization */
   Script = Script + "\n# Normalization\n";
-  Script = Script + "    FA= OutputPath + \"/\" + allcasesIDs[case] + \"_FA.nrrd\"\n";
-  Script = Script + "    NormFA= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_NormFA.nrrd\"\n";
-  Script = Script + "    NormFACommand= \"" + m_SoftPath[0] + " \" + FA + \" -outfile \" + NormFA + \" -matchHistogram \" + AtlasFAref\n";
-  Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [\" + allcasesIDs[case] + \"] [Normalization] => $ \" + NormFACommand)\n";
+  Script = Script + "    ScalarMeasurement= OutputPath + \"/\" + allcasesIDs[case] + \"_" + m_ScalarMeasurement + ".nrrd\"\n";
+  Script = Script + "    NormScalarMeasurement= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_Norm" + m_ScalarMeasurement + ".nrrd\"\n";
+  Script = Script + "    NormScalarMeasurementCommand= \"" + m_SoftPath[0] + " \" + ScalarMeasurement + \" -outfile \" + NormScalarMeasurement + \" -matchHistogram \" + AtlasScalarMeasurementref\n";
+  Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [\" + allcasesIDs[case] + \"] [Normalization] => $ \" + NormScalarMeasurementCommand)\n";
 
-  Script = Script + pyExecuteCommandPreprocessCase("NormFA", "NormFACommand", "ImageMath: Normalizing FA image", "    ");
+  Script = Script + pyExecuteCommandPreprocessCase("NormScalarMeasurement", "NormScalarMeasurementCommand", "ImageMath: Normalizing " + m_ScalarMeasurement + " image", "    ");
 
 /* Affine registration with BrainsFit */
   Script = Script + "\n# Affine registration with BrainsFit\n";
-  Script = Script + "    NormFA= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_NormFA.nrrd\"\n";
+  Script = Script + "    NormScalarMeasurement= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_Norm" + m_ScalarMeasurement + ".nrrd\"\n";
   Script = Script + "    LinearTranstfm= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_LinearTrans.txt\"\n";
-  Script = Script + "    LinearTrans= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_LinearTrans_FA.nrrd\"\n";
-  Script = Script + "    AffineCommand= \"" + m_SoftPath[4] + " --fixedVolume \" + AtlasFAref + \" --movingVolume \" + NormFA + \" --useAffine --outputVolume \" + LinearTrans + \" --outputTransform \" + LinearTranstfm\n";
+  Script = Script + "    LinearTrans= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_LinearTrans_" + m_ScalarMeasurement + ".nrrd\"\n";
+  Script = Script + "    AffineCommand= \"" + m_SoftPath[4] + " --fixedVolume \" + AtlasScalarMeasurementref + \" --movingVolume \" + NormScalarMeasurement + \" --useAffine --outputVolume \" + LinearTrans + \" --outputTransform \" + LinearTranstfm\n";
   Script = Script + "    InitLinearTransTxt= OutputPath + \"/\" + allcasesIDs[case] + \"_InitLinearTrans.txt\"\n";
   Script = Script + "    InitLinearTransMat= OutputPath + \"/\" + allcasesIDs[case] + \"_InitLinearTrans.mat\"\n";
   Script = Script + "    if n==0 and CheckFileExists( InitLinearTransMat, case, allcasesIDs[case] ) and CheckFileExists( InitLinearTransTxt, case, allcasesIDs[case] ):\n";
@@ -510,9 +530,9 @@ void ScriptWriter::Preprocess ()
   Script = Script + "    else : AffineCommand= AffineCommand + \" --initializeTransformMode " + m_BFAffineTfmMode + "\"\n";
 
   Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [\" + allcasesIDs[case] + \"] [Affine registration with BrainsFit] => $ \" + AffineCommand)\n";
-  Script = Script + "    CheckFileExists( LinearTrans, case, allcasesIDs[case] ) # Not for checking but to rename _LinearTrans_FA if old version\n";
+  Script = Script + "    CheckFileExists( LinearTrans, case, allcasesIDs[case] ) # Not for checking but to rename _LinearTrans_" + m_ScalarMeasurement + " if old version\n";
     
-  Script = Script + pyExecuteCommandPreprocessCase("LinearTranstfm", "AffineCommand", "BRAINSFit: Affine Registration of FA image", "    ");
+  Script = Script + pyExecuteCommandPreprocessCase("LinearTranstfm", "AffineCommand", "BRAINSFit: Affine Registration of " + m_ScalarMeasurement + " image", "    ");
 
 /* Implementing the affine registration */
   Script = Script + "\n# Implementing the affine registration\n";
@@ -526,20 +546,27 @@ void ScriptWriter::Preprocess ()
   {
     Script = Script + "    originalDTI= allcases[case]\n";
   }
-  Script = Script + "    ImplementCommand= \"" + m_SoftPath[1] + " \" + originalDTI + \" \" + LinearTransDTI + \" -f \" + LinearTranstfm + \" -R \" + AtlasFAref\n";
+  Script = Script + "    ImplementCommand= \"" + m_SoftPath[1] + " \" + originalDTI + \" \" + LinearTransDTI + \" -f \" + LinearTranstfm + \" -R \" + AtlasScalarMeasurementref\n";
   Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [\" + allcasesIDs[case] + \"] [Implementing the Affine registration] => $ \" + ImplementCommand)\n";
 
-  Script = Script + pyExecuteCommandPreprocessCase("LinearTransDTI", "ImplementCommand", "ResampleDTIlogEuclidean: Implementing the Affine Registration on FA image", "    ");
+  Script = Script + pyExecuteCommandPreprocessCase("LinearTransDTI", "ImplementCommand", "ResampleDTIlogEuclidean: Implementing the Affine Registration on " + m_ScalarMeasurement + " image", "    ");
 
-/* Generating FA of registered images */
-  Script = Script + "\n# Generating FA of registered images\n";
+/* Generating scalar measurement (FA or MD) of registered images */
+  Script = Script + "\n# Generating " + m_ScalarMeasurement + " of registered images\n";
   Script = Script + "    LinearTransDTI= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_LinearTrans_DTI.nrrd\"\n";
-  Script = Script + "    if n == " + IntToStr(m_nbLoops) + " : LoopFA= OutputPath + \"/Loop" + IntToStr(m_nbLoops) + "/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_FinalFA.nrrd\" # the last FA will be the Final output\n";
-  Script = Script + "    else : LoopFA= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_FA.nrrd\"\n";
-  Script = Script + "    GeneLoopFACommand= \"" + m_SoftPath[3] + " --dti_image \" + LinearTransDTI + \" -f \" + LoopFA\n";
-  Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [\" + allcasesIDs[case] + \"] [Generating FA of registered images] => $ \" + GeneLoopFACommand)\n";
+  Script = Script + "    if n == " + IntToStr(m_nbLoops) + " : LoopScalarMeasurement= OutputPath + \"/Loop" + IntToStr(m_nbLoops) + "/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_Final" + m_ScalarMeasurement + ".nrrd\" # the last " + m_ScalarMeasurement + " will be the Final output\n";
+  Script = Script + "    else : LoopScalarMeasurement= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_" + m_ScalarMeasurement + ".nrrd\"\n";
+  if( m_ScalarMeasurement == "FA" )
+  {
+    Script = Script + "    GeneLoopScalarMeasurementCommand= \"" + m_SoftPath[3] + " --dti_image \" + LinearTransDTI + \" -f \" + LoopScalarMeasurement\n";
+  }
+  else // MD
+  {
+    Script = Script + "    GeneLoopScalarMeasurementCommand= \"" + m_SoftPath[3] + " --dti_image \" + LinearTransDTI + \" -m \" + LoopScalarMeasurement\n";
+  }
+  Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [\" + allcasesIDs[case] + \"] [Generating " + m_ScalarMeasurement + " of registered images] => $ \" + GeneLoopScalarMeasurementCommand)\n";
 
-  Script = Script + pyExecuteCommandPreprocessCase("LoopFA", "GeneLoopFACommand", "dtiprocess: Generating FA of affine registered images", "    ");
+  Script = Script + pyExecuteCommandPreprocessCase("LoopScalarMeasurement", "GeneLoopScalarMeasurementCommand", "dtiprocess: Generating " + m_ScalarMeasurement + " of affine registered images", "    ");
 
 /* Run grid process command for case X, containing all operations */
   if( m_useGridProcess )
@@ -547,7 +574,7 @@ void ScriptWriter::Preprocess ()
     Script = Script + "\n# Run grid process command for case X, containing all operations\n";
     Script = Script + "    if len(GridProcessCaseCommandsArray)!=0 : # There are operations to run\n";
 
-    Script = Script + "      GridAffineCommand= \"" + m_GridCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/Case\" + str(case+1)\n";
+    Script = Script + "      GridAffineCommand= \"" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/Case\" + str(case+1)\n";
 
     Script = Script + "      GridCmd = 0\n";
     Script = Script + "      while GridCmd < len(GridProcessCaseCommandsArray):\n";
@@ -572,8 +599,8 @@ void ScriptWriter::Preprocess ()
     Script = Script + "  TestGridProcess( FilesFolder, len(allcases), " + NoCase1 + "*(n==0)) # stays in the function until all process is done\n\n";
   }
 
-/* FA Average of registered images with ImageMath */
-  Script = Script + "\n# FA Average of registered images with ImageMath\n";
+/* Scalar measurement (FA or MD) Average of registered images with ImageMath */
+  Script = Script + "\n# " + m_ScalarMeasurement + " Average of registered images with ImageMath\n";
   if ( m_nbLoops!=0 ) // if no looping, compute average for the only preprocessing for QC (if 1:)
   {
     Script = Script + "  if n != " + IntToStr(m_nbLoops) + " : # this will not be done for the last lap\n";
@@ -582,29 +609,29 @@ void ScriptWriter::Preprocess ()
   {
     Script = Script + "  if 1 :\n";
   }
-  Script = Script + "    FAAverage = OutputPath + \"/Loop\" + str(n) + \"/Loop\" + str(n) + \"_FAAverage.nrrd\"\n";
+  Script = Script + "    ScalarMeasurementAverage = OutputPath + \"/Loop\" + str(n) + \"/Loop\" + str(n) + \"_" + m_ScalarMeasurement + "Average.nrrd\"\n";
   if(m_RegType==1) //use case 1 as loop 1 ref
   {
-    Script = Script + "    if n == 0 : FAforAVG= OutputPath + \"/" + m_CasesIDs[0] + "_FA.nrrd\"\n";
-    Script = Script + "    else : FAforAVG= OutputPath + \"/Loop\" + str(n) + \"/" + m_CasesIDs[0] + "_Loop\" + str(n) + \"_FA.nrrd\"\n";
+    Script = Script + "    if n == 0 : ScalarMeasurementforAVG= OutputPath + \"/" + m_CasesIDs[0] + "_" + m_ScalarMeasurement + ".nrrd\"\n";
+    Script = Script + "    else : ScalarMeasurementforAVG= OutputPath + \"/Loop\" + str(n) + \"/" + m_CasesIDs[0] + "_Loop\" + str(n) + \"_" + m_ScalarMeasurement + ".nrrd\"\n";
   }
   else
   {
-    Script = Script + "    FAforAVG= OutputPath + \"/Loop\" + str(n) + \"/" + m_CasesIDs[0] + "_Loop\" + str(n) + \"_FA.nrrd\"\n";
+    Script = Script + "    ScalarMeasurementforAVG= OutputPath + \"/Loop\" + str(n) + \"/" + m_CasesIDs[0] + "_Loop\" + str(n) + \"_" + m_ScalarMeasurement + ".nrrd\"\n";
   }
 
-  Script = Script + "    AverageCommand = \"" + m_SoftPath[0] + " \" + FAforAVG + \" -outfile \" + FAAverage + \" -avg \"\n";
+  Script = Script + "    AverageCommand = \"" + m_SoftPath[0] + " \" + ScalarMeasurementforAVG + \" -outfile \" + ScalarMeasurementAverage + \" -avg \"\n";
   Script = Script + "    case = 1\n";
   Script = Script + "    while case < len(allcases):\n";
-  Script = Script + "      FAforAVG= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_FA.nrrd \"\n";
-  Script = Script + "      AverageCommand= AverageCommand + FAforAVG\n";
+  Script = Script + "      ScalarMeasurementforAVG= OutputPath + \"/Loop\" + str(n) + \"/\" + allcasesIDs[case] + \"_Loop\" + str(n) + \"_" + m_ScalarMeasurement + ".nrrd \"\n";
+  Script = Script + "      AverageCommand= AverageCommand + ScalarMeasurementforAVG\n";
   Script = Script + "      case += 1\n";
 
   if( m_useGridProcess )
   {
-    Script = Script + "    AverageCommand= \"" + m_GridCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/file \\'\" + AverageCommand  + \"\\'\"\n";
+    Script = Script + "    AverageCommand= \"" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/file \\'\" + AverageCommand  + \"\\'\"\n";
   }
-  Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [Computing FA Average of registered images] => $ \" + AverageCommand)\n";
+  Script = Script + "    print(\"[LOOP \" + str(n) + \"/" + IntToStr(m_nbLoops) + "] [Computing " + m_ScalarMeasurement +" Average of registered images] => $ \" + AverageCommand)\n";
 
   if(m_Overwrite==1)
   {
@@ -612,17 +639,17 @@ void ScriptWriter::Preprocess ()
   }
   else
   {
-    Script = Script + "    if not CheckFileExists(FAAverage, 0, \"\") :\n";
+    Script = Script + "    if not CheckFileExists(ScalarMeasurementAverage, 0, \"\") :\n";
   }
-  Script = Script + "      if os.system(AverageCommand)!=0 : DisplayErrorAndQuit(\'[Loop \' + str(n) + \'] dtiaverage: Computing FA Average of registered images\')\n";
+  Script = Script + "      if os.system(AverageCommand)!=0 : DisplayErrorAndQuit(\'[Loop \' + str(n) + \'] dtiaverage: Computing " + m_ScalarMeasurement + " Average of registered images\')\n";
   if( m_useGridProcess )
   {
     Script = Script + "      TestGridProcess( FilesFolder, 0, 0) # stays in the function until all process is done : 0 makes the function look for \'file\'\n";
   }
   Script = Script + "    else :\n"; // not used if overwrite because "if 1 :"
-  Script = Script + "      print(\"=> The file \\'\" + FAAverage + \"\\' already exists so the command will not be executed\")\n";
+  Script = Script + "      print(\"=> The file \\'\" + ScalarMeasurementAverage + \"\\' already exists so the command will not be executed\")\n";
 
-  Script = Script + "    AtlasFAref = FAAverage # the average becomes the reference\n\n";
+  Script = Script + "    AtlasScalarMeasurementref = ScalarMeasurementAverage # the average becomes the reference\n\n";
 
   Script = Script + "  print(\"\")\n";
   Script = Script + "  n += 1 # indenting main loop\n\n";
@@ -669,13 +696,14 @@ void ScriptWriter::AtlasBuilding()
   Script = Script + "  sys.exit(1)\n\n";
 
   /* Function that checks if file exist and replace old names by new names if needed */
-  Script = Script + pyCheckFileExists();
+  Script = Script + pyCheckFileExists( m_ScalarMeasurement );
 
 /* Call script to run command on grid */
   std::string GridApostrophe = "";
   std::string GridProcessCmd = "";
   std::string GridProcessFileExistCmd1 = "";
   std::string GridProcessCmdNoCase = "";
+  std::string GridProcessCmdAverage = "";
   std::string GridProcessFileExistCmdNoCase = "";
   std::string GridProcessFileExistIndent = "";
   std::string GridProcessFileExistIndent1 = "";
@@ -690,12 +718,14 @@ void ScriptWriter::AtlasBuilding()
 
     GridApostrophe = " + \"\\'\"";
     std::string File = "FilesFolder + \"/Case\" + str(case+1)";
-    GridProcessCmd = "\"" + m_GridCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + " + File + " + \" \"" + GridApostrophe + " + ";
+    GridProcessCmd = "\"" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + " + File + " + \" \"" + GridApostrophe + " + ";
     GridProcessFileExistCmd1 = "    f = open( " + File + ", 'w')\n    f.close()\n"; // if the image already exists, create the "semaphore" file
 
     std::string FileNoCase = "FilesFolder + \"/file\""; //  for the commands executed only once = not once per case
-    GridProcessCmdNoCase = "\"" + m_GridCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + " + FileNoCase + " + \" \"" + GridApostrophe + " + ";
+    GridProcessCmdNoCase = "\"" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + " + FileNoCase + " + \" \"" + GridApostrophe + " + ";
     GridProcessFileExistCmdNoCase = "  f = open( " + FileNoCase + ", 'w')\n  f.close()\n";
+    //This command is executed only once (like 'GridProcessCmdNoCase') but probably needs different parameters on the grid
+    GridProcessCmdAverage = "\"" + m_GridAtlasCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + " + FileNoCase + " + \" \"" + GridApostrophe + " + ";
 
     GridProcessFileExistIndent = "\n  "; // if the file already exists, several commands in the else (create file), so change line and indent
     GridProcessFileExistIndent1 = "\n    "; // if the file already exists, several commands in the else (create file), so change line and indent (double)
@@ -783,7 +813,7 @@ void ScriptWriter::AtlasBuilding()
   Script = Script + "# GreedyAtlas Command\n";
   Script = Script + "XMLFile= DeformPath + \"/GreedyAtlasParameters.xml\"\n";
   Script = Script + "ParsedFile= DeformPath + \"/ParsedXML.xml\"\n";
-  Script = Script + "AtlasBCommand= " + GridProcessCmdNoCase + "\"" + m_SoftPath[5] + " -f \" + XMLFile + \" -o \" + ParsedFile" + GridApostrophe + "\n";
+  Script = Script + "AtlasBCommand= " + GridProcessCmdAverage + "\"" + m_SoftPath[5] + " -f \" + XMLFile + \" -o \" + ParsedFile" + GridApostrophe + "\n";
   Script = Script + "print(\"[Computing the Deformation Fields with GreedyAtlas] => $ \" + AtlasBCommand)\n";
   if(m_Overwrite==1)
   {
@@ -801,10 +831,10 @@ void ScriptWriter::AtlasBuilding()
 
   Script = Script + "  case = 0\n";
   Script = Script + "  while case < len(allcases): # Renaming\n";
-  Script = Script + "    originalImage=DeformPath + \"/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_FinalFADefToMean.mhd\"\n";
-  Script = Script + "    originalHField=DeformPath + \"/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_FinalFADefFieldImToMean.mhd\"\n";
-  Script = Script + "    originalInvHField=DeformPath + \"/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_FinalFADefFieldMeanToIm.mhd\"\n";
-  Script = Script + "    NewImage= DeformPath + \"/\" + allcasesIDs[case] + \"_NonLinearTrans_FA.mhd\"\n";
+  Script = Script + "    originalImage=DeformPath + \"/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_Final" + m_ScalarMeasurement + "DefToMean.mhd\"\n";
+  Script = Script + "    originalHField=DeformPath + \"/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_Final" + m_ScalarMeasurement + "DefFieldImToMean.mhd\"\n";
+  Script = Script + "    originalInvHField=DeformPath + \"/\" + allcasesIDs[case] + \"_Loop" + IntToStr(m_nbLoops) + "_Final" + m_ScalarMeasurement + "DefFieldMeanToIm.mhd\"\n";
+  Script = Script + "    NewImage= DeformPath + \"/\" + allcasesIDs[case] + \"_NonLinearTrans_" + m_ScalarMeasurement + ".mhd\"\n";
   Script = Script + "    NewHField=DeformPath + \"/\" + allcasesIDs[case] + \"_HField.mhd\"\n";
   Script = Script + "    NewInvHField=DeformPath + \"/\" + allcasesIDs[case] + \"_InverseHField.mhd\"\n";
   Script = Script + "    print(\"[\" + allcasesIDs[case] + \"] => Renaming \\'\" + originalImage + \"\\' to \\'\" + NewImage + \"\\'\")\n";
@@ -821,7 +851,7 @@ void ScriptWriter::AtlasBuilding()
     Script = Script + "  # Renaming possible existing old named files from GreedyAtlas\n";
     Script = Script + "  case = 0\n";
     Script = Script + "  while case < len(allcases): # Updating old names if needed\n";
-    Script = Script + "    NewImage= DeformPath + \"/\" + allcasesIDs[case] + \"_NonLinearTrans_FA.mhd\"\n";
+    Script = Script + "    NewImage= DeformPath + \"/\" + allcasesIDs[case] + \"_NonLinearTrans_" + m_ScalarMeasurement + ".mhd\"\n";
     Script = Script + "    CheckFileExists(NewImage, case, allcasesIDs[case])\n";
     Script = Script + "    NewHField=DeformPath + \"/\" + allcasesIDs[case] + \"_HField.mhd\"\n";
     Script = Script + "    CheckFileExists(NewHField, case, allcasesIDs[case])\n";
@@ -850,11 +880,11 @@ void ScriptWriter::AtlasBuilding()
   }
   if(m_nbLoops==0)
   {
-    Script = Script + "  Ref = AffinePath + \"/Loop0/Loop0_FAAverage.nrrd\"\n"; // if no looping ((m_nbLoops==0), an average is computed anyway for QC
+    Script = Script + "  Ref = AffinePath + \"/Loop0/Loop0_" + m_ScalarMeasurement + "Average.nrrd\"\n"; // if no looping ((m_nbLoops==0), an average is computed anyway for QC
   }
   else
   {
-    Script = Script + "  Ref = AffinePath + \"/Loop" + IntToStr(m_nbLoops-1) + "/Loop" + IntToStr(m_nbLoops-1) + "_FAAverage.nrrd\"\n"; // an average image has been generated in the loops of affine reg for reference
+    Script = Script + "  Ref = AffinePath + \"/Loop" + IntToStr(m_nbLoops-1) + "/Loop" + IntToStr(m_nbLoops-1) + "_" + m_ScalarMeasurement + "Average.nrrd\"\n"; // an average image has been generated in the loops of affine reg for reference
   }
   Script = Script + "  HField= DeformPath + \"/\" + allcasesIDs[case] + \"_HField.mhd\"\n";
   Script = Script + "  FinalReSampCommand=\"" + m_SoftPath[1] + " -R \" + Ref + \" -H \" + HField + \" -f \" + alltfms[case] + \" \" + originalDTI + \" \" + FinalDTI\n";
@@ -897,8 +927,15 @@ void ScriptWriter::AtlasBuilding()
     Script = Script + "  if not CheckFileExists(FinalDTI, case, allcasesIDs[case]) :\n";
   }
 
-  Script = Script + "    DiffeomorphicCaseFA = FinalPath + \"/\" + allcasesIDs[case] + \"_DiffeomorphicFA.nrrd\"\n";
-  Script = Script + "    GeneDiffeomorphicCaseFACommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + FinalDTI + \" -f \" + DiffeomorphicCaseFA\n";
+  Script = Script + "    DiffeomorphicCaseScalarMeasurement = FinalPath + \"/\" + allcasesIDs[case] + \"_Diffeomorphic" + m_ScalarMeasurement + ".nrrd\"\n";
+  if( m_ScalarMeasurement == "FA" )
+  {
+    Script = Script + "    GeneDiffeomorphicCaseScalarMeasurementCommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + FinalDTI + \" -f \" + DiffeomorphicCaseScalarMeasurement\n";
+  }
+  else // MD
+  {
+    Script = Script + "    GeneDiffeomorphicCaseScalarMeasurementCommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + FinalDTI + \" -m \" + DiffeomorphicCaseScalarMeasurement\n";
+  }
 
   Script = Script + "    CaseDbleToFloatCommand=\"" + m_SoftPath[8] + " convert -t float -i \" + FinalDTI + \" | " + m_SoftPath[8] + " save -f nrrd -e gzip -o \" + FinalPath + \"/\" + allcasesIDs[case] + \"_DiffeomorphicDTI_float.nrrd\"\n\n";
 
@@ -906,8 +943,8 @@ void ScriptWriter::AtlasBuilding()
   {
     Script = Script + "    if os.system(FinalReSampCommand)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] ResampleDTIlogEuclidean: Applying deformation fields to original DTIs\')\n";
 
-    Script = Script + "    print(\"[\" + allcasesIDs[case] + \"] => $ \" + GeneDiffeomorphicCaseFACommand)\n";
-    Script = Script + "    if os.system(GeneDiffeomorphicCaseFACommand)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] dtiprocess: Computing Diffeomorphic FA\')\n";
+    Script = Script + "    print(\"[\" + allcasesIDs[case] + \"] => $ \" + GeneDiffeomorphicCaseScalarMeasurementCommand)\n";
+    Script = Script + "    if os.system(GeneDiffeomorphicCaseScalarMeasurementCommand)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] dtiprocess: Computing Diffeomorphic " + m_ScalarMeasurement + "\')\n";
 
     Script = Script + "    print(\"[\" + allcasesIDs[case] + \"] => $ \" + CaseDbleToFloatCommand + \"\\n\")\n";
     Script = Script + "    if os.system(CaseDbleToFloatCommand)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] unu: Converting the final DTI images from double to float DTI\')\n";
@@ -915,11 +952,11 @@ void ScriptWriter::AtlasBuilding()
   else // run up to 50 commands in the same script
   {
     Script = Script + "    GridProcessCommandsArray.append(FinalReSampCommand)\n";
-    Script = Script + "    GridProcessCommandsArray.append(GeneDiffeomorphicCaseFACommand)\n";
+    Script = Script + "    GridProcessCommandsArray.append(GeneDiffeomorphicCaseScalarMeasurementCommand)\n";
     Script = Script + "    GridProcessCommandsArray.append(CaseDbleToFloatCommand)\n";
 
     Script = Script + "    if len(GridProcessCommandsArray)>=50 or case==len(allcases)-1 : # launch a script if more than 50 operations or if last case\n";
-    Script = Script + "      GridProcessCmd= \"" + m_GridCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/Case\" + str(NbGridCommandsRan+1)\n";
+    Script = Script + "      GridProcessCmd= \"" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py \" + FilesFolder + \"/Case\" + str(NbGridCommandsRan+1)\n";
     Script = Script + "      GridCmd = 0\n";
     Script = Script + "      while GridCmd < len(GridProcessCommandsArray):\n";
     Script = Script + "        GridProcessCmd = GridProcessCmd + \" \'\" + GridProcessCommandsArray[GridCmd] + \"\'\"\n";
@@ -967,7 +1004,7 @@ void ScriptWriter::AtlasBuilding()
   Script = Script + "  MD= FinalPath + \"/DiffeomorphicAtlasMD.nrrd\"\n"; // Mean Diffusivity
   Script = Script + "  AD= FinalPath + \"/DiffeomorphicAtlasAD.nrrd\"\n"; // Axial Diffusivity
 
-  Script = Script + "  GeneFACommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + DTIAverage + \" -f \" + FA + \" -m \" + MD + \" --color_fa_output \" + cFA + \" --RD_output \" + RD + \" --lambda1_output \" + AD\n\n";
+  Script = Script + "  GeneScalarMeasurementCommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + DTIAverage + \" -f \" + FA + \" -m \" + MD + \" --color_fa_output \" + cFA + \" --RD_output \" + RD + \" --lambda1_output \" + AD\n\n";
 
   Script = Script + "  DbleToFloatCommand=\"" + m_SoftPath[8] + " convert -t float -i \" + DTIAverage + \" | " + m_SoftPath[8] + " save -f nrrd -e gzip -o \" + FinalPath + \"/DiffeomorphicAtlasDTI_float.nrrd\"\n\n";
 
@@ -975,15 +1012,15 @@ void ScriptWriter::AtlasBuilding()
   {
     Script = Script + "  if os.system(AverageCommand)!=0 : DisplayErrorAndQuit(\'dtiaverage: Computing the final DTI average\')\n";
 
-    Script = Script + "  print(\"[Computing some images from the final DTI with dtiprocess] => $ \" + GeneFACommand)\n";
-    Script = Script + "  if os.system(GeneFACommand)!=0 : DisplayErrorAndQuit(\'dtiprocess: Computing Diffeomorphic FA, color FA, MD, RD and AD\')\n";
+    Script = Script + "  print(\"[Computing some images from the final DTI with dtiprocess] => $ \" + GeneScalarMeasurementCommand)\n";
+    Script = Script + "  if os.system(GeneScalarMeasurementCommand)!=0 : DisplayErrorAndQuit(\'dtiprocess: Computing Diffeomorphic FA, color FA, MD, RD and AD\')\n";
 
     Script = Script + "  print(\"[Computing some images from the final DTI with dtiprocess] => $ \" + DbleToFloatCommand)\n";
     Script = Script + "  if os.system(DbleToFloatCommand)!=0 : DisplayErrorAndQuit(\'unu: Converting the final DTI atlas from double to float DTI\')\n";
   }
   else // run all commands in the same time in the script
   {
-    Script = Script + "  AverageGridCommand=" + GridProcessCmdNoCase + "AverageCommand + \"\\' \" + \"\\'\" + GeneFACommand + \"\\' \" + \"\\'\" + DbleToFloatCommand + \"\\'\"\n";
+    Script = Script + "  AverageGridCommand=" + GridProcessCmdNoCase + "AverageCommand + \"\\' \" + \"\\'\" + GeneScalarMeasurementCommand + \"\\' \" + \"\\'\" + DbleToFloatCommand + \"\\'\"\n";
     Script = Script + "  if os.system(AverageGridCommand)!=0 : DisplayErrorAndQuit(\'Computing the final DTI average\')\n";
   }
 
@@ -1040,7 +1077,7 @@ void ScriptWriter::AtlasBuilding()
   }
   Script = Script + "  GlobalDefField = FinalResampPath + \"/First_Resampling/\" + allcasesIDs[case] + \"_GlobalDisplacementField.nrrd\"\n";
   Script = Script + "  FinalDef = FinalResampPath + \"/First_Resampling/\" + allcasesIDs[case] + \"_DeformedDTI.nrrd\"\n";
-  Script = Script + "  GlobalDefFieldCommand=\"" + m_SoftPath[7] + " --fixedVolume \" + DTIAverage + \" --movingVolume \" + origDTI + \" --outputDeformationFieldVolume \" + GlobalDefField + \" --outputVolume \" + FinalDef\n";
+  Script = Script + "  GlobalDefFieldCommand=\"" + m_SoftPath[7] + " --fixedVolume \" + DTIAverage + \" --movingVolume \" + origDTI + \" --scalarMeasurement " + m_ScalarMeasurement + " --outputDisplacementField \" + GlobalDefField + \" --outputVolume \" + FinalDef\n";
 
   // give DTI-Reg the paths to the binary directories of BRAINS (4), dtiprocess (3) and ResampleDTIlogEuclidean (1) (ANTS given in option in the GUI : DTIRegExtraPath)
   // m_SoftPath[] contains executables, and DTI-Reg only needs the paths
@@ -1074,7 +1111,7 @@ void ScriptWriter::AtlasBuilding()
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --BRAINSarrayOfPyramidLevelIterations " + m_DTIRegOptions[4] + "\"\n";
     if(m_DTIRegOptions[2].compare("Use computed affine transform")==0) Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --initialAffine \" + alltfms[case]\n";
     else Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --BRAINSinitializeTransformMode " + m_DTIRegOptions[2] + "\"\n";
-    Script = Script + "  BRAINSTempTfm = FinalResampPath + \"/First_Resampling/\" + allcasesIDs[case] + \"_FA_AffReg.txt\"\n"; // so that nothing is stored in the same dir than the Atlas
+    Script = Script + "  BRAINSTempTfm = FinalResampPath + \"/First_Resampling/\" + allcasesIDs[case] + \"_" + m_ScalarMeasurement + "_AffReg.txt\"\n"; // so that nothing is stored in the same dir than the Atlas
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --outputTransform \" + BRAINSTempTfm\n";
   }
   if( m_DTIRegOptions[0].compare("ANTS")==0 )
@@ -1093,7 +1130,7 @@ void ScriptWriter::AtlasBuilding()
     if( m_DTIRegOptions[7].compare("1")==0 ) Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --ANTSGaussianSmoothingOff\"\n";
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --initialAffine \" + alltfms[case]\n";
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --ANTSUseHistogramMatching \"\n";
-    Script = Script + "  ANTSTempFileBase = FinalResampPath + \"/First_Resampling/\" + allcasesIDs[case] + \"_FA_\"\n"; // so that nothing is stored in the same dir than the Atlas
+    Script = Script + "  ANTSTempFileBase = FinalResampPath + \"/First_Resampling/\" + allcasesIDs[case] + \"_" + m_ScalarMeasurement + "_\"\n"; // so that nothing is stored in the same dir than the Atlas
     Script = Script + "  GlobalDefFieldCommand= GlobalDefFieldCommand + \" --ANTSOutbase \" + ANTSTempFileBase\n"; // no --outputTfm for ANTS because --ANTSOutbase is used for the tfm
   }
   Script = Script + "  print(\"\\n[\" + allcasesIDs[case] + \"] [Computing global deformation fields] => $ \" + GlobalDefFieldCommand)\n";
@@ -1162,7 +1199,7 @@ void ScriptWriter::AtlasBuilding()
   Script = Script + "  RD2= FinalResampPath + \"/FinalAtlasRD.nrrd\"\n"; // Radial Diffusivity
   Script = Script + "  MD2= FinalResampPath + \"/FinalAtlasMD.nrrd\"\n"; // Mean Diffusivity
   Script = Script + "  AD2= FinalResampPath + \"/FinalAtlasAD.nrrd\"\n"; // Axial Diffusivity
-  Script = Script + "  GeneFACommand2=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + DTIAverage2 + \" -f \" + FA2 + \" -m \" + MD2 + \" --color_fa_output \" + cFA2 + \" --RD_output \" + RD2 + \" --lambda1_output \" + AD2\n\n";
+  Script = Script + "  GeneScalarMeasurementCommand2=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + DTIAverage2 + \" -f \" + FA2 + \" -m \" + MD2 + \" --color_fa_output \" + cFA2 + \" --RD_output \" + RD2 + \" --lambda1_output \" + AD2\n\n";
 
   Script = Script + "  DbleToFloatCommand2=\"" + m_SoftPath[8] + " convert -t float -i \" + DTIAverage2 + \" | " + m_SoftPath[8] + " save -f nrrd -e gzip -o \" + FinalResampPath + \"/FinalAtlasDTI_float.nrrd\"\n\n";
 
@@ -1170,15 +1207,15 @@ void ScriptWriter::AtlasBuilding()
   {
     Script = Script + "  if os.system(AverageCommand2)!=0 : DisplayErrorAndQuit(\'dtiaverage: Recomputing the final DTI average\')\n";
 
-    Script = Script + "  print(\"[Computing some images from the final DTI with dtiprocess] => $ \" + GeneFACommand2)\n";
-    Script = Script + "  if os.system(GeneFACommand2)!=0 : DisplayErrorAndQuit(\'dtiprocess: Recomputing final FA, color FA, MD, RD and AD\')\n";
+    Script = Script + "  print(\"[Computing some images from the final DTI with dtiprocess] => $ \" + GeneScalarMeasurementCommand2)\n";
+    Script = Script + "  if os.system(GeneScalarMeasurementCommand2)!=0 : DisplayErrorAndQuit(\'dtiprocess: Recomputing final FA, color FA, MD, RD and AD\')\n";
 
     Script = Script + "  print(\"[Computing some images from the final DTI with dtiprocess] => $ \" + DbleToFloatCommand2)\n";
     Script = Script + "  if os.system(DbleToFloatCommand2)!=0 : DisplayErrorAndQuit(\'unu: Converting the final resampled DTI atlas from double to float DTI\')\n";
   }
   else // run all commands in the same time in the script
   {
-    Script = Script + "  Average2GridCommand=" + GridProcessCmdNoCase + "AverageCommand2 + \"\\' \" + \"\\'\" + GeneFACommand2 + \"\\' \" + \"\\'\" + DbleToFloatCommand2 + \"\\'\"\n";
+    Script = Script + "  Average2GridCommand=" + GridProcessCmdNoCase + "AverageCommand2 + \"\\' \" + \"\\'\" + GeneScalarMeasurementCommand2 + \"\\' \" + \"\\'\" + DbleToFloatCommand2 + \"\\'\"\n";
     Script = Script + "  if os.system(Average2GridCommand)!=0 : DisplayErrorAndQuit(\'Recomputing the final DTI average\')\n";
   }
 
@@ -1207,7 +1244,7 @@ void ScriptWriter::AtlasBuilding()
   }
   Script = Script + "  GlobalDefField2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_GlobalDisplacementField.nrrd\"\n";
   Script = Script + "  FinalDef2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FinalDeformedDTI.nrrd\"\n";
-  Script = Script + "  GlobalDefFieldCommand2=\"" + m_SoftPath[7] + " --fixedVolume \" + DTIAverage2 + \" --movingVolume \" + origDTI2 + \" --outputDeformationFieldVolume \" + GlobalDefField2 + \" --outputVolume \" + FinalDef2\n";
+  Script = Script + "  GlobalDefFieldCommand2=\"" + m_SoftPath[7] + " --fixedVolume \" + DTIAverage2 + \" --movingVolume \" + origDTI2 + \" --scalarMeasurement " + m_ScalarMeasurement + " --outputDisplacementField \" + GlobalDefField2 + \" --outputVolume \" + FinalDef2\n";
 
   // give DTI-Reg the paths to the binary directories of ANTS (6), BRAINS (5) and ResampleDTIlogEuclidean (2) | m_DTIRegExtraPath is supposed to contain ANTS
   // ANTSExecDir, BRAINSExecDir, ResampExecDir defined in the previous resampling
@@ -1239,7 +1276,7 @@ void ScriptWriter::AtlasBuilding()
     Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSarrayOfPyramidLevelIterations " + m_DTIRegOptions[4] + "\"\n";
     if(m_DTIRegOptions[2].compare("Use computed affine transform")==0) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --initialAffine \" + alltfms[case]\n";
     else Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --BRAINSinitializeTransformMode " + m_DTIRegOptions[2] + "\"\n";
-    Script = Script + "  BRAINSTempTfm2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FA_AffReg.txt\"\n"; // so that nothing is stored in the same dir than the Atlas
+    Script = Script + "  BRAINSTempTfm2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_" + m_ScalarMeasurement + "_AffReg.txt\"\n"; // so that nothing is stored in the same dir than the Atlas
     Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --outputTransform \" + BRAINSTempTfm2\n";
   }
   if( m_DTIRegOptions[0].compare("ANTS")==0 )
@@ -1259,7 +1296,7 @@ void ScriptWriter::AtlasBuilding()
     Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSGaussianSigma " + m_DTIRegOptions[6] + "\"\n";
     if( m_DTIRegOptions[7].compare("1")==0 ) Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSGaussianSmoothingOff\"\n";
     Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --initialAffine \" + alltfms[case]\n";
-    Script = Script + "  ANTSTempFileBase2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FA_\"\n"; // so that nothing is stored in the same dir than the Atlas
+    Script = Script + "  ANTSTempFileBase2 = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_" + m_ScalarMeasurement + "_\"\n"; // so that nothing is stored in the same dir than the Atlas
     Script = Script + "  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + \" --ANTSOutbase \" + ANTSTempFileBase2\n"; // no --outputTfm for ANTS because --ANTSOutbase is used for the tfm
   }
   Script = Script + "  print(\"\\n[\" + allcasesIDs[case] + \"] [Recomputing global deformation fields] => $ \" + GlobalDefFieldCommand2)\n";
@@ -1273,8 +1310,15 @@ void ScriptWriter::AtlasBuilding()
   }
 
   Script = Script + "    SecondResampRecomputed[case] = 1\n";
-  Script = Script + "    DTIRegCaseFA = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FinalDeformedFA.nrrd\"\n";
-  Script = Script + "    GeneDTIRegCaseFACommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + FinalDef2 + \" -f \" + DTIRegCaseFA\n";
+  Script = Script + "    DTIRegCaseScalarMeasurement = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FinalDeformed" + m_ScalarMeasurement + ".nrrd\"\n";
+  if( m_ScalarMeasurement == "FA" )
+  {
+    Script = Script + "    GeneDTIRegCaseScalarMeasurementCommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + FinalDef2 + \" -f \" + DTIRegCaseScalarMeasurement\n";
+  }
+  else // MD
+  {
+    Script = Script + "    GeneDTIRegCaseScalarMeasurementCommand=\"" + m_SoftPath[3] + " --scalar_float --dti_image \" + FinalDef2 + \" -m \" + DTIRegCaseScalarMeasurement\n";
+  }
 
   Script = Script + "    GlobDbleToFloatCommand2=\"" + m_SoftPath[8] + " convert -t float -i \" + FinalDef2 + \" | " + m_SoftPath[8] + " save -f nrrd -e gzip -o \" + FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FinalDeformedDTI_float.nrrd\"\n";
 
@@ -1285,12 +1329,12 @@ void ScriptWriter::AtlasBuilding()
     Script = Script + "    print(\"\\n[\" + allcasesIDs[case] + \"] [Converting the deformed images from double to float DTI] => $ \" + GlobDbleToFloatCommand2)\n";
     Script = Script + "    if os.system(GlobDbleToFloatCommand2)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] unu: Converting the deformed images from double to float DTI\')\n";
 
-    Script = Script + "    print(\"\\n[\" + allcasesIDs[case] + \"] [Computing DTIReg FA] => $ \" + GeneDTIRegCaseFACommand)\n";
-    Script = Script + "    if os.system(GeneDTIRegCaseFACommand)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] dtiprocess: Computing DTIReg FA\')\n";
+    Script = Script + "    print(\"\\n[\" + allcasesIDs[case] + \"] [Computing DTIReg " + m_ScalarMeasurement + "] => $ \" + GeneDTIRegCaseScalarMeasurementCommand)\n";
+    Script = Script + "    if os.system(GeneDTIRegCaseScalarMeasurementCommand)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] dtiprocess: Computing DTIReg " + m_ScalarMeasurement + "\')\n";
   }
   else // run all commands in the same time in the script
   {
-    Script = Script + "    GlobDefField2GridCommand=" + GridProcessCmd + "GlobalDefFieldCommand2 + \"\\' \" + \"\\'\" + GlobDbleToFloatCommand2 + \"\\' \" + \"\\'\" + GeneDTIRegCaseFACommand + \"\\'\"\n";
+    Script = Script + "    GlobDefField2GridCommand=" + GridProcessCmd + "GlobalDefFieldCommand2 + \"\\' \" + \"\\'\" + GlobDbleToFloatCommand2 + \"\\' \" + \"\\'\" + GeneDTIRegCaseScalarMeasurementCommand + \"\\'\"\n";
     Script = Script + "    if os.system(GlobDefField2GridCommand)!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] Recomputing global deformation fields\')\n";
   }
 
@@ -1327,10 +1371,10 @@ void ScriptWriter::AtlasBuilding()
   Script = Script + "    NewFinalDef2f = FinalResampPath + \"/FinalTensors/\" + allcasesIDs[case] + \"_FinalDeformedDTI_float.nrrd\"\n";
   Script = Script + "    if CheckFileExists(FinalDef2f, case, allcasesIDs[case]) :\n";
   Script = Script + "      shutil.copy(FinalDef2f, NewFinalDef2f)\n";
-  Script = Script + "    DTIRegCaseFA = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FinalDeformedFA.nrrd\"\n";
-  Script = Script + "    NewDTIRegCaseFA = FinalResampPath + \"/FinalTensors/\" + allcasesIDs[case] + \"_FinalDeformedFA.nrrd\"\n";
-  Script = Script + "    if CheckFileExists(DTIRegCaseFA, case, allcasesIDs[case]) :\n";
-  Script = Script + "      shutil.copy(DTIRegCaseFA, NewDTIRegCaseFA)\n";
+  Script = Script + "    DTIRegCaseScalarMeasurement = FinalResampPath + \"/Second_Resampling/\" + allcasesIDs[case] + \"_FinalDeformed" + m_ScalarMeasurement + ".nrrd\"\n";
+  Script = Script + "    NewDTIRegCaseScalarMeasurement = FinalResampPath + \"/FinalTensors/\" + allcasesIDs[case] + \"_FinalDeformed" + m_ScalarMeasurement + ".nrrd\"\n";
+  Script = Script + "    if CheckFileExists(DTIRegCaseScalarMeasurement, case, allcasesIDs[case]) :\n";
+  Script = Script + "      shutil.copy(DTIRegCaseScalarMeasurement, NewDTIRegCaseScalarMeasurement)\n";
   Script = Script + "  case += 1\n\n";
 
   Script = Script + "print(\"\\n============ End of Atlas Building =============\")\n\n";
@@ -1653,7 +1697,30 @@ void ScriptWriter::setGridProcess(bool useGridProcess)
   m_useGridProcess = useGridProcess;
 }
 
-void ScriptWriter::setGridCommand(std::string GridCommand)
+int ScriptWriter::setScalarMeasurement(std::string scalarMeasurement)
+{
+  if( scalarMeasurement != "FA"
+   && scalarMeasurement != "MD"
+    )
+  {
+    return -1 ;
+  }
+  m_ScalarMeasurement = scalarMeasurement ;
+  return 0 ;
+}
+
+void ScriptWriter::setGridGeneralCommand(std::string GridCommand)
+{
+  m_GridGeneralCommand = setGridCommand( GridCommand ) ;
+}
+
+void ScriptWriter::setGridAtlasCommand(std::string GridCommand)
+{
+
+  m_GridAtlasCommand = setGridCommand( GridCommand ) ;
+}
+
+std::string ScriptWriter::setGridCommand(std::string GridCommand)
 {
   size_t index = 0;
   // from http://stackoverflow.com/questions/4643512/replace-substring-with-another-substring-c
@@ -1670,7 +1737,7 @@ void ScriptWriter::setGridCommand(std::string GridCommand)
     /* Advance index forward so the next iteration doesn't pick it up as well. */
     index += 2;
   }
-  m_GridCommand = GridCommand;
+  return GridCommand;
 }
 
 void ScriptWriter::setPythonPath(std::string PythonPath)

@@ -928,7 +928,7 @@ void GUI::OpenDTIRegExtraPathBrowseWindow() /*SLOT*/
 
 void GUI::OpenTemplateBrowseWindow() /*SLOT*/
 {
-  QString TemplateBrowse=QFileDialog::getOpenFileName(this, "Open Atlas FA Template", QString(), "ITK format Images (*.nrrd *.nhdr *.nii *.nii.gz *.*)");
+  QString TemplateBrowse=QFileDialog::getOpenFileName(this, "Open Atlas Template", QString(), "ITK format Images (*.nrrd *.nhdr *.nii *.nii.gz *.*)");
   if(!TemplateBrowse.isEmpty())
   {
     TemplateLineEdit->setText(TemplateBrowse);
@@ -946,16 +946,16 @@ void GUI::DisplayAffineQC() /*SLOT*/
   std::string path;
   for(int i=0; i < CaseListWidget->count() ;i++) 
   {
-    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "_FinalFA.nrrd";
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "_Final" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
     if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
   }
   if(NbLoopsSpinBox->value()>0)
   {
-    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()-1) + "/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()-1) + "_FAAverage.nrrd";
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()-1) + "/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()-1) + "_" + ScalarMeasurementComboBox->currentText().toStdString() + "Average.nrrd";
   }
   else // if no looping (NbLoopsSpinBox->value()==0), an average is computed anyway for QC
   {
-    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop0/Loop0_FAAverage.nrrd";
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop0/Loop0_" + ScalarMeasurementComboBox->currentText().toStdString() + "Average.nrrd";
   }
   if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
 
@@ -971,12 +971,12 @@ void GUI::DisplayAffineQC() /*SLOT*/
   {
     if(!m_noGUI && !m_Testing) 
     {
-      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "/*_Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "_FinalFA.nrrd";
+      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration/Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "/*_Loop" + IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) + "_Final" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
       QMessageBox::warning(this, "No images found", text.c_str() );
     }
     else
     {
-      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) << "/*_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) << "_FinalFA.nrrd" <<std::endl;
+      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) << "/*_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()) << "_Final" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd" <<std::endl;
     }
   }
 }
@@ -988,10 +988,10 @@ void GUI::DisplayDeformQC() /*SLOT*/
   std::string path;
   for(int i=0; i < CaseListWidget->count() ;i++) 
   {
-    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_DiffeomorphicFA.nrrd";
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_Diffeomorphic" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
     if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
   }
-  path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas/DiffeomorphicAtlasFA.nrrd";
+  path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas/DiffeomorphicAtlas" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
   if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
 
   if( pathList != "" )
@@ -1006,12 +1006,12 @@ void GUI::DisplayDeformQC() /*SLOT*/
   {
     if(!m_noGUI && !m_Testing) 
     {
-      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas/*_DiffeomorphicFA.nrrd";
+      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas/*_Diffeomorphic" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
       QMessageBox::warning(this, "No images found", text.c_str() );
     }
     else
     {
-      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/3_Diffeomorphic_Atlas/*_DiffeomorphicFA.nrrd" <<std::endl;
+      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/3_Diffeomorphic_Atlas/*_Diffeomorphic" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd" <<std::endl;
     }
   }
 }
@@ -1023,10 +1023,10 @@ void GUI::DisplayResampQC() /*SLOT*/
   std::string path;
   for(int i=0; i < CaseListWidget->count() ;i++) 
   {
-    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/FinalTensors/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_FinalDeformedFA.nrrd";
+    path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/FinalTensors/" + itksys::SystemTools::GetFilenameWithoutExtension( CaseListWidget->item(i)->text().toStdString() ) + "_FinalDeformed" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
     if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
   }
-  path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/FinalAtlasFA.nrrd";
+  path = OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/FinalAtlas" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
   if( itksys::SystemTools::GetPermissions(path.c_str(), ITKmode_F_OK) ) pathList = pathList + " " + path;
 
   if( pathList != "" )
@@ -1041,12 +1041,12 @@ void GUI::DisplayResampQC() /*SLOT*/
   {
     if(!m_noGUI && !m_Testing) 
     {
-      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/FinalTensors/*_FinalDeformedFA.nrrd";
+      std::string text = "None of the images to be displayed have been found.\nPlease check that these files exist:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/FinalTensors/*_FinalDeformed" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd";
       QMessageBox::warning(this, "No images found", text.c_str() );
     }
     else
     {
-      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/4_Final_Resampling/FinalTensors/*_FinalDeformedFA.nrrd" <<std::endl;
+      std::cout<<"| None of the images to be displayed have been found. Please check that these files exist: "<< OutputFolderLineEdit->text().toStdString() << "/DTIAtlas/4_Final_Resampling/FinalTensors/*_FinalDeformed" + ScalarMeasurementComboBox->currentText().toStdString() + ".nrrd" <<std::endl;
     }
   }
 }
@@ -1228,7 +1228,7 @@ void GUI::SaveCSVResults(int Crop, int nbLoops) // Crop = 0 if no cropping , 1 i
 
     stream << QString("id") << m_CSVseparator << QString("Original DTI Image");
     if(Crop==1) stream << m_CSVseparator << QString("Cropped DTI");
-    stream << m_CSVseparator << QString("FA from original") << m_CSVseparator << QString("Affine transform") << m_CSVseparator << QString("Affine registered DTI") << m_CSVseparator << QString("Affine Registered FA") << m_CSVseparator << QString("Diffeomorphic Deformed FA") << m_CSVseparator << QString("Diffeomorphic Deformation field to Affine space") << m_CSVseparator << QString("Diffeomorphic Inverse Deformation field to Affine space") << m_CSVseparator << QString("Diffeomorphic DTI") << m_CSVseparator << QString("Diffeomorphic Deformation field to Original space") << m_CSVseparator << QString("DTI-Reg Final DTI") << endl;
+    stream << m_CSVseparator << ScalarMeasurementComboBox->currentText() << QString(" from original") << m_CSVseparator << QString("Affine transform") << m_CSVseparator << QString("Affine registered DTI") << m_CSVseparator << QString("Affine Registered ") << ScalarMeasurementComboBox->currentText() << m_CSVseparator << QString("Diffeomorphic Deformed ") << ScalarMeasurementComboBox->currentText() << m_CSVseparator << QString("Diffeomorphic Deformation field to Affine space") << m_CSVseparator << QString("Diffeomorphic Inverse Deformation field to Affine space") << m_CSVseparator << QString("Diffeomorphic DTI") << m_CSVseparator << QString("Diffeomorphic Deformation field to Original space") << m_CSVseparator << QString("DTI-Reg Final DTI") << endl;
 
     for(int i=0; i < CaseListWidget->count() ;i++) // for all cases
     {
@@ -1236,11 +1236,11 @@ void GUI::SaveCSVResults(int Crop, int nbLoops) // Crop = 0 if no cropping , 1 i
 
       stream << i+1 << m_CSVseparator << CaseListWidget->item(i)->text().remove(0, CaseListWidget->item(i)->text().split(":").at(0).size()+2 ); // Original DTI Image
       if(Crop==1) stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/1_Affine_Registration/") << CaseID << QString("_croppedDTI.nrrd"); // Cropped DTI
-      stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/1_Affine_Registration/") << CaseID << QString("_FA.nrrd"); // FA from original
+      stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/1_Affine_Registration/") << CaseID << QString("_") << ScalarMeasurementComboBox->currentText() << QString(".nrrd"); // Scalar measurement (FA or MD) from original
       stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/1_Affine_Registration/Loop") << nbLoops << QString("/") << CaseID << QString("_Loop ") << nbLoops << QString("_LinearTrans.txt"); // Affine transform
       stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/1_Affine_Registration/Loop") << nbLoops << QString("/") << CaseID << QString("_Loop ") << nbLoops << QString("_LinearTrans_DTI.nrrd"); // Affine registered DTI
-      stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/1_Affine_Registration/Loop") << nbLoops << QString("/") << CaseID << QString("_Loop ") << nbLoops << QString("_FinalFA.nrrd"); // Affine Registered FA
-      stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/2_NonLinear_Registration/") << CaseID << QString("_NonLinearTrans_FA.mhd"); // Diffeomorphic Deformed FA
+      stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/1_Affine_Registration/Loop") << nbLoops << QString("/") << CaseID << QString("_Loop ") << nbLoops << QString("_Final") << ScalarMeasurementComboBox->currentText() << QString(".nrrd"); // Affine Registered scalar measurement (FA or MD)
+      stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/2_NonLinear_Registration/") << CaseID << QString("_NonLinearTrans_") << ScalarMeasurementComboBox->currentText() << QString(".mhd"); // Diffeomorphic Deformed scalar measurement (FA or MD)
       stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/2_NonLinear_Registration/") << CaseID << QString("_HField.mhd"); // Diffeomorphic Deformation H field to Affine space
       stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/2_NonLinear_Registration/") << CaseID << QString("_InverseHField.mhd"); // Diffeomorphic Inverse Deformation H field to Affine space
       stream << m_CSVseparator << m_OutputPath + QString("/DTIAtlas/3_Diffeomorphic_Atlas/") << CaseID << QString("_DiffeomorphicDTI.nrrd"); // Diffeomorphic DTI
@@ -1291,9 +1291,10 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
 
     QTextStream stream( &file );
 
-    stream << "DTIAtlasBuilderParameterFileVersion" << "=2" << endl;
+    stream << "DTIAtlasBuilderParameterFileVersion" << "=3" << endl;
     stream << "Output Folder=" << OutputFolderLineEdit->text() << endl;
     stream << "Atlas Template=" << TemplateLineEdit->text() << endl;
+    stream << "Scalar Measurement=" << ScalarMeasurementComboBox->currentText() << endl;
     if(SafetyMargincheckBox->isChecked()) stream << "SafetyMargin=true" << endl;
     else  stream << "SafetyMargin=false" << endl;
     stream << "Loops for the registration=" << NbLoopsSpinBox->value() << endl;
@@ -1334,9 +1335,16 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
     }
     else stream << "=" << m_BRegTypeComboBox->currentText() << ";" << m_TfmModeComboBox->currentText() << ";" << m_NbPyrLevSpin->value() << ";" << m_PyrLevItLine->text() << endl;
 
-    stream << "GridProcessing=";
-    if( GridProcesscheckBox->isChecked() ) stream << GridProcessCmdLineEdit->text() <<endl;
-    else stream << endl;
+    if( GridProcesscheckBox->isChecked() )
+    {
+      stream << "GridProcessing=" << GridProcessCmdLineEdit->text() <<endl;
+      stream << "GridAtlasProcessing=" << GridProcessAtlasCmdLineEdit->text() <<endl;
+    }
+    else
+    {
+      stream << "GridProcessing="<<endl;
+      stream << "GridAtlasProcessing="<<endl;
+    }
 
     stream << "NbThreads=" << NbThreadsSpinBox->value() << endl;
 
@@ -1474,6 +1482,24 @@ int GUI::LoadParameters(QString paramFile, bool DiscardParametersCSV) // Discard
     list = line.split("=");
     if( LoadParametersReturnTrueIfCorrupted(list.at(0),"Atlas Template") ) return -1;
     TemplateLineEdit->setText(list.at(1));
+
+    if( ParamFileVersion >= 3 )
+    {
+      line = stream.readLine() ;
+      list = line.split( "=" ) ;
+      int comboBoxIndex = ScalarMeasurementComboBox->findText( list.at( 1 ) ) ;
+      if( comboBoxIndex == -1 )
+      {
+        // The value found for ScalarMeasurementComboBox in the parameter file is not valid.
+        // We "corrupt" the parameter file such that 'LoadParametersReturnTrueIfCorrupted' returns and error message.
+        list[ 0 ] = "" ;
+      }
+      if( LoadParametersReturnTrueIfCorrupted( list.at( 0 ) , "Scalar Measurement" ) )
+      {
+        return -1 ;
+      }
+      ScalarMeasurementComboBox->setCurrentIndex( comboBoxIndex ) ;
+    }
 
     line = stream.readLine();
     list = line.split("=");
@@ -1751,6 +1777,7 @@ int GUI::LoadParameters(QString paramFile, bool DiscardParametersCSV) // Discard
 /* Grid Processing */
     line = stream.readLine();
     list = line.split("=");
+    GridProcesscheckBox->setChecked(false);//both for GridProcessing and GridAtlasProcessing
     if( LoadParametersReturnTrueIfCorrupted(list.at(0),"GridProcessing") ) return -1;
 
     if( !list.at(1).isEmpty() )
@@ -1762,10 +1789,32 @@ int GUI::LoadParameters(QString paramFile, bool DiscardParametersCSV) // Discard
     }
     else
     {
-      GridProcesscheckBox->setChecked(false);
       GridProcessCmdLineEdit->setText( "" );
     }
-
+/* Atlas command line for grid processing */
+    if( ParamFileVersion >= 3 )
+    {
+      line = stream.readLine();
+      list = line.split("=");
+      if( LoadParametersReturnTrueIfCorrupted(list.at(0),"GridAtlasProcessing") )
+      {
+        return -1;
+      }
+      if( !list.at(1).isEmpty() )
+      {
+        list.removeFirst() ;
+        QString concatenatedList = list.join("=") ;//This line likely contains "=" signs. The grid command line would then be split. We need to concatenate it back to its normal form!
+        GridProcessAtlasCmdLineEdit->setText( concatenatedList );
+      }
+      else
+      {
+        GridProcessAtlasCmdLineEdit->setText( "" );
+      }
+    }
+    else
+    {
+      GridProcessAtlasCmdLineEdit->setText( GridProcessCmdLineEdit->text() );
+    }
 /* Nb Threads*/
     if( ParamFileVersion >= 2 )
     {
@@ -1846,7 +1895,7 @@ void GUI::GenerateXMLForGA()
     for (unsigned int i=0;i<m_CasesPath.size();i++)
     {
       stream <<"    <WeightedImage>"<< endl;
-      stream <<"      <Filename val=\"" << m_OutputPath << "/DTIAtlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "/" << itksys::SystemTools::GetFilenameWithoutExtension( m_CasesPath[i] ).c_str() << "_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "_FinalFA.nrrd\" />"<< endl;
+      stream <<"      <Filename val=\"" << m_OutputPath << "/DTIAtlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "/" << itksys::SystemTools::GetFilenameWithoutExtension( m_CasesPath[i] ).c_str() << "_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "_Final" << ScalarMeasurementComboBox->currentText() << ".nrrd\" />"<< endl;
       stream <<"      <ItkTransform val=\"1\" />"<< endl;
       stream <<"    </WeightedImage>"<< endl;
     }
@@ -2823,14 +2872,14 @@ bool GUI::CheckTemplate()
       else std::cout<<"| This template file is not an image : " << TemplateLineEdit->text().toStdString() <<std::endl;
       return false;
     }
-    if( checkImTemp == 0 ) // returns 1 if not an image, 2 if not a dti, otherwise 0 //the template has to be a FA image !!
+    if( checkImTemp == 0 ) // returns 1 if not an image, 2 if not a dti, otherwise 0 //the template has to be a FA or an MD image !!
     {
       if(!m_noGUI && !m_Testing)
       {
-        std::string text = "This template image is not a FA :\n" + TemplateLineEdit->text().toStdString();
+        std::string text = "This template image is not a scalar volume (FA or MD):\n" + TemplateLineEdit->text().toStdString();
         QMessageBox::critical(this, "No FA", QString(text.c_str()) );
       }
-      else std::cout<<"| This template image is not a FA : " << TemplateLineEdit->text().toStdString() <<std::endl;
+      else std::cout<<"| This template image is not a scalar volume (FA or MD): " << TemplateLineEdit->text().toStdString() <<std::endl;
       return false;
     }
     m_scriptwriter->setRegType(0);
@@ -3111,10 +3160,12 @@ void GUI::SetOtherOptions()
   m_scriptwriter->setBFAffineTfmMode(BFAffineTfmModecomboBox->currentText().toStdString());
 
   m_scriptwriter->setGridProcess( GridProcesscheckBox->isChecked() ); // isChecked() returns true or false
-  m_scriptwriter->setGridCommand( GridProcessCmdLineEdit->text().toStdString() );
+  m_scriptwriter->setGridGeneralCommand( GridProcessCmdLineEdit->text().toStdString() );
+  m_scriptwriter->setGridAtlasCommand( GridProcessAtlasCmdLineEdit->text().toStdString() );
 
   if( GridProcesscheckBox->isChecked() ) m_scriptwriter->setNbThreads(1); // Not used in script, but fct needs to be called to initialize var
   else m_scriptwriter->setNbThreads( NbThreadsSpinBox->value() );
+  m_scriptwriter->setScalarMeasurement( ScalarMeasurementComboBox->currentText().toStdString() ) ;
 }  // SetOtherOptions
 
 
