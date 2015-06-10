@@ -498,7 +498,7 @@ set( CMAKE_ExtraARGS
   -DBUILD_GENERATECLP:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
   -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-  DEPENDS ${ITK_DEPEND}
+  DEPENDS ${ITK_DEPEND} ${SlicerExecutionModel_DEPEND}
   )
 set( Tools
   ResampleDTIlogEuclidean
