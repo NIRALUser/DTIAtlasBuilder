@@ -4,7 +4,7 @@ CMAKE_POLICY(VERSION 2.8)
 set(BUILD_TESTING ON CACHE BOOL "Build, configure and copy testing files")
 
 project(DTIAtlasBuilder)
-
+set(innerproj ${CMAKE_PROJECT_NAME}-inner)
 
 # So error while configuring and not building if Git missing -> sets GIT_EXECUTABLE
 find_package(Git REQUIRED)
@@ -45,7 +45,6 @@ set(COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES
   -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
   -DCMAKE_GENERATOR:STRING=${CMAKE_GENERATOR}
   -DCMAKE_EXTRA_GENERATOR:STRING=${CMAKE_EXTRA_GENERATOR}
-  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
   -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
   -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
   -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
@@ -68,42 +67,50 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   set(EXTENSION_NAME DTIAtlasBuilder)
   set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dtiatlasbuilder")
   set(EXTENSION_CATEGORY "Diffusion")
-  set(EXTENSION_CONTRIBUTORS "Adrien Kaiser (UNC)")
+  set(EXTENSION_CONTRIBUTORS "Adrien Kaiser (UNC), Francois Budin (UNC)")
   set(EXTENSION_DESCRIPTION "A tool to create a DTI Atlas Image from a set of DTI Images")
   set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=636&screenshot_id=607")
   set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/0/02/DTIAtlasBuilder_Interface.png")
   set(EXTENSION_STATUS Beta)
-  set(EXTENSION_BUILD_SUBDIRECTORY DTIAtlasBuilder-build)
-  set(EXTENSION_DEPENDS "DTIProcess" ) # Specified as a space separated list or 'NA' if any
+  set(EXTENSION_BUILD_SUBDIRECTORY . )
+  set(EXTENSION_DEPENDS "DTIProcess ResampleDTIlogEuclidean DTI-Reg" ) # Specified as a space separated list or 'NA' if any
   set(MODULE_NAME DTIAtlasBuilder)
 
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
+  # Import DTIProcess, ResampleDTIlogEuclidean, and DTI-Reg targets for the tests
+  # DTIProcess_DIR and DTI-Reg_DIR are set because DTIAtlasBuilder is defined as dependent of the extension DTIProcess, ResampleDTIlogEuclidean, and DTI-Reg
+  include( ${DTIProcess_DIR}/ImportDTIProcessExtensionExecutables.cmake )
+  get_target_property(TOOLdtiprocess dtiprocess IMPORTED_LOCATION_RELEASE )
+  get_target_property(TOOLdtiaverage dtiaverage IMPORTED_LOCATION_RELEASE )
+  include( ${DTI-Reg_DIR}/ImportDTI-RegExtensionExecutables.cmake )
+  get_target_property(TOOLDTI-Reg DTI-Reg IMPORTED_LOCATION_RELEASE )
+  include( ${ResampleDTIlogEuclidean_DIR}/ResampleDTIlogEuclidean-exports.cmake )
+  get_target_property(TOOLResampleDTIlogEuclidean ResampleDTIlogEuclidean IMPORTED_LOCATION_RELEASE )
   #ANTS needs a more recent version of ITK (4.6) than the one currently in Slicer (05.21.2014)
   #We still use Slicer ITK_DIR to compile DTIAtlasBuilder to avoid conflicts when including Slicer_USE_FILE
-  set( ITK_DIR_Slicer ${ITK_DIR} )
-  set( GenerateCLP_DIR_Slicer ${GenerateCLP_DIR} )
-  unset( ITK_DIR CACHE )
-  unset( ITK_FOUND )
-  unset( SlicerExecutionModel_DIR CACHE )
-  unset( GenerateCLP_DIR CACHE )
+  #set( ITK_DIR_Slicer ${ITK_DIR} )
+  #set( GenerateCLP_DIR_Slicer ${GenerateCLP_DIR} )
+  #unset( ITK_DIR CACHE )
+  #unset( ITK_FOUND )
+  #unset( SlicerExecutionModel_DIR CACHE )
+  #unset( GenerateCLP_DIR CACHE )
   # SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY and SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION defined in Slicer_USE_FILE
   # SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION is [sthg]/cli_module : must contain only CLIs
   # If build as Slicer Extension, CMAKE_INSTALL_PREFIX is set to [ExtensionsFolder]/DTIAtlaBuilder
-  set(INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) # Set for DTIAtlasBuilder and other cli modules
-  set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin)
   if( APPLE )
     set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../ )
   endif()
   set( BUILD_SHARED_LIBS OFF CACHE BOOL "Builds shared libs")
+  set(TOOLBRAINSFit ${Slicer_HOME}/${Slicer_CLIMODULES_BIN_DIR}/BRAINSFit) # BRAINSFit built in cli modules dir # Slicer_CLIMODULES_BIN_DIR is a relative path
+  set(TOOLunu ${Teem_DIR}/bin/unu) # Teem_DIR set when find_package(Slicer) in SlicerConfig.cmake 
+  set( TOOLDTIAtlasBuilderLauncher ${CMAKE_CURRENT_BINARY_DIR}/${innerproj}-install/bin/DTIAtlasBuilderLauncher) # Build by this project if DTIAtlasBuilder is an extension
 else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 
   option( FORCE_BUILD_ON_MAC_OR_WIN "Force Building on Known failing platforms" OFF )
   if(NOT FORCE_BUILD_ON_MAC_OR_WIN AND ( APPLE OR WIN32 ) ) # If not Slicer ext, not compile because will fail at run time
     message(FATAL_ERROR "DTIAtlasBuilder has known issues and will not run on Mac or Windows\nSet -DFORCE_BUILD_ON_MAC_OR_WIN:BOOL=ON to override")
   endif()
-
-  set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 
 endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 
@@ -117,15 +124,14 @@ list( APPEND COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES
 
 #===================================================================================
 # Search needed libraries and packages for DTIAtlasBuilder : ITK_DIR GenerateCLP_DIR ModuleDescriptionParser_DIR TCLAP_DIR QT_QMAKE_EXECUTABLE
-if(NOT COMPILE_PACKAGE) # ITK and SlicerExecutionModel (GenerateCLP) are recompiled in the package
+if(NOT COMPILE_PACKAGE OR DTIAtlasBuilder_BUILD_SLICER_EXTENSION ) # ITK and SlicerExecutionModel (GenerateCLP) are recompiled in the package
+  find_package(SlicerExecutionModel REQUIRED)
+  include(${SlicerExecutionModel_USE_FILE})
+  include(${GenerateCLP_USE_FILE})
 
   find_package(ITK REQUIRED)
-  include(${ITK_USE_FILE}) # creates ITK_DIR
-
-  find_package(GenerateCLP REQUIRED)
-  include(${GenerateCLP_USE_FILE}) # creates GenerateCLP_DIR
-
-endif(NOT COMPILE_PACKAGE)
+  include(${ITK_USE_FILE})
+endif()
 
 find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
 include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
@@ -139,7 +145,7 @@ set( ExtProjList # External packages to compile
   BRAINS # BRAINSFit, BRAINSDemonWarp
   ANTS # ANTS, WarpImageMultiTransform, WarpTensorImageMultiTransform
   ResampleDTI # ResampleDTIlogEuclidean
-  DTIReg # DTI-Reg
+  DTI-Reg # DTI-Reg
   teem # unu
   MriWatcher # MriWatcher
   NIRALUtilities # ImageMath, CropDTI
@@ -152,15 +158,13 @@ set( ToolsList # Needed tools -> to hide unuseful TOOL* variables
   BRAINSDemonWarp
   ANTS
   WarpImageMultiTransform
-  WarpTensorImageMultiTransform
   ResampleDTIlogEuclidean
   DTI-Reg
-  DTI-Reg_Scalar_ANTS.bms # doesn't exist anymore in the new DTI-Reg version
-  DTI-Reg_Scalar_BRAINS.bms
   MriWatcher
   ImageMath
   CropDTI
   unu
+  ITKTransformTools
   )
 if(COMPILE_PACKAGE)
 
@@ -174,12 +178,12 @@ if(COMPILE_PACKAGE)
 
   else() # Slicer extension -> recompile only tools that are not in Slicer + not MriWatcher
 
-   foreach( tool BRAINS teem MriWatcher ) # Already in Slicer -> not recompiled # MriWatcher needs GLUT so disable if Slicer Extension because glut not necesseraly installed
+   foreach( tool DTI-Reg ANTS ResampleDTI dtiprocessTK BRAINS teem MriWatcher ) # Already in Slicer or independent extension -> not recompiled # MriWatcher needs GLUT so disable if Slicer Extension because glut not necesseraly installed
       set( COMPILE_EXTERNAL_${tool} OFF CACHE BOOL "Compile external ${tool}" )
       mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
     endforeach()
 
-    foreach( tool dtiprocessTK AtlasWerks ANTS ResampleDTI DTIReg NIRALUtilities ) # Not in Slicer -> recompile
+    foreach( tool AtlasWerks NIRALUtilities ) # Not in Slicer -> recompile
       set( COMPILE_EXTERNAL_${tool} ON CACHE BOOL "Compile external ${tool}" )
       mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
     endforeach()
@@ -188,7 +192,7 @@ if(COMPILE_PACKAGE)
 #      set( COMPILE_EXTERNAL_teem ON CACHE BOOL "Compile external teem" FORCE)
     endif(APPLE)
 
-    if(WIN32 OR APPLE) # DTIAB not working on Windows/Mac so only commpile DTI-Reg and ResampleDTI (cli modules) + needed tools for DTIReg: ANTS and dtiprocess
+    if(WIN32 OR APPLE) # DTIAB not working on Windows/Mac so only compile DTIAtlasBuilder's GUI
       set( COMPILE_EXTERNAL_AtlasWerks OFF CACHE BOOL "Compile external AtlasWerks" FORCE)
       set( COMPILE_EXTERNAL_NIRALUtilities OFF CACHE BOOL "Compile external NIRALUtilities" FORCE)
     endif()
@@ -197,12 +201,6 @@ if(COMPILE_PACKAGE)
 
   # File containing add_external for all tools
   include( ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/FindExternalTools.cmake ) # Go execute the given cmake script, and get back into this script when done
-
-  # Update the paths to the program in the configuration file, and copy it to the executable directory
-  if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION ) # If Slicer Extension, compiled and executed not on same system so Config file useless
-    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilderSoftConfig.txt ) # configure and copy with (tool)Path
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilderSoftConfig.txt DESTINATION ${INSTALL_DIR}) # will create the install folder if doesn't exist and copy the file in it at install step
-  endif( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 
 else(COMPILE_PACKAGE) # Hide unuseful variables
   foreach( proj ${ExtProjList})
@@ -218,59 +216,94 @@ else(COMPILE_PACKAGE) # Hide unuseful variables
   endforeach()
 endif(COMPILE_PACKAGE)
 
-
-if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-  set( ITK_DIR_Slicer ${ITK_DIR} )
-  set( GenerateCLP_DIR_Slicer ${GenerateCLP_DIR} )
-endif()
-
 #======================================================================================
-ExternalProject_Add(DTIAtlasBuilder # DTIAtlasBuilder added as Externalproject in case of SlicerExecutionModel recompiled because needs it
+
+ExternalProject_Add(${innerproj} # DTIAtlasBuilder added as Externalproject in case of SlicerExecutionModel recompiled because needs it
   DOWNLOAD_COMMAND ""
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-  BINARY_DIR DTIAtlasBuilder-build
+  BINARY_DIR ${innerproj}-build
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
     -DInnerBuildCMakeLists:BOOL=ON
     ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
     -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
-    -DITK_DIR:PATH=${ITK_DIR_Slicer}
-    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR_Slicer}
+    -DITK_DIR:PATH=${ITK_DIR}
+    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
     -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
-    -DLIBRARY_OUTPUT_PATH:PATH=${LIBRARY_OUTPUT_PATH}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${innerproj}-install
     # Installation step
-    -DINSTALL_DIR:PATH=${INSTALL_DIR}
-    -DNOCLI_INSTALL_DIR:PATH=${NOCLI_INSTALL_DIR}
-    -DCOMPILE_EXTERNAL_dtiprocessTK:BOOL=${COMPILE_EXTERNAL_dtiprocessTK}
-    -DCOMPILE_EXTERNAL_AtlasWerks:BOOL=${COMPILE_EXTERNAL_AtlasWerks}
-    -DCOMPILE_EXTERNAL_BRAINS:BOOL=${COMPILE_EXTERNAL_BRAINS}
-    -DCOMPILE_EXTERNAL_ANTS:BOOL=${COMPILE_EXTERNAL_ANTS}
-    -DCOMPILE_EXTERNAL_ResampleDTI:BOOL=${COMPILE_EXTERNAL_ResampleDTI}
-    -DCOMPILE_EXTERNAL_DTIReg:BOOL=${COMPILE_EXTERNAL_DTIReg}
-    -DCOMPILE_EXTERNAL_teem:BOOL=${COMPILE_EXTERNAL_teem}
-    -DCOMPILE_EXTERNAL_MriWatcher:BOOL=${COMPILE_EXTERNAL_MriWatcher}
-    -DCOMPILE_EXTERNAL_NIRALUtilities:BOOL=${COMPILE_EXTERNAL_NIRALUtilities}
     # Slicer extension
     -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION:BOOL=${DTIAtlasBuilder_BUILD_SLICER_EXTENSION}
     -DSlicer_DIR:PATH=${Slicer_DIR}
-    -DCLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
-    -DCLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
-    -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
-    -DEXTENSION_SOURCE_DIR:PATH=${EXTENSION_SOURCE_DIR}
     -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
-    -DEXTENSION_HOMEPAGE:STRING=${EXTENSION_HOMEPAGE}
-    -DEXTENSION_CATEGORY:STRING=${EXTENSION_CATEGORY}
-    -DEXTENSION_CONTRIBUTORS:STRING=${EXTENSION_CONTRIBUTORS}
-    -DEXTENSION_DESCRIPTION:STRING=${EXTENSION_DESCRIPTION}
-    -DEXTENSION_ICONURL:STRING=${EXTENSION_ICONURL}
-    -DEXTENSION_SCREENSHOTURLS:STRING=${EXTENSION_SCREENSHOTURLS}
-    -DEXTENSION_STATUS:STRING=${EXTENSION_STATUS}
-    -DEXTENSION_DEPENDS:STRING=${EXTENSION_DEPENDS}
-    -DEXTENSION_BUILD_SUBDIRECTORY:STRING=${EXTENSION_BUILD_SUBDIRECTORY}
-    -DMIDAS_PACKAGE_EMAIL:STRING=${MIDAS_PACKAGE_EMAIL}
-    -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
-  INSTALL_COMMAND ""
+    # For the tests
+    -DTOOLImageMath:PATH=${TOOLImageMath}
+    -DTOOLResampleDTIlogEuclidean:PATH=${TOOLResampleDTIlogEuclidean}
+    -DTOOLCropDTI:PATH=${TOOLCropDTI}
+    -DTOOLdtiprocess:PATH=${TOOLdtiprocess}
+    -DTOOLBRAINSFit:PATH=${TOOLBRAINSFit}
+    -DTOOLGreedyAtlas:PATH=${TOOLGreedyAtlas}
+    -DTOOLdtiaverage:PATH=${TOOLdtiaverage}
+    -DTOOLDTI-Reg:PATH=${TOOLDTI-Reg}
+    -DTOOLunu:PATH=${TOOLunu}
+    -DTOOLMriWatcher:PATH=${TOOLMriWatcher}
   DEPENDS ${ITK_DEPEND} ${DTIAtlasBuilderExternalToolsDependencies} # DTIAtlasBuilderExternalToolsDependencies contains the names of all the recompiled softwares so DTIAB is compiled last (for install)
 )
+set( TOOLDTIAtlasBuilder ${CMAKE_CURRENT_BINARY_DIR}/${innerproj}-install/bin/DTIAtlasBuilder )
+
+if(BUILD_TESTING)
+  include(CTest)
+  if( WIN32 )
+    set( EXT .exe )
+  endif()
+  set(TestingSRCdirectory ${CMAKE_CURRENT_SOURCE_DIR}/Testing)
+  set(TestingBINdirectory ${CMAKE_CURRENT_BINARY_DIR}/Testing)
+  set(TestDataFolder ${CMAKE_CURRENT_SOURCE_DIR}/Data/Testing)
+  set( PACKAGING_TESTS DTIAtlasBuilderGUITestLabels DTIAtlasBuilderTest DTIAtlasBuilderGUITest DTIAtlasBuilder)
+  foreach( VAR ${PACKAGING_TESTS})
+    add_executable(${VAR} IMPORTED)
+    set_property(TARGET ${VAR} PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${innerproj}-install/bin/${VAR}${EXT})
+  endforeach()
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Testing/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Testing/DTIAtlasBuilderSoftConfig.txt)
+  add_subdirectory(Testing)
+endif()
+
+set( PACKAGING_HIDDEN_CLI DTIAtlasBuilder)
+if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  set( PACKAGING_CLI DTIAtlasBuilderLauncher)
+  set( PACKAGING_NO_CLI CropDTI ImageMath GreedyAtlas )
+  set( CLI_FOLDER ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
+  set( HIDDEN_CLI_FOLDER ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
+  set( NO_CLI_FOLDER ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin )
+else()
+  set( PACKAGING_NO_CLI CropDTI MriWatcher unu ImageMath GreedyAtlas ANTS WarpImageMultiTransform ITKTransformTools)
+  set( PACKAGING_CLI ResampleDTIlogEuclidean dtiprocess BRAINSFit BRAINSDemonWarp dtiaverage DTI-Reg)
+  set( CLI_FOLDER bin)
+  set( HIDDEN_CLI_FOLDER ${CLI_FOLDER} )
+  set( NO_CLI_FOLDER ${CLI_FOLDER} )
+  # Update the paths to the program in the configuration file, and copy it to the executable directory
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilderSoftConfig.txt ) # configure and copy with (tool)Path
+endif()
+
+foreach(VAR ${PACKAGING_CLI})
+  if( TOOL${VAR} )
+    install(PROGRAMS ${TOOL${VAR}} DESTINATION ${CLI_FOLDER})
+  endif()
+endforeach()
+foreach(VAR ${PACKAGING_HIDDEN_CLI})
+  if( TOOL${VAR} )
+    install(PROGRAMS ${TOOL${VAR}} DESTINATION ${HIDDEN_CLI_FOLDER} )
+  endif()
+endforeach()
+foreach(VAR ${PACKAGING_NO_CLI})
+  if( TOOL${VAR} )
+    install(PROGRAMS ${TOOL${VAR}} DESTINATION ${NO_CLI_FOLDER} )
+  endif()
+endforeach()
+
+if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+  include(${Slicer_EXTENSION_CPACK})
+endif()
 

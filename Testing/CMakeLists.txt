@@ -15,31 +15,17 @@ if(NOT WIN32 AND NOT APPLE) # DTIAtlasBuilder pipeline does not work on Win and 
   # Compile the program that will be run to : run pipeline and then compare output with reference
 
   set(BUILD_SHARED_LIBS OFF) # for the preprocessor variable "BUILD_SHARED_LIBS" on Windows
-
-  if(ITK_VERSION_MAJOR EQUAL 3)
-    add_executable(DTIAtlasBuilderTest DTIAtlasBuilderTestITKv${ITK_VERSION_MAJOR}.cxx) # This executable will run pipeline and then compare output with reference
-    target_link_libraries(DTIAtlasBuilderTest DTIAtlasBuilderLib)
+  if( InnerBuildCMakeLists )
+    add_executable(DTIAtlasBuilderTest DTIAtlasBuilderTestITKv3.cxx) # This executable will run pipeline and then compare output with reference
+    target_link_libraries(DTIAtlasBuilderTest DTIAtlasBuilderLib ${ITK_LIBRARIES})
     set_target_properties(DTIAtlasBuilderTest PROPERTIES LABELS DTIAtlasBuilder)
     if(BUILD_SHARED_LIBS)
       set_target_properties(DTIAtlasBuilderTest PROPERTIES COMPILE_FLAGS "-DBUILD_SHARED_LIBS") # definition of the variable for c++ preprocessor
     endif(BUILD_SHARED_LIBS)
-    set(NoGUITestCommand ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:DTIAtlasBuilderTest>) # Slicer_LAUNCH_COMMAND will launch the Slicer environment # TARGET_FILE so path not given directly = no need to be known
-    set(NameOfMain ModuleEntryPoint)
-  elseif(ITK_VERSION_MAJOR EQUAL 4) # BRAINS/BRAINSCommonLib/BuildScripts/CMakeBRAINS3BuildMacros.cmake : macro MakeTestDriverFromSEMTool
-    set(CMAKE_TESTDRIVER_BEFORE_TESTMAIN "#include \"itkTestDriverBeforeTest.inc\"")
-    set(CMAKE_TESTDRIVER_AFTER_TESTMAIN "#include \"itkTestDriverAfterTest.inc\"")
-    create_test_sourcelist(DTIAtlasBuilder DTIAtlasBuilderTestDriver.cxx DTIAtlasBuilderTestITKv${ITK_VERSION_MAJOR}.cxx # Creates DTIAtlasBuilderTestDriver.cxx (= test source) into bin/Testing
-      EXTRA_INCLUDE itkTestDriverIncludeRequiredIOFactories.h
-      FUNCTION  ProcessArgumentsAndRegisterRequiredFactories
-      )
-    add_executable(DTIAtlasBuilderTestDriver DTIAtlasBuilderTestDriver.cxx DTIAtlasBuilderTestITKv${ITK_VERSION_MAJOR}.cxx)
-    target_link_libraries(DTIAtlasBuilderTestDriver DTIAtlasBuilderLib ${ITKTestKernel_LIBRARIES}) # ITKTestKernel_LIBRARIES only defined in ITKv4
-    if(BUILD_SHARED_LIBS)
-      set_target_properties(DTIAtlasBuilderTestDriver PROPERTIES COMPILE_FLAGS "-DBUILD_SHARED_LIBS") # definition of the variable for c++ preprocessor
-    endif(BUILD_SHARED_LIBS)
-    set(NoGUITestCommand ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:DTIAtlasBuilderTestDriver>) # Slicer_LAUNCH_COMMAND will launch the Slicer environment # TARGET_FILE so path not given directly = no need to be known
-    set(NameOfMain DTIAtlasBuilderTestITKv4)
+    install(TARGETS DTIAtlasBuilderTest DESTINATION bin)
   endif()
+  set(NoGUITestCommand ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:DTIAtlasBuilderTest>) # Slicer_LAUNCH_COMMAND will launch the Slicer environment # TARGET_FILE so path not given directly = no need to be known
+  set(NameOfMain ModuleEntryPoint)
 
   set(CompareParametersImageMathFA
     --compareIntensityTolerance 200 # pixel OK if in range [value-200;value+200] => FA between 0 and 10000 (ImageMath)
@@ -112,17 +98,23 @@ if(NOT WIN32 AND NOT APPLE) # DTIAtlasBuilder pipeline does not work on Win and 
 endif(NOT WIN32 AND NOT APPLE)
 
 ## Test 6 : Open the GUI for 10 sec and close it
-add_executable(DTIAtlasBuilderGUITest DTIAtlasBuilderGUITest.cxx)
-target_link_libraries(DTIAtlasBuilderGUITest DTIAtlasBuilderLib)
-set_target_properties(DTIAtlasBuilderGUITest PROPERTIES LABELS DTIAtlasBuilder)
+if( InnerBuildCMakeLists )
+  add_executable(DTIAtlasBuilderGUITest DTIAtlasBuilderGUITest.cxx)
+  target_link_libraries(DTIAtlasBuilderGUITest DTIAtlasBuilderLib)
+  set_target_properties(DTIAtlasBuilderGUITest PROPERTIES LABELS DTIAtlasBuilder)
+  install(TARGETS DTIAtlasBuilderGUITest DESTINATION bin )
+endif()
 add_test(NAME TestGUI COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:DTIAtlasBuilderGUITest> ${CMAKE_CURRENT_BINARY_DIR}/bin/DTIAtlasBuilderSoftConfig.txt) # The config file will be read as argv[1] (no GenerateCLP)
 # Slicer_LAUNCH_COMMAND will launch the Slicer environment # TARGET_FILE so path not given directly = no need to be known
 
 
 ## Test 7 : Open the GUI for 10 sec with a param file, check the content of the QLineEdit and close it
-add_executable(DTIAtlasBuilderGUITestLabels DTIAtlasBuilderGUITestLabels.cxx)
-target_link_libraries(DTIAtlasBuilderGUITestLabels DTIAtlasBuilderLib)
-set_target_properties(DTIAtlasBuilderGUITestLabels PROPERTIES LABELS DTIAtlasBuilder)
+if( InnerBuildCMakeLists )
+  add_executable(DTIAtlasBuilderGUITestLabels DTIAtlasBuilderGUITestLabels.cxx)
+  target_link_libraries(DTIAtlasBuilderGUITestLabels DTIAtlasBuilderLib)
+  set_target_properties(DTIAtlasBuilderGUITestLabels PROPERTIES LABELS DTIAtlasBuilder)
+  install(TARGETS DTIAtlasBuilderGUITestLabels DESTINATION bin)
+endif()
 add_test(NAME TestGUILabels COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:DTIAtlasBuilderGUITestLabels> ${TestingBINdirectory}/TestGUIparametersBRAINS.txt ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilderSoftConfig.txt ${TestingBINdirectory})
 # The parameter file will be read as argv[1] (no GenerateCLP) and config file argv[2] # argv[3] is the folder to check to content of LineEdit
 

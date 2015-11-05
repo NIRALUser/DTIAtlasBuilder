@@ -1,10 +1,10 @@
 # Find external tools
 
 #===== Macro set paths ===============================================
-macro( SetPathsRecompile )
+macro( SetPathsRecompile INSTALL_PATH)
   foreach( tool ${Tools} )
  #   set(InstallPath ${CMAKE_INSTALL_PREFIX}) # Non cache variable so its value can change and be updated
-    set(TOOL${tool} ${CMAKE_INSTALL_PREFIX}/${tool} CACHE STRING "Path to the ${tool} executable")
+    set(TOOL${tool} ${INSTALL_PATH}/bin/${tool} CACHE STRING "Path to the ${tool} executable" FORCE)
     get_filename_component(${tool}Path ${TOOL${tool}} REALPATH ABSOLUTE) # Set the real path in the config file
 #    set(${tool}Path ${TOOL${tool}}) # ${proj}Path =  variable changed in the DTIAB config file (non cache)
     mark_as_advanced(CLEAR TOOL${tool}) # Show the option in the gui
@@ -40,25 +40,24 @@ endmacro()
 #===== Macro add tool ===============================================
  # if SourceCodeArgs or CMAKE_ExtraARGS passed to the macro as arguments, only the first word is used (each element of the list is taken as ONE argument) => use as "global variables"
 macro( AddToolMacro Proj )
-
+  set( INSTALL_PATH ${CMAKE_CURRENT_BINARY_DIR}/${Proj}-install)
   # Update and test tools
   if(COMPILE_EXTERNAL_${Proj}) # If need to recompile, just set the paths here
-    SetPathsRecompile() # Uses the list "Tools"
+    SetPathsRecompile(${INSTALL_PATH}) # Uses the list "Tools"
   else(COMPILE_EXTERNAL_${Proj}) # If no need to recompile, search the tools on the system and need to recompile if some tool not found
 
     # search the tools on the system and warning if not found
     # If SlicerExtension, OFF packages are already in Slicer but can be not found -> don't recompile
     if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
       FindToolsMacro( ${Proj} )
+      # If some program not found, reset all tools to the recompiled path and recompile the whole package
+      if(NOT AllToolsFound) # AllToolsFound set or reset in FindToolsMacro()
+        set( COMPILE_EXTERNAL_${Proj} ON CACHE BOOL "" FORCE)
+        SetPathsRecompile(${INSTALL_PATH}) # Uses the list "Tools"
+      else()
+        SetPathsSystem() # Uses the list "Tools"
+      endif()
     endif( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-
-    # If some program not found, reset all tools to the recompiled path and recompile the whole package
-    if(NOT AllToolsFound) # AllToolsFound set or reset in FindToolsMacro()
-#      set( COMPILE_EXTERNAL_${Proj} ON CACHE BOOL "" FORCE)
-      SetPathsRecompile() # Uses the list "Tools"
-    else()
-      SetPathsSystem() # Uses the list "Tools"
-    endif()
 
   endif(COMPILE_EXTERNAL_${Proj})
   # After the main if() because we could need to recompile after not having found all tools on system
@@ -75,7 +74,7 @@ macro( AddToolMacro Proj )
 #       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
 #       -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
 #       -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-build/bin
-       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/${Proj}-install
+       -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_PATH}
        ${CMAKE_ExtraARGS}
      #INSTALL_COMMAND "" # So the install step of the external project is not done
     )
@@ -306,13 +305,12 @@ endif(RecompileSEM)
 
 ### For Slicer Extension:
 ## CLI Modules # CLI= (pgm) --xml exists # So the cli_modules go to Extensions/DTIAtlaBuilder/lib/Slicer4.2/cli_module
-# dtiprocessTK
-# ResampleDTI
-# DTIReg
-## No CLI Modules # So the non cli_modules don't go to Extensions/DTIAtlaBuilder/lib/Slicer4.2/cli_module but to Extensions/DTIAtlaBuilder/bin
+# dtiprocessTK -> extension
+# ResampleDTIlogEuclidean -> extension
+# DTI-Reg -> extension (# ANTS)
+# BRAINS is a cli_module but needs to be in non cli_module to prevent conflict with actual Slicer's BRAINS
+## No CLI Modules # So the non cli_modules don't go to Extensions/DTIAtlaBuilder/lib/SlicerX.X/cli_module
 # AtlasWerks
-# BRAINS # BRAINS is a cli_module but needs to be in non cli_module to prevent conflict with actual Slicer's BRAINS
-# ANTS
 # MriWatcher
 # NIRALUtilities
 # teem # teem is in Slicer but not a cli_module
@@ -320,30 +318,24 @@ endif(RecompileSEM)
 # ===== dtiprocessTK ==============================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git
-  GIT_TAG b4957939daa58d10ee65a0038a7c223aa15bd0a9
+  GIT_TAG 8205274f37ddbdffceb3a9b71992b2151c4259c8
   )
-if( MSVC )
-  set( INSTALL_CONFIG DTIProcess-build/DTIProcess.sln /Build Release /Project INSTALL.vcproj )
-else()
-  set( INSTALL_CONFIG -C DTIProcess-build install )
-endif()
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
-  -DUSE_SYSTEM_ITK:BOOL=ON
+#  -DUSE_SYSTEM_ITK:BOOL=ON
   -DVTK_DIR:PATH=${VTK_DIR}
-  -DUSE_SYSTEM_VTK:BOOL=ON
-  -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+#  -DUSE_SYSTEM_VTK:BOOL=ON
+#  -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=OFF
   -DEXECUTABLES_ONLY:BOOL=ON
-  -DDTIProcess_SUPERBUILD:BOOL=ON
+  -DDTIProcess_SUPERBUILD:BOOL=OFF
   -DBUILD_PolyDataTransform:BOOL=OFF
   -DBUILD_PolyDataMerge:BOOL=OFF
   -DBUILD_CropDTI:BOOL=OFF
   -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
-  -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/dtiprocessTK-install/bin
-  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
+  -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=bin
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
   )
 set( Tools
@@ -386,7 +378,7 @@ set( CMAKE_ExtraARGS
   #We only care about GreedyAtlas so we only build this target.
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} GreedyAtlas
   #There is no install in AtlasWerks. We only care about GreedyAtlas so we just copy it. We only do that on Linux since AtlasWerks does not work on the other plateform
-  INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/ && ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-build/Applications/Greedy/GreedyAtlas ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder-build/AtlasWerks-install/bin/
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-install/bin/ && ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-build/Applications/Greedy/GreedyAtlas ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-install/bin/
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} FFTW CLAPACK # Not CMake Arg -> directly after CMakeArg in ExternalProject_Add()
   )
 set( Tools
@@ -461,43 +453,43 @@ set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/stnava/ANTs.git"
   GIT_TAG 4d37532aa6a73b72deedf2663a0d002b267c464f
   )
-if( MSVC )
-  set( INSTALL_CONFIG ANTS-build/ANTS.sln /Build Release /Project INSTALL.vcproj )
-else()
-  set( INSTALL_CONFIG -C ANTS-build install )
-endif()
+#if( MSVC )
+#  set( INSTALL_CONFIG ANTS-build/ANTS.sln /Build Release /Project INSTALL.vcproj )
+#else()
+#  set( INSTALL_CONFIG -C ANTS-build install )
+#endif()
 set( CMAKE_ExtraARGS
   -DBUILD_SHARED_LIBS:BOOL=OFF
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_EXAMPLES:BOOL=OFF
   -DBUILD_EXTERNAL_APPLICATIONS:BOOL=OFF
-  -DANTS_SUPERBUILD:BOOL=ON
-  -DSuperBuild_ANTS_USE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
-  -DUSE_SYSTEM_ITK:BOOL=ON
+#  -DANTS_SUPERBUILD:BOOL=ON
+  -DANTS_SUPERBUILD:BOOL=OFF
+#  -DSuperBuild_ANTS_USE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
+#  -DUSE_SYSTEM_ITK:BOOL=ON
   -DITK_DIR:PATH=${ITK_DIR}
   -DITK_VERSION_MAJOR:STRING=4
-  -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+#  -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
   -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
+#  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} ${INSTALL_CONFIG}
   DEPENDS ${ITK_DEPEND} ${SlicerExecutionModel_DEPEND}
   )
 set( Tools
   ANTS
   WarpImageMultiTransform
-  WarpTensorImageMultiTransform
   )
 AddToolMacro( ANTS ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
 
 # ===== ResampleDTIlogEuclidean =====================================================
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/ResampleDTIlogEuclidean.git"
-  GIT_TAG 59271e41fedcd45e7b73004c0c7d303dc80302d3 
+  GIT_TAG 3842355f700fddad40d97b985d9aac42d21ea42b
   )
 set( CMAKE_ExtraARGS
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_GENERATECLP:BOOL=OFF
   -DITK_DIR:PATH=${ITK_DIR}
-  -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+  -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
   DEPENDS ${ITK_DEPEND} ${SlicerExecutionModel_DEPEND}
   )
 set( Tools
@@ -540,7 +532,7 @@ AddToolMacro( MriWatcher ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_Ex
 # ===== NIRALUtilities ===================================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/niral_utilities.git
-  GIT_TAG 132b3e996fa880117dfeb529339a17cf06db45f5
+  GIT_TAG 0e4a5b676e3c95eec9adc771e4fc9ab61167fc63
   )
 set( CMAKE_ExtraARGS
   -DCOMPILE_CONVERTITKFORMATS:BOOL=OFF
@@ -575,19 +567,18 @@ endif()
 # ===== DTI-Reg =====================================================================
 set( SourceCodeArgs
   GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTI-Reg.git
-  GIT_TAG 2a1e26cd5fa01cefb890242ed290449399a51798
+  GIT_TAG 3161943f6b6f860d946f926330f64de62d9ee07b
   )
 set( CMAKE_ExtraARGS
-  -DANTSTOOL:PATH=${ANTSPath}
-  -DBRAINSDemonWarpTOOL:PATH=${BRAINSDemonWarpPath}
-  -DBRAINSFitTOOL:PATH=${BRAINSFitPath}
+  -DANTSTOOL:PATH=${TOOLANTS}
+  -DBRAINSDemonWarpTOOL:PATH=${TOOLBRAINSDemonWarp}
+  -DBRAINSFitTOOL:PATH=${TOOLBRAINSFit}
   -DCOMPILE_EXTERNAL_dtiprocess:BOOL=OFF
   -DCOMPILE_EXTERNAL_ITKTransformTools:BOOL=ON
   -DBUILD_SHARED_LIBS:BOOL=OFF
-  -DResampleDTITOOL:PATH=${ResampleDTIlogEuclideanPath}
-  -DWARPIMAGEMULTITRANSFORMTOOL:PATH=${WarpImageMultiTransformPath}
-  -DWARPTENSORIMAGEMULTITRANSFORMTOOL:PATH=${WarpTensorImageMultiTransformPath}
-  -DdtiprocessTOOL:PATH=${dtiprocessPath}
+  -DResampleDTITOOL:PATH=${TOOLResampleDTIlogEuclidean}
+  -DWARPIMAGEMULTITRANSFORMTOOL:PATH=${TOOLWarpImageMultiTransform}
+  -DdtiprocessTOOL:PATH=${TOOLdtiprocess}
   -DUSE_GIT_PROTOCOL_SuperBuild_DTIReg:STRING=${USE_GIT_PROTOCOL}
   ${Slicer_CLIMODULES_BIN_DIR_OPTION}
   #To reduce path length, we put everything in current binary directory
@@ -601,8 +592,12 @@ list( APPEND CMAKE_ExtraARGS
       DEPENDS ${ITK_DEPEND}
     )
 endif()
+list(APPEND CMAKE_ExtraARGS
+     INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "DTI-Reg - No install"
+    )
 set( Tools
   DTI-Reg
+  ITKTransformTools
   )
-AddToolMacro( DTIReg ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
+AddToolMacro( DTI-Reg ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_ExtraARGS Tools
 

@@ -62,9 +62,6 @@ to display a warning if a new compute is done afterwards with a newer version
 #define Platform "linux"
 #endif
 
-// DTIAtlasBuilder_BUILD_SLICER_EXTENSION is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
-#define SlicerPythonExec "${SlicerPythonExec}" // configured in DTIAtlasBuilder.cmake
-
 //We want to search the extension path first, and then we look for the tools on the system
 std::string FindProgram( const char* name , std::vector< std::string > m_FindProgramDTIABExecDirVec )
 {
@@ -3072,22 +3069,18 @@ bool GUI::FindPython()
     // Use the python executable copied from the Slicer build tree (python-build/bin/python or customPython) to the ExternalBin folder
     if((std::string)Platform == "linux" || (std::string)Platform == "mac")
     {
-      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/customPython";
+      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/SlicerPython";
     }
     else if((std::string)Platform == "win")
     {
-      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/python.exe";
+      m_PythonPath = m_DTIABSlicerExtensionExternalBinDir + "/SlicerPython.exe";
     }
 
-    if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // If not here -> Testing: use directly Slicer's python
+    if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // if still not here: use default python
     {
-      m_PythonPath = SlicerPythonExec; // SlicerPythonExec is defined as preprocessor variable with CMake set_target_properties() in DTIAtlasBuilder.cmake
-      if(! itksys::SystemTools::GetPermissions(m_PythonPath.c_str(), ITKmode_X_OK) ) // if still not here: use default python
-      {
-        m_PythonPath=""; // If Slicer Extension and testing, ExternalBin folder does not exist so just leave it // itksys::SystemTools::GetPermissions() returns true if ok, -1 if not ok
-      }
-
+      m_PythonPath=""; // If Slicer Extension and testing, ExternalBin folder does not exist so just leave it // itksys::SystemTools::GetPermissions() returns true if ok, -1 if not ok
     }
+
   } // if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION)
 
   if( m_PythonPath.empty() ) // Find Python version used // If not slicer ext -> empty, if slicer ext and test and not found -> empty
@@ -3108,6 +3101,7 @@ bool GUI::FindPython()
   // Check python version (need > 2.5)
   QProcess * Process = new QProcess;
   std::string program = m_PythonPath + " --version";
+  std::cout<<"| Python path: " << m_PythonPath << std::endl ;
   std::cout<<"| Checking the version of python...";
   Process->setProcessChannelMode(QProcess::MergedChannels);
   Process->start( program.c_str(), QIODevice::ReadWrite  );
