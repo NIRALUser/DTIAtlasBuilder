@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+DTIAtlasBuilder.cmakecmake_minimum_required(VERSION 2.8)
 CMAKE_POLICY(VERSION 2.8)
 
 #======================================================================================
@@ -13,8 +13,8 @@ QT4_WRAP_UI(UI_FILES GUIwindow.ui)
 
 #======================================================================================
 
-find_package(GenerateCLP REQUIRED)
-include(${GenerateCLP_USE_FILE})
+#find_package(GenerateCLP REQUIRED)
+#include(${GenerateCLP_USE_FILE})
 
 #======================================================================================
 # As the external project gives this CMakeLists the paths to the needed libraries (*_DIR), find_package will just use the existing *_DIR
@@ -68,9 +68,9 @@ else() # Unix
   string(REGEX REPLACE "(..)/(..)/(....).*" "\\1/\\2/\\3" TODAY ${TODAY}) # to remove the end of line
 endif()
 
-configure_file(DTIAtlasBuilder.xml.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml)
+#configure_file(DTIAtlasBuilder.xml.in ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml)
 # xml info in GUI
-file(READ ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml var)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilder.xml var)
 
 string(REGEX MATCH "<version>.*</version>" ext "${var}")
 string(REPLACE "<version>" "" version_number ${ext} )
@@ -79,16 +79,34 @@ string(REPLACE "</version>" "" version_number ${version_number})
 ADD_DEFINITIONS(-DDTIAtlasBuilder_VERSION="${version_number}")
 
 # DTIAtlasBuilder target
-GENERATECLP(DTIABsources ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml) # include the GCLP file to the project
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  add_executable( DTIAtlasBuilderLauncher Launcher.cxx ${DTIABsources} )
-  install( TARGETS DTIAtlasBuilderLauncher DESTINATION bin )
-endif()
-list( APPEND DTIABsources DTIAtlasBuilder.cxx GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
-add_executable(DTIAtlasBuilder ${DTIABsources})  # add the files contained by "DTIABsources" to the project
+#GENERATECLP(DTIABsources ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasBuilder.xml) # include the GCLP file to the project
+#if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  #add_executable( DTIAtlasBuilderLauncher Launcher.cxx ${DTIABsources} )
+  #install( TARGETS DTIAtlasBuilderLauncher DESTINATION bin )
+#endif()
+#list( APPEND DTIABsources DTIAtlasBuilder.cxx GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
+#add_executable(DTIAtlasBuilder ${DTIABsources})  # add the files contained by "DTIABsources" to the project
+#target_link_libraries(DTIAtlasBuilder ${QT_LIBRARIES} ${ITK_LIBRARIES})
+#install(TARGETS DTIAtlasBuilder DESTINATION bin)
+
+set(DTIABsources GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
+
+SEMMacroBuildCLI(
+    NAME DTIAtlasBuilder
+    EXECUTABLE_ONLY
+    ADDITIONAL_SRCS ${DTIABsources}
+    TARGET_LIBRARIES ${QT_LIBRARIES} ${ITK_LIBRARIES}
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+    INSTALL_RUNTIME_DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+    INSTALL_LIBRARY_DESTINATION ${INSTALL_LIBRARY_DESTINATION}
+    INSTALL_ARCHIVE_DESTINATION ${INSTALL_ARCHIVE_DESTINATION}
+    )
+  export(TARGETS ${LOCAL_NAME} APPEND FILE ${CMAKE_BINARY_DIR}/${PRIMARY_PROJECT_NAME}-exports.cmake)
+
 set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}")# Add preprocessor definitions
-target_link_libraries(DTIAtlasBuilder ${QT_LIBRARIES} ${ITK_LIBRARIES})
-install(TARGETS DTIAtlasBuilder DESTINATION bin)
+
 
 #======================================================================================
 # Testing for DTIAtlasBuilder
@@ -97,7 +115,7 @@ if(BUILD_TESTING)
   set(TestingSRCdirectory ${CMAKE_CURRENT_SOURCE_DIR}/Testing)
   set(TestingBINdirectory ${CMAKE_CURRENT_BINARY_DIR}/Testing)
   set(TestDataFolder ${CMAKE_CURRENT_SOURCE_DIR}/Data/Testing)
-  add_library(DTIAtlasBuilderLib STATIC ${DTIABsources}) # STATIC is also the default
+  #add_library(DTIAtlasBuilderLib STATIC ${DTIABsources}) # STATIC is also the default
   set_target_properties(DTIAtlasBuilderLib PROPERTIES COMPILE_FLAGS "-Dmain=ModuleEntryPoint -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}") # replace the main in DTIAtlasBuilder.cxx by the itkTest function ModuleEntryPoint
   target_link_libraries(DTIAtlasBuilderLib ${QT_LIBRARIES} ${ITK_LIBRARIES})
   set_target_properties(DTIAtlasBuilderLib PROPERTIES LABELS DTIAtlasBuilder)

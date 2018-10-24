@@ -104,55 +104,55 @@ if(COMPILE_EXTERNAL_dtiprocessTK OR COMPILE_EXTERNAL_AtlasWerks OR COMPILE_EXTER
   endif(VTK_FOUND)
 endif()
 
-set(VTK_VERSION_MAJOR 5 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
+#set(VTK_VERSION_MAJOR 5 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
 # Set the possible values of VTK major version for cmake-gui
-set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
-if(NOT "${VTK_VERSION_MAJOR}" STREQUAL "5" AND NOT "${VTK_VERSION_MAJOR}" STREQUAL "6")
-  set(VTK_VERSION_MAJOR 5 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6)." FORCE)
-  message(WARNING "Setting VTK_VERSION_MAJOR to '5' as an valid value was specified.")
-endif()
+#set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
+#if(NOT "${VTK_VERSION_MAJOR}" STREQUAL "5" AND NOT "${VTK_VERSION_MAJOR}" STREQUAL "6")
+#  set(VTK_VERSION_MAJOR 5 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6)." FORCE)
+#  message(WARNING "Setting VTK_VERSION_MAJOR to '5' as an valid value was specified.")
+#endif()
 
-set(USE_VTKv5 ON)
-set(USE_VTKv6 OFF)
-if(${VTK_VERSION_MAJOR} STREQUAL "6")
-  set(USE_VTKv5 OFF)
-  set(USE_VTKv6 ON)
-endif()
+#set(USE_VTKv5 ON)
+#set(USE_VTKv6 OFF)
+#if(${VTK_VERSION_MAJOR} STREQUAL "6")
+#  set(USE_VTKv5 OFF)
+#  set(USE_VTKv6 ON)
+#endif()
 
-if(RecompileVTK) # BRAINSStandAlone/SuperBuild/External_VTK.cmake
-  if(USE_VTKv6)
-    set(VTK_GIT_TAG "v6.1.0")
-    set(VTK_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
-  else()
-    set(VTK_REPOSITORY ${git_protocol}://github.com/BRAINSia/VTK.git)
-    set(VTK_GIT_TAG "FixClangFailure_VTK5.10_release")
-  endif()
-  ExternalProject_Add(VTK
-    GIT_REPOSITORY ${VTK_REPOSITORY}
-    GIT_TAG ${VTK_GIT_TAG}
-    SOURCE_DIR VTK
-    BINARY_DIR VTK-build
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
-      -DBUILD_EXAMPLES:BOOL=OFF
-      -DBUILD_TESTING:BOOL=OFF
-      -DBUILD_SHARED_LIBS:BOOL=OFF
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/VTK-install
-      -DVTK_USE_PARALLEL:BOOL=ON
-      -DVTK_LEGACY_REMOVE:BOOL=OFF
-      -DVTK_WRAP_TCL:BOOL=OFF
-      -DVTK_WRAP_PYTHON:BOOL=${VTK_WRAP_PYTHON}
-      -DVTK_INSTALL_LIB_DIR:PATH=${Slicer_INSTALL_LIB_DIR}
-    )
-    if(USE_VTKv6)
-      set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/cmake/vtk-6.1)
-    else()
-      set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/vtk-5.10)
-    endif()
-    mark_as_advanced(CLEAR VTK_DIR)
-    set(VTK_DEPEND VTK)
-endif(RecompileVTK)
+#if(RecompileVTK) # BRAINSStandAlone/SuperBuild/External_VTK.cmake
+#  if(USE_VTKv6)
+#    set(VTK_GIT_TAG "v6.1.0")
+#    set(VTK_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
+#  else()
+#    set(VTK_REPOSITORY ${git_protocol}://github.com/BRAINSia/VTK.git)
+#    set(VTK_GIT_TAG "FixClangFailure_VTK5.10_release")
+#  endif()
+#  ExternalProject_Add(VTK
+#    GIT_REPOSITORY ${VTK_REPOSITORY}
+#    GIT_TAG ${VTK_GIT_TAG}
+#    SOURCE_DIR VTK
+#    BINARY_DIR VTK-build
+#    CMAKE_GENERATOR ${gen}
+#    CMAKE_ARGS
+#      ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
+#      -DBUILD_EXAMPLES:BOOL=OFF
+#      -DBUILD_TESTING:BOOL=OFF
+#      -DBUILD_SHARED_LIBS:BOOL=OFF
+#      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/VTK-install
+#      -DVTK_USE_PARALLEL:BOOL=ON
+#      -DVTK_LEGACY_REMOVE:BOOL=OFF
+#      -DVTK_WRAP_TCL:BOOL=OFF
+#      -DVTK_WRAP_PYTHON:BOOL=${VTK_WRAP_PYTHON}
+#      -DVTK_INSTALL_LIB_DIR:PATH=${Slicer_INSTALL_LIB_DIR}
+#    )
+#    if(USE_VTKv6)
+#      set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/cmake/vtk-6.1)
+#    else()
+#      set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/VTK-install/lib/vtk-5.10)
+#    endif()
+#    mark_as_advanced(CLEAR VTK_DIR)
+#    set(VTK_DEPEND VTK)
+#endif(RecompileVTK)
 
 # FFTW and CLAPACK for GreedyAtlas
 if(COMPILE_EXTERNAL_AtlasWerks) # FFTW D + F build one on(after) another
