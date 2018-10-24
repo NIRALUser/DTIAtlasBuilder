@@ -303,7 +303,7 @@ endif()
 # endforeach()
 
 if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${innerproj}-install/bin/DTIAtlasBuilder DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR}/DTIAtlasBuilder-inner-build;${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()
 

@@ -1,17 +1,25 @@
 cmake_minimum_required(VERSION 2.8)
 CMAKE_POLICY(VERSION 2.8)
-
-if(NOT SETIFEMPTY)
-macro(SETIFEMPTY)
-  set(KEY ${ARGV0})
-  set(VALUE ${ARGV1})
-  if(NOT ${KEY})
-    set(${KEY} ${VALUE})
-  endif(NOT ${KEY})
-endmacro(SETIFEMPTY KEY VALUE)
-endif(NOT SETIFEMPTY)
 #======================================================================================
 # Generation of moc_GUI.cxx does not need all Slicer libs so do it first to avoid processing long cmd line with all libs
+
+set(INSTALL_RUNTIME_DESTINATION bin)
+set(INSTALL_LIBRARY_DESTINATION bin)
+set(INSTALL_ARCHIVE_DESTINATION lib/static)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+  
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  
+  SET(INSTALL_RUNTIME_DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR})
+  SET(INSTALL_LIBRARY_DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR})
+  SET(INSTALL_ARCHIVE_DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR})
+  
+endif()
 
 find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
@@ -99,13 +107,6 @@ ADD_DEFINITIONS(-DDTIAtlasBuilder_VERSION="${version_number}")
 #install(TARGETS DTIAtlasBuilder DESTINATION bin)
 
 set(DTIABsources GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
-
-SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
-SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
-SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
-SETIFEMPTY(INSTALL_RUNTIME_DESTINATION bin)
-SETIFEMPTY(INSTALL_LIBRARY_DESTINATION lib)
-SETIFEMPTY(INSTALL_ARCHIVE_DESTINATION lib)
 
 SEMMacroBuildCLI(
     NAME DTIAtlasBuilder
