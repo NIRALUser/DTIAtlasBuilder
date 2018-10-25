@@ -112,14 +112,14 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   QObject::connect(m_ScriptRunningQTimer, SIGNAL(timeout()), this, SLOT(UpdateScriptRunningGUIDisplay()));
 
 /* Error message if windows or mac */
-  if ( !m_Testing )
-  {
-    if( (std::string)Platform == "mac" || (std::string)Platform == "win")
-    {
-      if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION) QMessageBox::critical(this, "DTIAtlasBuilder not working", "This program is currently not working as it should on this platform.\nPlease do not hit the compute button, or the process will fail.\nYou can find other useful tools in Slicer:\n> DTI-Reg\n>Resample DTI Volume - log euclidean");
-      else QMessageBox::critical(this, "DTIAtlasBuilder not working", "This program is currently not working as it should on this platform.\nPlease do not hit the compute button, or the process will fail.\nIf the package was compiled or downloaded, you will find other useful tools in the specified install directory.");
-    }
-  }
+  // if ( !m_Testing )
+  // {
+  //   if( (std::string)Platform == "mac" || (std::string)Platform == "win")
+  //   {
+  //     if(DTIAtlasBuilder_BUILD_SLICER_EXTENSION) QMessageBox::critical(this, "DTIAtlasBuilder not working", "This program is currently not working as it should on this platform.\nPlease do not hit the compute button, or the process will fail.\nYou can find other useful tools in Slicer:\n> DTI-Reg\n>Resample DTI Volume - log euclidean");
+  //     else QMessageBox::critical(this, "DTIAtlasBuilder not working", "This program is currently not working as it should on this platform.\nPlease do not hit the compute button, or the process will fail.\nIf the package was compiled or downloaded, you will find other useful tools in the specified install directory.");
+  //   }
+  // }
 
 /* Initialize the options */
   InitOptions();
@@ -286,7 +286,8 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   m_FromConstructor=1; // do not test GA path if 'Default' called from constructor -> test at the end of constructor
 
 /* SET the soft config */
-  // get the directory where the running executable is
+  // std::vector
+
   std::string DTIABExecutablePath = itksys::SystemTools::GetRealPath( itksys::SystemTools::GetFilenamePath(commandRan).c_str() );
   if( DTIABExecutablePath=="" ) // if DTIAtlasBuilder called without path (e.g. $ DTIAtlasBuilder) => either found in the PATH or in the current dir => FindProgram will find it
   {
@@ -322,7 +323,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   }
 
   // look for the programs with the itk function
-  ConfigDefault();
+  ConfigDefault(commandRan);
 
   // Look for the config file in the executable directory
   std::string SoftConfigPath= DTIABExecutablePath + "/DTIAtlasBuilderSoftConfig.txt";
@@ -2161,12 +2162,44 @@ void GUI::SaveConfig() /*SLOT*/
   }
 }
 
-void GUI::ConfigDefault() /*SLOT*/
+void GUI::ConfigDefault(std::string commandRan) /*SLOT*/
 {
   std::cout<<"| Searching the softwares..."; // command line display
 
   std::string program;
   std::string notFound;
+
+  // get the directory where the running executable is
+  std::string DTIAtlasBuilderPath = itksys::SystemTools::GetRealPath(itksys::SystemTools::GetParentDirectory(commandRan));
+  
+  std::vector< std::string > tools_paths_hints;
+
+  if(commandRan.compare("") != 0){
+    tools_paths_hints.push_back("DTI-Reg");
+    tools_paths_hints.push_back("DTIProcess");
+    tools_paths_hints.push_back("ResampleDTIlogEuclidean");
+
+    if(DTIAtlasBuilderPath.find("DTIAtlasBuilder") != std::string::npos){
+      std::cout<<DTIAtlasBuilderPath<<std::endl;
+      std::cout<<DTIAtlasBuilderPath.size()<<std::endl;
+
+      std::size_t firstch = DTIAtlasBuilderPath.rfind("DTIAtlasBuilder");
+
+      for(int i = 0; i < tools_paths_hints.size(); i++){
+        std::string fullpath = DTIAtlasBuilderPath;
+        tools_paths_hints[i] = fullpath.replace(firstch, std::string("DTIAtlasBuilder").size(), tools_paths_hints[i]);
+        std::cout<<tools_paths_hints[i]<<std::endl;
+      }
+      std::string dtireghint = tools_paths_hints[0];
+      if(dtireghint.rfind("cli-modules") != std::string::npos){
+        tools_paths_hints.push_back(dtireghint.replace(dtireghint.rfind("cli-modules"), std::string("cli-modules").size(), "ExternalBin"));
+        std::cout<<tools_paths_hints[tools_paths_hints.size() - 1]<<std::endl;
+      }
+      
+    }
+
+    m_FindProgramDTIABExecDirVec.insert(m_FindProgramDTIABExecDirVec.end(), tools_paths_hints.begin(), tools_paths_hints.end());
+  }
 
   program = FindProgram("ImageMath",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(ImagemathPath->text().isEmpty()) notFound = notFound + "> ImageMath\n"; }

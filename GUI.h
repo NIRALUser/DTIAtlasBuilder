@@ -138,7 +138,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
 /*SOFT CONFIG*/
     void LoadConfigSlot();
     void SaveConfig();
-    void ConfigDefault();
+    void ConfigDefault(std::string commandRan = "");
     void BrowseSoft(int); //in the soft dialog window
     void ResetSoft(int);
     int testGA(); // returns 0 if version ok, -1 if bad version
