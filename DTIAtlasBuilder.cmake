@@ -142,6 +142,19 @@ if(BUILD_TESTING)
 #  include_directories( ${TestingSRCdirectory} ) # contains a CMakeLists.txt
 endif()
 
+if(AtlasWerks_DIR)
+  
+  install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
+    DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+    COMPONENT RUNTIME)
+
+  install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyWarp
+    DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+    COMPONENT RUNTIME)
+    
+  
+endif()
+
 if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   include(${Slicer_EXTENSION_CPACK})
 endif()

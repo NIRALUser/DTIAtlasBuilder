@@ -78,6 +78,9 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
+
+  set(COMPILE_EXTERNAL_AtlasWerks ON)
+
   # Import DTIProcess, ResampleDTIlogEuclidean, and DTI-Reg targets for the tests
   # DTIProcess_DIR and DTI-Reg_DIR are set because DTIAtlasBuilder is defined as dependent of the extension DTIProcess, ResampleDTIlogEuclidean, and DTI-Reg
   #include( ${DTIProcess_DIR}/ImportDTIProcessExtensionExecutables.cmake )
@@ -111,7 +114,6 @@ else( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   if(NOT FORCE_BUILD_ON_MAC_OR_WIN AND ( APPLE OR WIN32 ) ) # If not Slicer ext, not compile because will fail at run time
     message(FATAL_ERROR "DTIAtlasBuilder has known issues and will not run on Mac or Windows\nSet -DFORCE_BUILD_ON_MAC_OR_WIN:BOOL=ON to override")
   endif()
-
 endif( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 
 set( COMPILE_PACKAGE ON CACHE BOOL "Compiles all the external projects and tools" )
@@ -140,15 +142,15 @@ include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
 #======================================================================================
 # Compile package
 set( ExtProjList # External packages to compile
-  dtiprocessTK # dtiprocess, dtiaverage
+  # dtiprocessTK # dtiprocess, dtiaverage
   AtlasWerks # GreedyAtlas
-  BRAINS # BRAINSFit, BRAINSDemonWarp
-  ANTS # ANTS, WarpImageMultiTransform, WarpTensorImageMultiTransform
-  ResampleDTI # ResampleDTIlogEuclidean
-  DTI-Reg # DTI-Reg
-  teem # unu
-  MriWatcher # MriWatcher
-  NIRALUtilities # ImageMath, CropDTI
+  # BRAINS # BRAINSFit, BRAINSDemonWarp
+  # ANTS # ANTS, WarpImageMultiTransform, WarpTensorImageMultiTransform
+  # ResampleDTI # ResampleDTIlogEuclidean
+  # DTI-Reg # DTI-Reg
+  # teem # unu
+  # MriWatcher # MriWatcher
+  # NIRALUtilities # ImageMath, CropDTI
   )
 set( ToolsList # Needed tools -> to hide unuseful TOOL* variables
   dtiprocess
@@ -166,55 +168,54 @@ set( ToolsList # Needed tools -> to hide unuseful TOOL* variables
   unu
   ITKTransformTools
   )
-if(COMPILE_PACKAGE)
+# if(COMPILE_PACKAGE)
 
   # Define COMPILE_EXTERNAL_* variables
-  if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION ) # no Slicer extension -> recompile all
+#   if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION ) # no Slicer extension -> recompile all
 
-    foreach( tool ${ExtProjList})
-      set( COMPILE_EXTERNAL_${tool} ON CACHE BOOL "Compile external ${tool}" )
-      mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
-    endforeach()
+#     foreach( tool ${ExtProjList})
+#       set( COMPILE_EXTERNAL_${tool} ON CACHE BOOL "Compile external ${tool}" )
+#       mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
+#     endforeach()
 
-  else() # Slicer extension -> recompile only tools that are not in Slicer + not MriWatcher
+#   else() # Slicer extension -> recompile only tools that are not in Slicer + not MriWatcher
 
-   foreach( tool DTI-Reg ANTS ResampleDTI dtiprocessTK BRAINS teem MriWatcher ) # Already in Slicer or independent extension -> not recompiled # MriWatcher needs GLUT so disable if Slicer Extension because glut not necesseraly installed
-      set( COMPILE_EXTERNAL_${tool} OFF CACHE BOOL "Compile external ${tool}" )
-      mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
-    endforeach()
+#    foreach( tool DTI-Reg ANTS ResampleDTI dtiprocessTK BRAINS teem MriWatcher ) # Already in Slicer or independent extension -> not recompiled # MriWatcher needs GLUT so disable if Slicer Extension because glut not necesseraly installed
+#       set( COMPILE_EXTERNAL_${tool} OFF CACHE BOOL "Compile external ${tool}" )
+#       mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
+#     endforeach()
 
-    foreach( tool AtlasWerks NIRALUtilities ) # Not in Slicer -> recompile
-      set( COMPILE_EXTERNAL_${tool} ON CACHE BOOL "Compile external ${tool}" )
-      mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
-    endforeach()
+#     foreach( tool AtlasWerks NIRALUtilities ) # Not in Slicer -> recompile
+#       set( COMPILE_EXTERNAL_${tool} ON CACHE BOOL "Compile external ${tool}" )
+#       mark_as_advanced(CLEAR COMPILE_EXTERNAL_${tool}) # Show variable if been hidden
+#     endforeach()
 
-    if(APPLE) # unu is not recompiled with Slicer on MacOS
-#      set( COMPILE_EXTERNAL_teem ON CACHE BOOL "Compile external teem" FORCE)
-    endif(APPLE)
+#     if(APPLE) # unu is not recompiled with Slicer on MacOS
+# #      set( COMPILE_EXTERNAL_teem ON CACHE BOOL "Compile external teem" FORCE)
+#     endif(APPLE)
 
-    if(WIN32 OR APPLE) # DTIAB not working on Windows/Mac so only compile DTIAtlasBuilder's GUI
-      set( COMPILE_EXTERNAL_AtlasWerks OFF CACHE BOOL "Compile external AtlasWerks" FORCE)
-      set( COMPILE_EXTERNAL_NIRALUtilities OFF CACHE BOOL "Compile external NIRALUtilities" FORCE)
-    endif()
+#     if(WIN32 OR APPLE) # DTIAB not working on Windows/Mac so only compile DTIAtlasBuilder's GUI
+#       set( COMPILE_EXTERNAL_AtlasWerks OFF CACHE BOOL "Compile external AtlasWerks" FORCE)
+#       set( COMPILE_EXTERNAL_NIRALUtilities OFF CACHE BOOL "Compile external NIRALUtilities" FORCE)
+#     endif()
 
-  endif()
+#   endif()
 
-  # File containing add_external for all tools
-  include( ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/FindExternalTools.cmake ) # Go execute the given cmake script, and get back into this script when done
+include( ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/FindExternalTools.cmake ) # Go execute the given cmake script, and get back into this script when done
 
-else(COMPILE_PACKAGE) # Hide unuseful variables
-  foreach( proj ${ExtProjList})
-    set( COMPILE_EXTERNAL_${proj} OFF CACHE BOOL "Compile external ${proj}" FORCE ) # For installation step in DTIAtlasBuilder.cmake
-    mark_as_advanced(FORCE COMPILE_EXTERNAL_${proj})
-  endforeach()
-  foreach( tool ${ToolsList})
-    mark_as_advanced(FORCE TOOL${tool})
-    mark_as_advanced(FORCE TOOL${tool}Sys)
-  endforeach()
-  foreach( lib VTK SlicerExecutionModel )
-    mark_as_advanced(FORCE ${lib}_DIR)
-  endforeach()
-endif(COMPILE_PACKAGE)
+# else(COMPILE_PACKAGE) # Hide unuseful variables
+#   foreach( proj ${ExtProjList})
+#     set( COMPILE_EXTERNAL_${proj} OFF CACHE BOOL "Compile external ${proj}" FORCE ) # For installation step in DTIAtlasBuilder.cmake
+#     mark_as_advanced(FORCE COMPILE_EXTERNAL_${proj})
+#   endforeach()
+#   foreach( tool ${ToolsList})
+#     mark_as_advanced(FORCE TOOL${tool})
+#     mark_as_advanced(FORCE TOOL${tool}Sys)
+#   endforeach()
+#   foreach( lib VTK SlicerExecutionModel )
+#     mark_as_advanced(FORCE ${lib}_DIR)
+#   endforeach()
+# endif(COMPILE_PACKAGE)
 
 #======================================================================================
 
@@ -248,6 +249,7 @@ ExternalProject_Add(${innerproj} # DTIAtlasBuilder added as Externalproject in c
     -DTOOLDTI-Reg:PATH=${TOOLDTI-Reg}
     -DTOOLunu:PATH=${TOOLunu}
     -DTOOLMriWatcher:PATH=${TOOLMriWatcher}
+    -DAtlasWerks_DIR:PATH=${AtlasWerks_DIR}
   DEPENDS ${ITK_DEPEND} ${DTIAtlasBuilderExternalToolsDependencies} # DTIAtlasBuilderExternalToolsDependencies contains the names of all the recompiled softwares so DTIAB is compiled last (for install)
 )
 set( TOOLDTIAtlasBuilder ${CMAKE_CURRENT_BINARY_DIR}/${innerproj}-install/bin/DTIAtlasBuilder )

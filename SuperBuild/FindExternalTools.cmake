@@ -192,6 +192,9 @@ if(COMPILE_EXTERNAL_AtlasWerks) # FFTW D + F build one on(after) another
       -DBUILD_TESTING:BOOL=OFF
     INSTALL_COMMAND "" # No install step
     )
+
+  set(AtlasWerks_DIR ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-install)
+  
 endif(COMPILE_EXTERNAL_AtlasWerks)
 
 # ITK and SlicerExecutionModel
@@ -348,7 +351,7 @@ AddToolMacro( dtiprocessTK ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_
 # code for external tools from http://github.com/Chaircrusher/AtlasWerksBuilder/blob/master/CMakeLists.txt
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/AtlasWerks.git"
-  GIT_TAG 5118f362f4db4714d87fd5f278cfd2cf905f873b
+  GIT_TAG f5e51f8757dee5a388df2077d48c55b3395c77d1
   )
 
 set( CMAKE_ExtraARGS
@@ -378,7 +381,6 @@ set( CMAKE_ExtraARGS
   #We only care about GreedyAtlas so we only build this target.
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} GreedyAtlas
   #There is no install in AtlasWerks. We only care about GreedyAtlas so we just copy it. We only do that on Linux since AtlasWerks does not work on the other plateform
-  INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-install/bin/ && ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-build/Applications/Greedy/GreedyAtlas ${CMAKE_CURRENT_BINARY_DIR}/AtlasWerks-install/bin/
   DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} FFTW CLAPACK # Not CMake Arg -> directly after CMakeArg in ExternalProject_Add()
   )
 set( Tools
