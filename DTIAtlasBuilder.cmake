@@ -144,15 +144,23 @@ endif()
 
 if(AtlasWerks_DIR)
   
-  install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
-    DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
+  if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
+      DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
+      COMPONENT RUNTIME)
+
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyWarp
+      DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
+      COMPONENT RUNTIME)
+  else()
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
+    DESTINATION ${INSTALL_RUNTIME_DESTINATION}
     COMPONENT RUNTIME)
 
-  install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyWarp
-    DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
-    COMPONENT RUNTIME)
-    
-  
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyWarp
+      DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+      COMPONENT RUNTIME)
+  endif()
 endif()
 
 if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
