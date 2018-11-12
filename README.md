@@ -1,16 +1,16 @@
 <p align="right"><img width="15%" src="http://www.nitrc.org/project/screenshot.php?group_id=636&screenshot_id=607"/></p>
 
-#DTIAtlasBuilder
+# DTIAtlasBuilder
 
-Current stable release: [**1.3**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.3) (06/26/2013)
+Current stable release: [**1.5**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.0) (11/12/2018)
 
-##What is it?
+## What is it?
 
 A tool to create an atlas from several DTI images
 
-<img width="100%" src="http://adrienkaiser.fr/data/dtiabshortpipe.png"/>
+<img width="100%" src="https://raw.githubusercontent.com/NIRALUser/DTIAtlasBuilder/master/Data/DTIAtlasBuilderIcon.jpeg"/>
 
-##Where is it?
+## Where is it?
 
 Find the tool on [NITRC](http://www.nitrc.org/projects/dtiatlasbuilder "DTIAtlasBuilder on NITRC") and [GitHub](http://github.com/NIRALUser/DTIAtlasBuilder "DTIAtlasBuilder on GitHub")
 
@@ -34,7 +34,12 @@ These Softwares need to be installed before executing the tool :
 
 If you do not have these softwares installed on your machine, you can use the COMPILE_PACKAGE CMake option to download and compile aumatically the tools you need. If you do so, please run "make install" after the compilation to copy the tools into the CMAKE_INSTALL_PREFIX.
 
-##Change Log:
+## Change Log:
+
+####[v1.5](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.0) (11/12/2018)
+
+- Fix superbuild mechanism for SlicerExtension
+- New mechanism to find executables based on Slicer architecture
 
 ####[v1.3](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.3) (06/26/2013)
 
