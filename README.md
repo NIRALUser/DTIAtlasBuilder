@@ -1,5 +1,3 @@
-<p align="right"><img width="15%" src="http://www.nitrc.org/project/screenshot.php?group_id=636&screenshot_id=607"/></p>
-
 # DTIAtlasBuilder
 
 Current stable release: [**1.5**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.0) (11/12/2018)
@@ -8,7 +6,7 @@ Current stable release: [**1.5**](http://github.com/NIRALUser/DTIAtlasBuilder/tr
 
 A tool to create an atlas from several DTI images
 
-<img width="100%" src="https://raw.githubusercontent.com/NIRALUser/DTIAtlasBuilder/master/Data/DTIAtlasBuilderIcon.jpeg"/>
+<img width="30%" src="https://raw.githubusercontent.com/NIRALUser/DTIAtlasBuilder/master/Data/DTIAtlasBuilderIcon.jpeg"/>
 
 ## Where is it?
 
