@@ -36,12 +36,12 @@ If you do not have these softwares installed on your machine, you can use the CO
 
 ## Change Log:
 
-####[v1.5](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.0) (11/12/2018)
+#### [v1.5](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.0) (11/12/2018)
 
 - Fix superbuild mechanism for SlicerExtension
 - New mechanism to find executables based on Slicer architecture
 
-####[v1.3](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.3) (06/26/2013)
+#### [v1.3](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.3) (06/26/2013)
 
 - File/Folder management:
   - Keep original subject names instead of using "CaseX"
@@ -58,7 +58,7 @@ If you do not have these softwares installed on your machine, you can use the CO
 
 - Python version 2.5 minimum required
 
-####[v1.2](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.2) (05/01/2013)
+#### [v1.2](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.2) (05/01/2013)
 
 - Fixing the output global displacement fields when using ANTs
 
@@ -70,7 +70,7 @@ If you do not have these softwares installed on your machine, you can use the CO
 4_Final_Resampling/Second_Resampling/CaseX_GlobalDeformationField.nrrd  -> 4_Final_Resampling/Second_Resampling/CaseX_GlobalDisplacementField.nrrd
 ```
 
-####[v1.1](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.1) (02/22/2013)
+#### [v1.1](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.1) (02/22/2013)
 
 - Add a SuperBuild system to automatically download and compile all needed external tools
 
@@ -88,28 +88,28 @@ If you do not have these softwares installed on your machine, you can use the CO
 3_Diffeomorphic_Atlas/AWAtlasDTI.nrrd        -> 3_Diffeomorphic_Atlas/DiffeomorphicAtlasDTI.nrrd
 ```
 
-####[v1.0](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.0) (10/11/2012)
+#### [v1.0](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.0) (10/11/2012)
 
 - Initial version
 
 
 ##Troubleshooting:
 
-####Final Atlas is bad
+#### Final Atlas is bad
 
 If you see in the QC windows that the Affine and Diffeomorphic Atlases and registered images look OK, and that the Final Atlas and images look bad for all or most cases, that means that something went wrong during the FINAL registration.  
 If this final registration was done using BRAINS, try to recompute it using ANTS (in the Final Resampling tab > Registration Method), which gives a better registration.
 
 
-####Loading parameter file fail
+#### Loading parameter file fail
 
 If a parameter file fails to open in DTIAtlasBuilder (Parameter file is corrupted), you need to recreate it by loading only the corresponding dataset file and setting your options again.
 
-####QC does not show up
+#### QC does not show up
 
 If the QC windows do not appear when pushing the QC buttons, it might mean that you need to install the GLUT library to get MriWatcher to work.  
 You can find the GLUT library [here](http://www.opengl.org/resources/libraries/glut/glut_downloads.php)
 
-####Contact : akaiser[at]unc[dot]edu
+#### Contact : jprieto[at]med.unc.edu
 
 Slicer extension build status: [Open the dashboard](http://slicer.cdash.org/index.php?project=Slicer4) and search "DTIAtlasBuilder" in the build name using the filters.
