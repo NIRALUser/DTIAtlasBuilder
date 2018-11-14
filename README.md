@@ -18,7 +18,7 @@ Binary package available on the [NITRC download page](http://www.nitrc.org/frs/?
 
 Usage tutorial available [from NITRC](http://www.nitrc.org/docman/view.php/636/1189/DTIAtlasBuilder_Tutorial.pdf)
 
-##External Requirements
+## External Requirements
 
 These Softwares need to be installed before executing the tool :
 - ImageMath
@@ -93,7 +93,7 @@ If you do not have these softwares installed on your machine, you can use the CO
 - Initial version
 
 
-##Troubleshooting:
+## Troubleshooting:
 
 #### Final Atlas is bad
 
