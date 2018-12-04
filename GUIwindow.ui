@@ -1481,7 +1481,7 @@ It will be read at the beginning of the program.</string>
            <string>$ setenv DTIAtlasBuilderSoftPath [your config file]</string>
           </property>
           <property name="textFormat">
-           <enum>Qt::LogText</enum>
+           <enum>Qt::TextFormat::AutoText</enum>
           </property>
           <property name="margin">
            <number>0</number>

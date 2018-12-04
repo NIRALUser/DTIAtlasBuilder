@@ -26,11 +26,12 @@ if(Qt5_DIR)
 
   include_directories(${Qt5Widgets_INCLUDE_DIRS})
   add_definitions(${Qt5Widgets_DEFINITIONS})
+
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
   set(QT_LIBRARIES ${Qt5Widgets_LIBRARIES})
 
   qt5_add_resources(RCC_SRCS DTIAtlasBuilder.qrc)
-  qt5_wrap_cpp(MOC_FILES GUI.h)
+  qt5_wrap_cpp(QtProject_HEADERS_MOC GUI.h)
   qt5_wrap_ui(UI_FILES GUIwindow.ui)
 else()
   find_package(Qt4 REQUIRED)
