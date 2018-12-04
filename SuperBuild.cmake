@@ -81,6 +81,10 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
 
   set(COMPILE_EXTERNAL_AtlasWerks ON)
 
+  if(Qt5_DIR)
+    set(USE_Qt5 ON)
+  endif()
+
   # Import DTIProcess, ResampleDTIlogEuclidean, and DTI-Reg targets for the tests
   # DTIProcess_DIR and DTI-Reg_DIR are set because DTIAtlasBuilder is defined as dependent of the extension DTIProcess, ResampleDTIlogEuclidean, and DTI-Reg
   #include( ${DTIProcess_DIR}/ImportDTIProcessExtensionExecutables.cmake )
@@ -135,8 +139,11 @@ if(NOT COMPILE_PACKAGE OR DTIAtlasBuilder_BUILD_SLICER_EXTENSION ) # ITK and Sli
   include(${ITK_USE_FILE})
 endif()
 
-find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
-include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
+if(NOT USE_Qt5)
+  find_package(Qt4 REQUIRED) # For DTIAtlasBuilder
+  include(${QT_USE_FILE}) # creates QT_QMAKE_EXECUTABLE
+endif()
+
 
 
 #======================================================================================
@@ -230,6 +237,7 @@ ExternalProject_Add(${innerproj} # DTIAtlasBuilder added as Externalproject in c
     -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
     -DITK_DIR:PATH=${ITK_DIR}
     -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+    -DQt5_DIR:PATH=${Qt5_DIR}
     -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${innerproj}-install

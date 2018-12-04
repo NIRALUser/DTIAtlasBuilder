@@ -21,12 +21,25 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   
 endif()
 
-find_package(Qt4 REQUIRED)
-include(${QT_USE_FILE})
+if(Qt5_DIR)
+  find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-QT4_ADD_RESOURCES(RCC_SRCS DTIAtlasBuilder.qrc) # QResource for the icon
-QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
-QT4_WRAP_UI(UI_FILES GUIwindow.ui)
+  include_directories(${Qt5Widgets_INCLUDE_DIRS})
+  add_definitions(${Qt5Widgets_DEFINITIONS})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+  set(QT_LIBRARIES ${Qt5Widgets_LIBRARIES})
+
+  qt5_add_resources(RCC_SRCS DTIAtlasBuilder.qrc)
+  qt5_wrap_cpp(MOC_FILES GUI.h)
+  qt5_wrap_ui(UI_FILES GUIwindow.ui)
+else()
+  find_package(Qt4 REQUIRED)
+  include(${QT_USE_FILE})
+
+  QT4_ADD_RESOURCES(RCC_SRCS DTIAtlasBuilder.qrc) # QResource for the icon
+  QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
+  QT4_WRAP_UI(UI_FILES GUIwindow.ui)
+endif()
 
 #======================================================================================
 
@@ -144,15 +157,23 @@ endif()
 
 if(AtlasWerks_DIR)
   
-  install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
-    DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
+  if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
+      DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
+      COMPONENT RUNTIME)
+
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyWarp
+      DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
+      COMPONENT RUNTIME)
+  else()
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
+    DESTINATION ${INSTALL_RUNTIME_DESTINATION}
     COMPONENT RUNTIME)
 
-  install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyWarp
-    DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
-    COMPONENT RUNTIME)
-    
-  
+    install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyWarp
+      DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+      COMPONENT RUNTIME)
+  endif()
 endif()
 
 if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )

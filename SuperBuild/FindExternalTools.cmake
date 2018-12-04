@@ -378,6 +378,7 @@ set( CMAKE_ExtraARGS
   -DatlasWerks_COMPILE_APP_TX_APPLY:BOOL=OFF
   -DatlasWerks_COMPILE_APP_TX_WERKS:BOOL=OFF
   -DatlasWerks_COMPILE_APP_UTILITIES:BOOL=OFF
+  -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   #We only care about GreedyAtlas so we only build this target.
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} GreedyAtlas
   #There is no install in AtlasWerks. We only care about GreedyAtlas so we just copy it. We only do that on Linux since AtlasWerks does not work on the other plateform
