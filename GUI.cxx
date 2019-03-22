@@ -65,13 +65,15 @@ to display a warning if a new compute is done afterwards with a newer version
 //We want to search the extension path first, and then we look for the tools on the system
 std::string FindProgram( const char* name , std::vector< std::string > m_FindProgramDTIABExecDirVec )
 {
-std::string path ;
-path = itksys::SystemTools::FindProgram( name , m_FindProgramDTIABExecDirVec , true ) ;
-if( path.empty() )
-  {
-  path = itksys::SystemTools::FindProgram( name ) ;
-  }
-return path ;
+  std::string path ;
+
+  path = itksys::SystemTools::FindProgram( name , m_FindProgramDTIABExecDirVec , true ) ;
+
+  if( path.empty() )
+    {
+    path = itksys::SystemTools::FindProgram( name ) ;
+    }
+  return path ;
 }
 
 template< class T > std::string IntOrDoubleToStr(T IntOrDoubleVar) // T is int or double
@@ -321,6 +323,14 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     }
     DTIRegExtraPathlineEdit->setText( listPath ) ;
   }
+
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../ResampleDTIlogEuclidean/" + std::string(Slicer_CLIMODULES_BIN_DIR));
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../ResampleDTIlogEuclidean/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTI-Reg/" + std::string(Slicer_CLIMODULES_BIN_DIR));
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTI-Reg/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTIProcess/" + std::string(Slicer_CLIMODULES_BIN_DIR));
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTIProcess/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
+  
 
   // look for the programs with the itk function
   ConfigDefault(commandRan);
