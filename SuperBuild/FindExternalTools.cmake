@@ -351,7 +351,7 @@ AddToolMacro( dtiprocessTK ) # AddToolMacro( proj ) + uses SourceCodeArgs CMAKE_
 # code for external tools from http://github.com/Chaircrusher/AtlasWerksBuilder/blob/master/CMakeLists.txt
 set( SourceCodeArgs
   GIT_REPOSITORY "${git_protocol}://github.com/NIRALUser/AtlasWerks.git"
-  GIT_TAG f5e51f8757dee5a388df2077d48c55b3395c77d1
+  GIT_TAG master
   )
 
 set( CMAKE_ExtraARGS
