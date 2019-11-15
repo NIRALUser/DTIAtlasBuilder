@@ -20,8 +20,10 @@ if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
   SET(INSTALL_ARCHIVE_DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR})
 
   add_definitions(-DSlicer_CLIMODULES_BIN_DIR="${Slicer_CLIMODULES_BIN_DIR}")
-  
+else()
+  add_definitions(-DSlicer_CLIMODULES_BIN_DIR="")
 endif()
+
 
 if(Qt5_DIR)
   find_package(Qt5 COMPONENTS Widgets REQUIRED)
@@ -123,6 +125,10 @@ ADD_DEFINITIONS(-DDTIAtlasBuilder_VERSION="${version_number}")
 #install(TARGETS DTIAtlasBuilder DESTINATION bin)
 
 set(DTIABsources GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
+
+#Find SlicerExecutionModel
+FIND_PACKAGE(SlicerExecutionModel REQUIRED)
+INCLUDE(${SlicerExecutionModel_USE_FILE})
 
 SEMMacroBuildCLI(
     NAME DTIAtlasBuilder

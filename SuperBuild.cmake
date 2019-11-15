@@ -233,6 +233,7 @@ ExternalProject_Add(${innerproj} # DTIAtlasBuilder added as Externalproject in c
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
     -DInnerBuildCMakeLists:BOOL=ON
+    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
     -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
     -DITK_DIR:PATH=${ITK_DIR}
