@@ -184,7 +184,7 @@ option(USE_SYSTEM_ANTs "Build using an externally defined version of ANTs" OFF)
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
-list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel teem ANTs BRAINSTools FFTW JPEG TIFF DCMTK  DTIProcess)
+list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel teem ANTs BRAINSTools BatchMake FFTW JPEG TIFF DCMTK  DTIProcess)
 
 set(USE_ITK_Module_MGHIO TRUE)
 #set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )
