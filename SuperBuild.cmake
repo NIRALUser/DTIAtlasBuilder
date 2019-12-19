@@ -13,7 +13,7 @@ if(WIN32)
 endif()
 
 set( COMPILE_EXTERNAL_ITKTransformTools ON CACHE BOOL "Compile External ITKTransformTools" FORCE )
-if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+if( ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )
   # Slicer
   find_package(Slicer REQUIRED)
   # Therefore we recompile all the libraries even though Slicer has already built the libraries we need.
@@ -169,7 +169,7 @@ COMPILE_EXTERNAL_TOOLS( TOOL_NAMES ResampleDTIlogEuclidean TOOL_PROJECT_NAME Res
 COMPILE_EXTERNAL_TOOLS( TOOL_NAMES BRAINSFit BRAINSDemonWarp TOOL_PROJECT_NAME BRAINSTools)
 COMPILE_EXTERNAL_TOOLS( TOOL_NAMES ANTS TOOL_PROJECT_NAME ANTs)
 
-if( NOT DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+if( NOT ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )
   # Do not configure external tools paths: extension will be run on a different computer,
   # we don't need to find the tools on the computer on which the extension is built
   include(FindExternalTools)
@@ -184,7 +184,7 @@ option(USE_SYSTEM_ANTs "Build using an externally defined version of ANTs" OFF)
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
-list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel BatchMake teem)
+list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel teem ANTs BRAINSTools FFTW JPEG TIFF DCMTK  DTIProcess)
 
 set(USE_ITK_Module_MGHIO TRUE)
 #set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )
@@ -286,12 +286,13 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   BUILD_TESTING:BOOL
   ITK_VERSION_MAJOR:STRING
   ITK_DIR:PATH
+  VTK_DIR:PATH
   Slicer_DIR:PATH
   BatchMake_DIR:PATH
   GenerateCLP_DIR:PATH
   SlicerExecutionModel_DIR:PATH
-  DTIAtlasBuilder_BUILD_SLICER_EXTENSION:BOOL
-  STATIC_DTIAtlasBuilder:BOOL
+  ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION:BOOL
+  STATIC_${LOCAL_PROJECT_NAME}:BOOL
   ANTSTOOL:PATH
   BRAINSFitTOOL:PATH
   BRAINSDemonWarpTOOL:PATH
@@ -343,11 +344,11 @@ else()
 endif()
 
 set(proj ${LOCAL_PROJECT_NAME})
-list(APPEND LIST_TOOLS DTIAtlasBuilder )
-set( DTIAtlasBuilderTOOL DTIAtlasBuilder )
+list(APPEND LIST_TOOLS ${LOCAL_PROJECT_NAME} )
+set( ${LOCAL_PROJECT_NAME}TOOL ${LOCAL_PROJECT_NAME} )
 
-if(NOT DTIAtlasBuilder_INSTALL_DIRECTORY)
-  set( DTIAtlasBuilder_INSTALL_DIRECTORY ${EXTERNAL_BINARY_DIRECTORY}/DTIAtlasBuilder-install )
+if(NOT ${LOCAL_PROJECT_NAME}_INSTALL_DIRECTORY)
+  set( ${LOCAL_PROJECT_NAME}_INSTALL_DIRECTORY ${EXTERNAL_BINARY_DIRECTORY}/${LOCAL_PROJECT_NAME}-install )
 endif()
 
 set(proj_build ${proj}-build)
@@ -362,13 +363,13 @@ ExternalProject_Add(${proj}-inner
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
-    -DCMAKE_INSTALL_PREFIX:PATH=${DTIAtlasBuilder_INSTALL_DIRECTORY}
+    -DCMAKE_INSTALL_PREFIX:PATH=${${LOCAL_PROJECT_NAME}_INSTALL_DIRECTORY}
     -DBatchMake_SOURCE_DIR:PATH=${EXTERNAL_SOURCE_DIRECTORY}/BatchMake
   )
 
-if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
+if( ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR}/DTIAtlasBuilder-inner-build;${EXTENSION_NAME};ALL;/")
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR}/${LOCAL_PROJECT_NAME}-inner-build;${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()

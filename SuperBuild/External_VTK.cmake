@@ -150,6 +150,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   set(${proj}_CMAKE_OPTIONS
       -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+      -DCMAKE_C_FLAGS=-DGLX_GLXEXT_LEGACY 
+      -DCMAKE_CXX_FLAGS=-DGLX_GLXEXT_LEGACY
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
       -DVTK_USE_PARALLEL:BOOL=ON
@@ -165,7 +167,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${VTK_MAC_ARGS}
     )
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/Kitware/VTK.git)
   set(${proj}_GIT_TAG "v5.10.0")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}

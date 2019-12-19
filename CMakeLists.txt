@@ -31,7 +31,7 @@ set(CMAKE_MODULE_PATH
 
 include(SlicerExtensionsConfigureMacros)
 
-option(STATIC_DTI-Reg "Build static DTI-Reg" ON)
+option(STATIC_${LOCAL_PROJECT_NAME} "Build static ${LOCAL_PROJECT_NAME}" ON)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake)
 

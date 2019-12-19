@@ -80,7 +80,7 @@ if((NOT DEFINED PYTHON_INCLUDE_DIR
 
   ExternalProject_Add(python-source
     URL "http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz"
-    URL_MD5 "2cf641732ac23b18d139be077bd906cd"
+    URL_MD5 "d41d8cd98f00b204e9800998ecf8427e"
     DOWNLOAD_DIR ${EXTERNAL_BINARY_DIRECTORY}
     SOURCE_DIR ${python_SOURCE_DIR}
     ${EXTERNAL_PROJECT_OPTIONAL_ARGS}
