@@ -22,16 +22,6 @@ ProjectDependancyPush(CACHED_proj ${proj})
 set(extProjName CLAPACK)         #The find_package known name
 set(proj        ${extProjName} ) #This local name
 
-#if(${USE_SYSTEM_${extProjName}})
-#  unset(${extProjName}_DIR CACHE)
-#endif()
-
-# Sanity checks
-#if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
-#  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory")
-#endif()
-
-
 # Set dependency list
 set(${proj}_DEPENDENCIES "")
 
@@ -74,19 +64,10 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
     INSTALL_COMMAND ""
-    #BUILD_COMMAND ${CMAKE_COMMAND} -DTOP_BINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild/InstallCLAPACK.cmake # -DARGNAME:TYPE=VALUE -P <cmake file> = Process script mode
     )
   set( ${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install )
   set( ${extProjName}_INCLUDE_PATH ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include )
-  # if(WIN32)
-  #   set( ${extProjName}D_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/CLAPACK3.lib )
-  #   set( ${extProjName}F_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/CLAPACK3f.lib )
-  # else()
-  #   set( ${extProjName}D_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libCLAPACK3.a )
-  #   set( ${extProjName}F_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libCLAPACK3f.a )
-  #   set( ${extProjName}D_THREADS_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libCLAPACK3_threads.a )
-  #   set( ${extProjName}F_THREADS_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libCLAPACK3f_threads.a )
-  # endif()
+
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} REQUIRED)

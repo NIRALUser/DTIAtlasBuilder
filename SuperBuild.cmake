@@ -198,7 +198,9 @@ list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4
                                                                                       DTIProcess 
                                                                                       DTI-Reg
                                                                                       ResampleDTIlogEuclidean
-                                                                                      CLAPACK )
+                                                                                      niral_utilities
+                                                                                      CLAPACK
+                                                                                      MriWatcher )
 
 set(USE_ITK_Module_MGHIO TRUE)
 #set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )
