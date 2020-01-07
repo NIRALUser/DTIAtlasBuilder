@@ -41,6 +41,8 @@ if(UNIX AND (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7))
   set(CMAKE_CXX_FLAGS_BatchMake -std=c++11)
 endif()
 
+set(${proj}_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/${proj}-install")
+
 if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
   #message(STATUS "${__indent}Adding project ${proj}")
   ExternalProject_Add(${proj}
@@ -68,6 +70,7 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
       DEPENDS  ${${proj}_DEPENDENCIES}
     )
     set(BatchMake_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
+    set(BatchMake_SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj})
     mark_as_advanced(CLEAR BatchMake_DIR)
     set(BatchMake_ITK_DIR ${ITK_DIR}) # If batchmake recompiled, no include(${BatchMake_USE_FILE}) has been done so BatchMake_ITK_DIR does not exist, and we used ${ITK_DIR} to compile it.
     set(BatchMake_DEPEND BatchMake)

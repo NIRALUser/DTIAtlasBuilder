@@ -24,8 +24,8 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # Make sure that the ExtProjName/IntProjName variables are unique globally
 # even if other External_${ExtProjName}.cmake files are sourced by
 # SlicerMacroCheckExternalProjectDependency
-set(extProjName DTIReg) #The find_package known name
-set(proj        DTIReg) #This local name
+set(extProjName DTI-Reg) #The find_package known name
+set(proj        DTI-Reg) #This local name
 set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
 #if(${USE_SYSTEM_${extProjName}})
@@ -76,9 +76,10 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -DITK_DIR:PATH=${ITK_DIR}
     -DVTK_DIR:PATH=${VTK_DIR}
     -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+    -DBatchMake_SOURCE_DIR:PATH=${BatchMake_SOURCE_DIR}
     -DDCMTK_DIR=${DCMTK_DIR}
-    -DDTIReg_SUPERBUILD:BOOL=OFF
-    -DDTIReg_BUILD_SLICER_EXTENSION:BOOL=OFF
+    -DDTI-Reg_SUPERBUILD:BOOL=OFF
+    -DDTI-Reg_BUILD_SLICER_EXTENSION:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
     -DBUILD_CropDTI:BOOL=OFF
     -DBUILD_PolyDataMerge:BOOL=OFF
@@ -86,9 +87,10 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   
   ### --- End Project specific additions
-  #set( ${proj}_REPOSITORY ${git_protocol}://github.com/scalphunters/DTIProcessToolkit.git)
+  #set( ${proj}_REPOSITORY ${git_protocol}://github.com/scalphunters/DTI-Reg.git)
   set( ${proj}_REPOSITORY /root/dti-reg-ok/)
   set( ${proj}_GIT_TAG master )
+  
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -106,11 +108,12 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_CMAKE_OPTIONS}
       ## We really do want to install to remove uncertainty about where the tools are
       ## (on Windows, tools might be in subfolders, like "Release", "Debug",...)
+      -DBatchMake_SOURCE_DIR=${BatchMake_SOURCE_DIR}
       -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     DEPENDS
       ${${proj}_DEPENDENCIES} 
   )
-  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-inner-build)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
