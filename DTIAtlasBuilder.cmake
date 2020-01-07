@@ -24,7 +24,7 @@ else()
   add_definitions(-DSlicer_CLIMODULES_BIN_DIR="")
 endif()
 
-find_package(Qt5)
+find_package(Qt5 COMPONENTS Core Widgets Gui)
 
 if(Qt5_FOUND)
   find_package(Qt5 COMPONENTS Widgets REQUIRED)
