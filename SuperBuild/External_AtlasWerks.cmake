@@ -24,8 +24,8 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # Make sure that the ExtProjName/IntProjName variables are unique globally
 # even if other External_${ExtProjName}.cmake files are sourced by
 # SlicerMacroCheckExternalProjectDependency
-set(extProjName MriWatcher) #The find_package known name
-set(proj        MriWatcher) #This local name
+set(extProjName AtlasWerks) #The find_package known name
+set(proj        AtlasWerks) #This local name
 set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
 #if(${USE_SYSTEM_${extProjName}})
@@ -40,7 +40,7 @@ endif()
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   # option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4)
+  set(${proj}_DEPENDENCIES ITKv4 FFTW CLAPACK)
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
   # Set CMake OSX variable to pass down the external project
@@ -53,20 +53,39 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   endif()
 
   ### --- Project specific additions here
+
   set(${proj}_CMAKE_OPTIONS
-    ${DWIAtlasVars}
-    -DBUILD_TESTING:BOOL=OFF
-    -DUSE_SYSTEM_ITK:BOOL=ON
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DMriWatcher_SUPERBUILD:BOOL=OFF
-    -DMriWatcher_BUILD_SLICER_EXTENSION:BOOL=OFF
+      -DITK_DIR:PATH=${ITK_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+      -DLAPACK_DIR:PATH=${CLAPACK_DIR}
+      -DFFTW_INSTALL_BASE_PATH:PATH=${FFTW_DIR} # will use find_library to find the libs
+      -DFFTWF_LIB:PATH=${FFTW_DIR}/lib/libfftw3f.a # FFTW in float
+      -DFFTWD_LIB:PATH=${FFTW_DIR}/lib/libfftw3.a # FFTW in double # needed for AtlasWerks to configure, not to compile with
+      -DFFTWF_THREADS_LIB:PATH=${FFTW_DIR}/lib/libfftw3f_threads.a
+      -DFFTWD_THREADS_LIB:PATH=${FFTW_DIR}/lib/libfftw3_threads.a
+      -DFFTW_INCLUDE_PATH:PATH=${FFTW_DIR}/include # will be used to set FFTW_INSTALL_BASE_PATH by finding the path = remove the /include
+      -DAtlasWerks_COMPILE_TESTING:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_Affine:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_AffineAtlas:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_ATLAS_WERKS:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_VECTOR_ATLAS_WERKS:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_FGROWTH:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_FWARP:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_ImageConvert:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_IMMAP:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_LDMM:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_GREEDY:BOOL=ON  # Compile Only GreedyAtlas
+      -DatlasWerks_COMPILE_APP_TX_APPLY:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_TX_WERKS:BOOL=OFF
+      -DatlasWerks_COMPILE_APP_UTILITIES:BOOL=OFF
+      -DCMAKE_CXX_STANDARD=14
     )
   
   ### --- End Project specific additions
 
   ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/MriWatcher.git
-    GIT_TAG bd82f023f5fbcf9ecef232698809c19708bccfe4
+    GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/AtlasWerks.git
+    GIT_TAG master
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
@@ -81,9 +100,13 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_CMAKE_OPTIONS}
       ## We really do want to install to remove uncertainty about where the tools are
       ## (on Windows, tools might be in subfolders, like "Release", "Debug",...)
-      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+      #-DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     DEPENDS
       ${${proj}_DEPENDENCIES} 
+    #We only care about GreedyAtlas so we only build this target.
+    BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} GreedyAtlas GreedyWarp
+    INSTALL_COMMAND ""
+    #There is no install in AtlasWerks. We only care about GreedyAtlas so we just copy it. We only do that on Linux since AtlasWerks does not work on the other plateform
   )
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
 else()

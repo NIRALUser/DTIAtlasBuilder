@@ -65,8 +65,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DBUILD_TESTING:BOOL=OFF
     INSTALL_COMMAND ""
     )
-  set( ${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install )
-  set( ${extProjName}_INCLUDE_PATH ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include )
+  set( ${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build )
+  #set( ${extProjName}_INCLUDE_PATH ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include )
 
 else()
   if(${USE_SYSTEM_${extProjName}})
