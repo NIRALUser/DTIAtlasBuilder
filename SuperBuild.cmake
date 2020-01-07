@@ -197,7 +197,8 @@ list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4
                                                                                       DCMTK  
                                                                                       DTIProcess 
                                                                                       DTI-Reg
-                                                                                      ResampleDTIlogEuclidean )
+                                                                                      ResampleDTIlogEuclidean
+                                                                                      CLAPACK )
 
 set(USE_ITK_Module_MGHIO TRUE)
 #set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )
