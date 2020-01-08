@@ -116,16 +116,9 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Extension meta-information
-set(EXTENSION_NAME DTI-Reg)
-set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/DTI-Reg")
-set(EXTENSION_CATEGORY "Diffusion")
-set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC), Clement Vachet (SCI), Martin Styner (UNC)")
-set(EXTENSION_DESCRIPTION "DTI-Reg is an application that performs pair-wise DTI registration, using scalar FA (or MD) map to drive the registration. Individual steps of the pair-wise registration pipeline are performed via external applications - some of them being 3D Slicer modules. Starting with two input DTI images, scalar FA maps are generated via dtiprocess. Registration is then performed between these FA maps, via BRAINSFit/BRAINSDemonWarp or ANTS -Advanced Normalization Tools-, which provide different registration schemes: rigid, affine, BSpline, diffeomorphic, logDemons. The final deformation is then applied to the source DTI image via ResampleDTIlogEuclidean.")
-set(EXTENSION_ICONURL "https://raw.githubusercontent.com/NIRALUser/DTI-Reg/master/DTI-Reg-icon.png")
-set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/c/c5/DTI-Reg_-_Misaligned_DTIs.png http://www.slicer.org/slicerWiki/images/1/12/DTI-Reg_-_Aligned_DTIs_-_Coronal.png")
-set(EXTENSION_DEPENDS "DTIProcess ResampleDTIlogEuclidean") # Specified as a space separated list or 'NA' if any
+
 #  set(EXTENSION_BUILD_SUBDIRECTORY DTI-Reg-build)
 set(EXTENSION_BUILD_SUBDIRECTORY . )
-set(SUPERBUILD_TOPLEVEL_PROJECT DTI-Reg)
+set(SUPERBUILD_TOPLEVEL_PROJECT DTIAtlasBuilder)
 set(EXTENSION_README_FILE ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 set(EXTENSION_LICENSE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/License.txt)

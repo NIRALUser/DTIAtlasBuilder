@@ -200,6 +200,7 @@ list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4
                                                                                       ResampleDTIlogEuclidean
                                                                                       niral_utilities
                                                                                       CLAPACK
+                                                                                      GLUT
                                                                                       MriWatcher
                                                                                       AtlasWerks )
 
@@ -317,6 +318,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   dtiprocessTOOL:PATH
   ITKTransformTools_DIR:PATH
   ANTs_DIR:PATH
+  GLUT_DIR:PATH
   CONFIGURE_TOOLS_PATHS:BOOL
   )
 
@@ -382,6 +384,34 @@ ExternalProject_Add(${proj}-inner
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
     -DCMAKE_INSTALL_PREFIX:PATH=${${LOCAL_PROJECT_NAME}_INSTALL_DIRECTORY}
     -DBatchMake_SOURCE_DIR:PATH=${EXTERNAL_SOURCE_DIRECTORY}/BatchMake
+
+    -DInnerBuildCMakeLists:BOOL=ON
+    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+    ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
+    -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
+    -DITK_DIR:PATH=${ITK_DIR}
+    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+    #-DQt5_DIR:PATH=${Qt5_DIR}
+    -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
+    -DBUILD_TESTING:BOOL=${BUILD_TESTING}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+    # Installation step
+    # Slicer extension
+    -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION:BOOL=${DTIAtlasBuilder_BUILD_SLICER_EXTENSION}
+    -DSlicer_DIR:PATH=${Slicer_DIR}
+    -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
+    # For the tests
+    -DTOOLImageMath:PATH=${TOOLImageMath}
+    -DTOOLResampleDTIlogEuclidean:PATH=${TOOLResampleDTIlogEuclidean}
+    -DTOOLCropDTI:PATH=${TOOLCropDTI}
+    -DTOOLdtiprocess:PATH=${TOOLdtiprocess}
+    -DTOOLBRAINSFit:PATH=${TOOLBRAINSFit}
+    -DTOOLGreedyAtlas:PATH=${TOOLGreedyAtlas}
+    -DTOOLdtiaverage:PATH=${TOOLdtiaverage}
+    -DTOOLDTI-Reg:PATH=${TOOLDTI-Reg}
+    -DTOOLunu:PATH=${TOOLunu}
+    -DTOOLMriWatcher:PATH=${TOOLMriWatcher}
+    -DAtlasWerks_DIR:PATH=${AtlasWerks_DIR}
   )
 
 if( ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )

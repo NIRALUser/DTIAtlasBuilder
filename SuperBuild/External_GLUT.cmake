@@ -24,8 +24,8 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # Make sure that the ExtProjName/IntProjName variables are unique globally
 # even if other External_${ExtProjName}.cmake files are sourced by
 # SlicerMacroCheckExternalProjectDependency
-set(extProjName MriWatcher) #The find_package known name
-set(proj        MriWatcher) #This local name
+set(extProjName GLUT) #The find_package known name
+set(proj        GLUT) #This local name
 set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
 #if(${USE_SYSTEM_${extProjName}})
@@ -38,9 +38,14 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
-  # option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
+  option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
+  #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 GLUT)
+  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel DCMTK JPEG TIFF)
+  if( BUILD_DWIAtlas )
+    list( APPEND ${proj}_DEPENDENCIES Boost )
+  endif()
+
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
   # Set CMake OSX variable to pass down the external project
@@ -54,19 +59,18 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
-    ${DWIAtlasVars}
     -DBUILD_TESTING:BOOL=OFF
-    -DUSE_SYSTEM_ITK:BOOL=ON
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DMriWatcher_SUPERBUILD:BOOL=OFF
-    -DMriWatcher_BUILD_SLICER_EXTENSION:BOOL=OFF
+    -DGLUT_SUPERBUILD:BOOL=OFF
+    -DEXECUTABLES_ONLY:BOOL=ON
     )
   
   ### --- End Project specific additions
 
+  set( ${proj}_REPOSITORY https://github.com/LuaDist/freeglut)
+  set( ${proj}_GIT_TAG master )
   ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/MriWatcher.git
-    GIT_TAG bd82f023f5fbcf9ecef232698809c19708bccfe4
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
