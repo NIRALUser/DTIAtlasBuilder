@@ -88,7 +88,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   
   ### --- End Project specific additions
   #set( ${proj}_REPOSITORY ${git_protocol}://github.com/scalphunters/DTI-Reg.git)
-  set( ${proj}_REPOSITORY /root/dti-reg-ok/)
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/niralUser/DTI-Reg.git)
   set( ${proj}_GIT_TAG master )
   
   ExternalProject_Add(${proj}
@@ -113,7 +113,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     DEPENDS
       ${${proj}_DEPENDENCIES} 
   )
-  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-inner-build)
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)

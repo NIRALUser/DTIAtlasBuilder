@@ -87,7 +87,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   
   ### --- End Project specific additions
   #set( ${proj}_REPOSITORY ${git_protocol}://github.com/scalphunters/DTIProcessToolkit.git)
-  set( ${proj}_REPOSITORY /root/dtiprocesstoolkit/)
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/niralUser/DTIProcessToolkit.git)
   set( ${proj}_GIT_TAG master )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}

@@ -165,8 +165,29 @@ if(BUILD_TESTING)
 #  include_directories( ${TestingSRCdirectory} ) # contains a CMakeLists.txt
 endif()
 
+## INSTALL TOOLS
+
+set(TOOL_LIST
+    ${DTI-Reg_DIR}/bin/DTI-Reg
+    ${DTIProcess_DIR}/bin/dtiprocess
+    ${DTIProcess_DIR}/bin/dtiaverage
+    ${niral_utilities_DIR}/../../../bin/CropDTI
+    ${niral_utilities_DIR}/../../../bin/ImageMath
+    ${teem_DIR}/../bin/unu
+    ${AtlasWerks_DIR}/bin/GreedyAtlas
+    ${AtlasWerks_DIR}/bin/GreedyWarp
+    ${MriWatcher_DIR}/MriWatcher 
+    ${BRAINSTools_DIR}/bin/BRAINSFit
+    ${ResampleDTIlogEuclidean_DIR}/../ResampleDTIlogEuclidean-install/bin/ResampleDTIlogEuclidean
+  )
+
+foreach(file ${TOOL_LIST})
+    install(PROGRAMS ${file}
+      DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+      COMPONENT RUNTIME)
+endforeach()
+
 if(AtlasWerks_DIR)
-  
   if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
     install(PROGRAMS ${AtlasWerks_DIR}/bin/GreedyAtlas
       DESTINATION ${INSTALL_RUNTIME_DESTINATION}/../ExternalBin
