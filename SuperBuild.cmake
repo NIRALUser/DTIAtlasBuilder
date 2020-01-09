@@ -393,25 +393,26 @@ ExternalProject_Add(${proj}-inner
     -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
     #-DQt5_DIR:PATH=${Qt5_DIR}
     -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
-    -DBUILD_TESTING:BOOL=${BUILD_TESTING}
+    -DBUILD_TESTING:BOOL=ON
     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
     # Installation step
     # Slicer extension
     -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION:BOOL=${DTIAtlasBuilder_BUILD_SLICER_EXTENSION}
     -DSlicer_DIR:PATH=${Slicer_DIR}
     -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
-    # For the tests
-    -DTOOLImageMath:PATH=${TOOLImageMath}
-    -DTOOLResampleDTIlogEuclidean:PATH=${TOOLResampleDTIlogEuclidean}
-    -DTOOLCropDTI:PATH=${TOOLCropDTI}
-    -DTOOLdtiprocess:PATH=${TOOLdtiprocess}
-    -DTOOLBRAINSFit:PATH=${TOOLBRAINSFit}
-    -DTOOLGreedyAtlas:PATH=${TOOLGreedyAtlas}
-    -DTOOLdtiaverage:PATH=${TOOLdtiaverage}
-    -DTOOLDTI-Reg:PATH=${TOOLDTI-Reg}
-    -DTOOLunu:PATH=${TOOLunu}
-    -DTOOLMriWatcher:PATH=${TOOLMriWatcher}
-    -DAtlasWerks_DIR:PATH=${AtlasWerks_DIR}
+    # For the configuration file (DTIAtlasBuilderSoftConfig.txt.in)
+    # -DImageMathPath:PATH="Helloworld" #${TOOLImageMath}
+    # -DResampleDTIlogEuclideanPath:PATH=${TOOLResampleDTIlogEuclidean}
+    # -DCropDTIPath:PATH=${TOOLCropDTI}
+    # -DdtiprocessPath:PATH=${TOOLdtiprocess}
+    # -DBRAINSFitPath:PATH=${TOOLBRAINSFit}
+    # -DGreedyAtlasPath:PATH=${TOOLGreedyAtlas}
+    # -DdtiaveragePath:PATH=${TOOLdtiaverage}
+    # -DDTI-RegPath:PATH=${TOOLDTI-Reg}
+    # -DunuPath:PATH=${TOOLunu}
+    # -DMriWatcherPath:PATH=${TOOLMriWatcher}
+    # #Pure copy of AtlaskWerks
+    # -DAtlasWerks_DIR:PATH=${AtlasWerks_DIR}
   )
 
 if( ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )

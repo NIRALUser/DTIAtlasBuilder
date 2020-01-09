@@ -104,6 +104,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(${extProjName}_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj})
   set(${extProjName}_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
   set(${extProjName}_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install)
+  set(${extProjName}_BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/bin)
+  
   set(USE_ANTS ON)
 else()
   if(${USE_SYSTEM_${extProjName}})
@@ -131,6 +133,8 @@ ${extProjName}_LIBRARY_DIR=${${extProjName}_LIBRARY_DIR}")
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_BINARY_DIR:PATH)
+
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 

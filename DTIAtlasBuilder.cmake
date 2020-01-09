@@ -131,6 +131,7 @@ set(DTIABsources GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADE
 FIND_PACKAGE(SlicerExecutionModel REQUIRED)
 INCLUDE(${SlicerExecutionModel_USE_FILE})
 
+
 SEMMacroBuildCLI(
     NAME DTIAtlasBuilder
     EXECUTABLE_ONLY
@@ -146,6 +147,8 @@ SEMMacroBuildCLI(
   export(TARGETS ${LOCAL_NAME} APPEND FILE ${CMAKE_BINARY_DIR}/${PRIMARY_PROJECT_NAME}-exports.cmake)
 
 set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}")# Add preprocessor definitions
+
+
 
 
 #======================================================================================
@@ -165,27 +168,46 @@ if(BUILD_TESTING)
 #  include_directories( ${TestingSRCdirectory} ) # contains a CMakeLists.txt
 endif()
 
+### ~Install default configuration file
+
+find_program(DTI-RegPath DTI-Reg PATHS ${DTI-Reg_BINARY_DIR})
+find_program(dtiaveragePath dtiaverage PATHS ${DTIProcess_BINARY_DIR})
+find_program(dtiprocessPath dtiprocess PATHS ${DTIProcess_BINARY_DIR})
+find_program(GreedyAtlasPath GreedyAtlas PATHS ${AtlasWerks_BINARY_DIR})
+find_program(GreedyWarp GreedyWarp PATHS ${AtlasWerks_BINARY_DIR})
+find_program(unuPath unu PATHS ${teem_BINARY_DIR})
+find_program(CropDTIPath CropDTI PATHS ${niral_utilities_BINARY_DIR})
+find_program(ImageMathPath ImageMath PATHS ${niral_utilities_BINARY_DIR})
+find_program(BRAINSFitPath BRAINSFit PATHS ${BRAINSTools_BINARY_DIR})
+find_program(ResampleDTIlogEuclideanPath ResampleDTIlogEuclidean PATHS ${ResampleDTIlogEuclidean_BINARY_DIR})
+find_program(MriWatcherPath MriWatcher PATHS ${MriWatcher_BINARY_DIR})
+
+message("XXXX - Finding in ${DTI-Reg_BINARY_DIR}")
+message("XXXX - ${DTI-RegPath}")
+
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_INSTALL_PREFIX}/bin/DTIAtlasBuilderSoftConfig.txt)
+
 ## INSTALL TOOLS
 
-set(TOOL_LIST
-    ${DTI-Reg_DIR}/bin/DTI-Reg
-    ${DTIProcess_DIR}/bin/dtiprocess
-    ${DTIProcess_DIR}/bin/dtiaverage
-    ${niral_utilities_DIR}/../../../bin/CropDTI
-    ${niral_utilities_DIR}/../../../bin/ImageMath
-    ${teem_DIR}/../bin/unu
-    ${AtlasWerks_DIR}/bin/GreedyAtlas
-    ${AtlasWerks_DIR}/bin/GreedyWarp
-    ${MriWatcher_DIR}/MriWatcher 
-    ${BRAINSTools_DIR}/bin/BRAINSFit
-    ${ResampleDTIlogEuclidean_DIR}/../ResampleDTIlogEuclidean-install/bin/ResampleDTIlogEuclidean
-  )
+# set(TOOL_LIST
+#     ${DTI-Reg_DIR}/bin/DTI-Reg
+#     ${DTIProcess_DIR}/bin/dtiprocess
+#     ${DTIProcess_DIR}/bin/dtiaverage
+#     ${niral_utilities_DIR}/../../../bin/CropDTI
+#     ${niral_utilities_DIR}/../../../bin/ImageMath
+#     ${teem_DIR}/../bin/unu
+#     ${AtlasWerks_DIR}/bin/GreedyAtlas
+#     ${AtlasWerks_DIR}/bin/GreedyWarp
+#     ${MriWatcher_DIR}/MriWatcher 
+#     ${BRAINSTools_DIR}/bin/BRAINSFit
+#     ${ResampleDTIlogEuclidean_DIR}/../ResampleDTIlogEuclidean-install/bin/ResampleDTIlogEuclidean
+#   )
 
-foreach(file ${TOOL_LIST})
-    install(PROGRAMS ${file}
-      DESTINATION ${INSTALL_RUNTIME_DESTINATION}
-      COMPONENT RUNTIME)
-endforeach()
+# foreach(file ${TOOL_LIST})
+#     install(PROGRAMS ${file}
+#       DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+#       COMPONENT RUNTIME)
+# endforeach()
 
 if(AtlasWerks_DIR)
   if( DTIAtlasBuilder_BUILD_SLICER_EXTENSION )
