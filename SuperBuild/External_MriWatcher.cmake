@@ -52,17 +52,28 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
   endif()
 
+
+  ### search for preinstalled or compiled glut
+
+  #find_package(GLUT)
+
+
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
     ${DWIAtlasVars}
     -DBUILD_TESTING:BOOL=OFF
     -DUSE_SYSTEM_ITK:BOOL=ON
     -DITK_DIR:PATH=${ITK_DIR}
+    # -DGLUT_FOUND=ON
+    # -DGLUT_DIR=${GLUT_DIR}
+    # -DGLUT_INCLUDE_DIR=${GLUT_DIR}/include
+    # -DGLUT_glut_LIBRARY=${GLUT_DIR}/lib/libfreeglut.a
     -DMriWatcher_SUPERBUILD:BOOL=OFF
     -DMriWatcher_BUILD_SLICER_EXTENSION:BOOL=OFF
     )
   
   ### --- End Project specific additions
+ 
 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${git_protocol}://github.com/NIRALUser/MriWatcher.git
@@ -85,6 +96,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     DEPENDS
       ${${proj}_DEPENDENCIES} 
   )
+
+  message("XXXX - ${GLUT_LIBRARIES}")
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
   set(${extProjName}_BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/bin)
   

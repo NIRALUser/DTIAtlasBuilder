@@ -182,9 +182,6 @@ find_program(BRAINSFitPath BRAINSFit PATHS ${BRAINSTools_BINARY_DIR})
 find_program(ResampleDTIlogEuclideanPath ResampleDTIlogEuclidean PATHS ${ResampleDTIlogEuclidean_BINARY_DIR})
 find_program(MriWatcherPath MriWatcher PATHS ${MriWatcher_BINARY_DIR})
 
-message("XXXX - Finding in ${DTI-Reg_BINARY_DIR}")
-message("XXXX - ${DTI-RegPath}")
-
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_INSTALL_PREFIX}/bin/DTIAtlasBuilderSoftConfig.txt)
 
 ## INSTALL TOOLS
