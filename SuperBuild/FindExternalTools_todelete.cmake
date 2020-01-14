@@ -227,7 +227,7 @@ if(RecompileITK)
   message("ITKv4 not found. It will be downloaded and recompiled, unless a path is manually specified in the ITK_DIR variable.") # Not a Warning = just info
   # Download and compile ITKv4
   ExternalProject_Add(I4 # BRAINSStandAlone/SuperBuild/External_ITKv4.cmake # !! All args needed as they are # Name shorten from ITKv4 because Windows ITKv4 path limited to 50 chars
-    GIT_REPOSITORY "${git_protocol}://itk.org/ITK.git"
+    GIT_REPOSITORY "${git_protocol}://github.com/InsightSoftwareConsortium/ITK"
     GIT_TAG 8f7c404aff99f5ae3dfedce6e480701f0304864c
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4 # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/I4-b # Path shorten from ITKv4 because Windows SOURCE_DIR path limited to 50 chars

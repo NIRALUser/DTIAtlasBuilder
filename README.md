@@ -19,6 +19,14 @@ Binary package available on the [NITRC download page](http://www.nitrc.org/frs/?
 Usage tutorial available [from NITRC](http://www.nitrc.org/docman/view.php/636/1189/DTIAtlasBuilder_Tutorial.pdf)
 
 ## External Requirements
+Following OS level library and tools needs to be installed before build
+
+- python-devel
+- qt4-qtbase-devel
+- qt5-qtbase-devel
+- freeglut-devel
+- cmake 3.4 or above
+
 
 These Softwares need to be installed before executing the tool :
 - ImageMath
