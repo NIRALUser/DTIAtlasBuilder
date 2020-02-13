@@ -27,6 +27,16 @@ Following OS level library and tools needs to be installed before build
 - freeglut-devel
 - cmake 3.4 or above
 
+## Dockerfile for developers
+
+Use below command in source directory to build docker image (Currently having only CentOS7 image.
+
+```
+$ docker build . -t <image-name>
+$ docker run --rm -it -v $PWD/../:/work -w /work <image-name> 
+```
+
+
 
 These Softwares need to be installed before executing the tool :
 - ImageMath

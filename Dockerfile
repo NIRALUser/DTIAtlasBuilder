@@ -14,5 +14,6 @@ RUN tar xvfz cmake-3.16.4.tar.gz
 WORKDIR /root/cmake-3.16.4
 RUN ./configure
 RUN make install
+WORKDIR /
 
 
