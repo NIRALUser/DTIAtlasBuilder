@@ -27,17 +27,6 @@ Following OS level library and tools needs to be installed before build
 - freeglut-devel
 - cmake 3.4 or above
 
-## Dockerfile for developers
-
-Use below command in source directory to build docker image (Currently having only CentOS7 image.
-
-```
-$ docker build . -t <image-name>
-$ docker run --rm -it -v $PWD/../:/work -w /work <image-name> 
-```
-
-
-
 These Softwares need to be installed before executing the tool :
 - ImageMath
 - ResampleDTIlogEuclidean
@@ -51,6 +40,17 @@ These Softwares need to be installed before executing the tool :
 - unu
 
 If you do not have these softwares installed on your machine, you can use the COMPILE_PACKAGE CMake option to download and compile aumatically the tools you need. If you do so, please run "make install" after the compilation to copy the tools into the CMAKE_INSTALL_PREFIX.
+
+
+## Dockerfile for developers
+
+Use below command in source directory to build docker image (Currently having only CentOS7 image.
+
+```
+$ docker build . -t <image-name>
+$ docker run --rm -it -v $PWD/../:/work -w /work <image-name> 
+```
+
 
 ## Change Log:
 
