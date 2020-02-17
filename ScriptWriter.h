@@ -6,10 +6,21 @@
 #include <string>
 #include <vector>
 #include <math.h>// for the absolute value
+#include <string>
+#include <iostream>
+#include <iomanip>
+
+/*json classes*/
+#include <iostream>
+#include <nlohmann/json.hpp>
 
 /*itk classes*/
 #include "itkImage.h"
 #include "itkImageFileReader.h"
+
+/* Namespace */
+using json = nlohmann::json;
+
 
 class ScriptWriter
 {
@@ -35,6 +46,10 @@ class ScriptWriter
     int CheckVoxelSize(); // returns 0 if voxel size OK , otherwise 1
 
 /*SET THE VALUES*/
+    /* Script Configuration */
+    void SaveScriptConfiguration(void);
+
+    /* */
     void setCasesPath(std::vector < std::string > CasesPath);
     void clearCasesPath();
     void setOutputPath(std::string OutputPath);

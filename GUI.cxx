@@ -23,11 +23,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <string>
+#include <iomanip>
+
 
 /*itk classes*/
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include <itksys/SystemTools.hxx> // for FindProgram() and GetFilenamePath()
+
 
 /* ITK modes = same values than the C variables: F_OK W_OK R_OK X_OK */
 mode_t ITKmode_F_OK = 0;
@@ -1383,6 +1387,8 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
 
   }
 }
+
+
 
 void GUI::LoadParametersSlot() /*SLOT*/
 {

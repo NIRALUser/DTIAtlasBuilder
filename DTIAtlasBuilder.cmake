@@ -168,6 +168,13 @@ if(BUILD_TESTING)
 #  include_directories( ${TestingSRCdirectory} ) # contains a CMakeLists.txt
 endif()
 
+### Install resources 
+
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/template_main.py ${CMAKE_INSTALL_PREFIX}/bin/Script/DTIAtlasBuilder_Main.py)
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/template_preprocess.py ${CMAKE_INSTALL_PREFIX}/bin/Script/DTIAtlasBuilder_Preprocess.py)
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/template_atlasbuilding.py ${CMAKE_INSTALL_PREFIX}/bin/Script/DTIAtlasBuilder_AtlasBuilding.py)
+
+
 ### ~Install default configuration file
 
 find_program(DTI-RegPath DTI-Reg PATHS ${DTI-Reg_BINARY_DIR})

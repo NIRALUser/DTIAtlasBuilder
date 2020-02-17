@@ -202,7 +202,8 @@ list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4
                                                                                       CLAPACK
                                                                                       GLUT
                                                                                       MriWatcher
-                                                                                      AtlasWerks )
+                                                                                      AtlasWerks
+                                                                                      JSON )
 
 set(USE_ITK_Module_MGHIO TRUE)
 #set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )

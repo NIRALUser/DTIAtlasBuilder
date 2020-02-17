@@ -44,7 +44,7 @@ std::string pyTestGridProcess ( bool NoCase1 )
   Script = Script + "    filesOK = 1\n";
   Script = Script + "    if NbCases>0 :\n";
   Script = Script + "      NbfilesOK = 0\n";
-  if( NoCase1 )
+  if( NoCase1 ) 
   {
     Script = Script + "      case = int(NoCase1) # NoCase1 is 0 or 1 (bool)\n";
   }
@@ -203,6 +203,10 @@ std::string ScriptWriter::pyExecuteCommandPreprocessCase ( std::string NameOfFil
 
 void ScriptWriter::WriteScript()
 {
+  std::cout<<"| Write script configuration file"<<std::endl;
+  SaveScriptConfiguration();
+  std::cout<<"| Script file written"<<std::endl;
+  std::cout<<"|"<<std::endl;
   std::cout<<"|"<<std::endl; // command line display
   std::cout<<"| Number of Cases: "<<m_CasesPath.size()<<std::endl; // command line display
   std::cout<<"| Output Directory : "<<m_OutputPath<<"/DTIAtlas"<<std::endl; // command line display
@@ -1586,6 +1590,27 @@ int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
   /////////////////////////////////////////
  //           SET THE VALUES            //
 /////////////////////////////////////////
+void ScriptWriter::SaveScriptConfiguration(void)
+{
+  std::cout << "Script Configuration generated" << std::endl;
+  json obj={
+    {"OutputPath",m_OutputPath},
+    {"m_PythonPath", m_PythonPath},
+    {"m_useGridProcess", m_useGridProcess},
+    {"m_NbThreadsString" , m_NbThreadsString}
+  };
+  std::cout << std::setw(4) << obj << std::endl;
+
+  // Write to file
+  std::string name="/DTIAtlas/Script/script.json";
+  std::string filename = m_OutputPath + name;
+  std::cout << "Writing script configuration to file to : " + filename  << std::endl;
+  std::ofstream o(filename);
+  o << std::setw(4) << obj << std::endl;
+
+  std::cout << "Script configuration written."<< std::endl;
+
+}
 
 void ScriptWriter::setCasesPath(std::vector < std::string > CasesPath)
 {

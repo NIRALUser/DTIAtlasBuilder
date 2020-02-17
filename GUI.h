@@ -20,6 +20,7 @@
 #include <vector>
 #include <sstream>
 
+
 /*itk classes*/
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -67,6 +68,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
                                                              QDoubleSpinBox*& gammaDoubleSpinBox,
                                                              QDoubleSpinBox*& maxPerturbationDoubleSpinBox );
     void SaveParameters(QString ParamBrowseName,QString CSVFileName);
+
 
 /*XML FILE*/
     void GenerateXMLForGA();
