@@ -3,8 +3,14 @@
 import os # To run a shell command : os.system("[shell command]")
 import sys # to return an exit code
 import shutil # to remove a non empty directory
+import json
 
-PIDlogFile = "/work/DTIAtlas/Script/PID.log"
+configPath=os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.json")
+config={}
+with open(configPath,'r') as f:
+  config=json.load(f)
+
+PIDlogFile = config['m_OutputPath']+"/DTIAtlas/Script/PID.log"
 PIDfile = open( PIDlogFile, 'a') # open in Append mode
 PIDfile.write( str(os.getpid()) + "\n" )
 PIDfile.close()

@@ -1594,15 +1594,35 @@ void ScriptWriter::SaveScriptConfiguration(void)
 {
   std::cout << "Script Configuration generated" << std::endl;
   json obj={
-    {"OutputPath",m_OutputPath},
+    {"m_OutputPath",m_OutputPath},
     {"m_PythonPath", m_PythonPath},
     {"m_useGridProcess", m_useGridProcess},
-    {"m_NbThreadsString" , m_NbThreadsString}
+    {"m_NbThreadsString" , m_NbThreadsString},
+    {"m_CasesPath", m_CasesPath},
+    {"m_CasesIDs", m_CasesIDs},
+    {"m_RegType", m_RegType},
+    {"m_nbLoops", m_nbLoops},
+    {"m_TemplatePath",m_TemplatePath},
+    {"m_CropSize", m_CropSize},
+    {"m_NeedToBeCropped", m_NeedToBeCropped},
+    {"m_Overwrite", m_Overwrite},
+    {"m_InterpolType", m_InterpolType},
+    {"m_InterpolOption",m_InterpolOption},
+    {"m_TensInterpol", m_TensInterpol},
+    {"m_InterpolLogOption", m_InterpolLogOption},
+    {"m_TensTfm", m_TensTfm},
+    {"m_SoftPath",m_SoftPath},
+    {"m_DTIRegOptions",m_DTIRegOptions},
+    {"m_DTIRegExtraPath",m_DTIRegExtraPath},
+    {"m_BFAffineTfmMode", m_BFAffineTfmMode},
+    {"m_GridGeneralCommand",m_GridGeneralCommand},
+    {"m_GridAtlasCommand",m_GridAtlasCommand},
+    {"m_ScalarMeasurement",m_ScalarMeasurement}
   };
   std::cout << std::setw(4) << obj << std::endl;
 
   // Write to file
-  std::string name="/DTIAtlas/Script/script.json";
+  std::string name="/DTIAtlas/Script/config.json";
   std::string filename = m_OutputPath + name;
   std::cout << "Writing script configuration to file to : " + filename  << std::endl;
   std::ofstream o(filename);

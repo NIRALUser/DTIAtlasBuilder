@@ -3,28 +3,25 @@
 import os
 import time
 import sys
-import argparse
+import json 
 
-
-config={
-	# MAIN Script
-	"m_PythonPath" : "/usr/bin/python",
-	"m_NbThreadsString" : "0",
-	"OutputPath" : "~/work/niral/DTIAtlas"
-	"m_useGridProcess" : False
-}
 
 ### load configutation json
 
-
-
+configPath=os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.json")
+config={}
+with open(configPath,'r') as f:
+	config=json.load(f)
+print(json.dumps(config,indent=4))
 
 print("\nThe current date and time are:")
 print( time.strftime('%x %X %Z') )
 
+exit(1)
+
 print("\n=============== Main Script ================")
 
-OutputPath= config['main']['m_OutputPath']+"DTIAtlas"
+OutputPath= config['m_OutputPath']+"/DTIAtlas"
 
 def DisplayErrorAndQuit ( Error ):
   print '\n\nERROR DETECTED IN WORKFLOW:',Error
@@ -44,12 +41,12 @@ if os.path.isfile( OutputPath + "/Script/DTIAtlasBuilder_AtlasBuilding.script" )
 time1=time.time()
 
 # Call the Preprocess script
-PrePScriptCommand= config['m_PythonPath']+ " " +config['OutputPath'] + "/Script/DTIAtlasBuilder_Preprocess.py"
+PrePScriptCommand= config['m_PythonPath']+ " " + OutputPath+ "/Script/DTIAtlasBuilder_Preprocess.py"
 print("\n=> $ " + PrePScriptCommand)
 if os.system(PrePScriptCommand)!=0 : DisplayErrorAndQuit('=> Errors detected in preprocessing')
 
 # Call the Atlas Building script
-AtlasBuildingCommand= config['m_PythonPath']+ " " + config['OutputPath'] + "/Script/DTIAtlasBuilder_AtlasBuilding.py"
+AtlasBuildingCommand= config['m_PythonPath']+ " " + OutputPath + "/Script/DTIAtlasBuilder_AtlasBuilding.py"
 print("\n=> $ " + AtlasBuildingCommand)
 if os.system(AtlasBuildingCommand)!=0 : DisplayErrorAndQuit('=> Errors detected in atlas building')
 
