@@ -31,10 +31,10 @@
     "m_NbThreadsString": "0",
     "m_NeedToBeCropped": 0,
     "m_OutputPath": "/work",
-    "m_Overwrite": 0,
+    "m_Overwrite": 1,
     "m_PythonPath": "/usr/bin/python",
     "m_RegType": 1,
-    "m_ScalarMeasurement": "FA",
+    "m_ScalarMeasurement": "MD",
     "m_SoftPath": [
         "/work/dtiatlasbuilder-build/niral_utilities-install/bin/ImageMath",
         "/work/dtiatlasbuilder-build/ResampleDTIlogEuclidean-install/bin/ResampleDTIlogEuclidean",
@@ -46,9 +46,9 @@
         "/work/dtiatlasbuilder-build/DTI-Reg-install/bin/DTI-Reg",
         "/work/dtiatlasbuilder-build/teem-install/bin/unu"
     ],
-    "m_TemplatePath": "",
+    "m_TemplatePath": "/work/dtiatlasbuilder/Data/Testing/ImageTest3.nrrd",
     "m_TensInterpol": "Log Euclidean",
     "m_TensTfm": "Preservation of the Principal Direction (PPD)",
-    "m_nbLoops": 1,
+    "m_nbLoops": 3,
     "m_useGridProcess": false
 }

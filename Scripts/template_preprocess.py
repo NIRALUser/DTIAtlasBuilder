@@ -40,14 +40,14 @@ def DisplayErrorAndQuit ( Error ):
 def pyExecuteCommandPreprocessCase(NameOfFileVarToTest, NameOfCmdVarToExec, ErrorTxtToDisplay,case=0):
   if config["m_Overwrite"]==1:
     if not config["m_useGridProcess"]:
-      if os.system(" + NameOfCmdVarToExec + ")!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + ']' + ErrorTxtToDisplay)
+      if os.system(NameOfCmdVarToExec)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + ']' + ErrorTxtToDisplay)
     else:
       GridProcessCaseCommandsArray.append(NameOfCmdVarToExec) # Executed eventually
     #print("=> The file '" + NameOfFileVarToTest + "' already exists so the command will not be executed")
   else:
     if not CheckFileExists(NameOfFileVarToTest,case, allcases[case]):
       if not config["m_useGridProcess"]:
-        if os.system(" + NameOfCmdVarToExec + ")!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + ']' + ErrorTxtToDisplay)
+        if os.system(NameOfCmdVarToExec)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + ']' + ErrorTxtToDisplay)
         else:
           GridProcessCaseCommandsArray.append(NameOfCmdVarToExec) # Executed eventually
     else:
@@ -192,15 +192,15 @@ if not os.path.isdir(OutputPath):
 
 
 # Creating template by processing Case 1 DTI
-RescaleTemp=None
-RescaleTempCommand=None
+# RescaleTemp=None
+# RescaleTempCommand=None
 #AtlasScalarMeasurementref=None
-FilteredDTI=None 
-FilterDTICommand=None 
-DTI=None 
+# FilteredDTI=None 
+# FilterDTICommand=None 
+# DTI=None 
 ScalarMeasurement=config['m_ScalarMeasurement']
-GeneScalarMeasurementCommand=None 
-GridCase1TemplateCommand=None 
+# GeneScalarMeasurementCommand=None 
+# GridCase1TemplateCommand=None 
 
 if config['m_RegType']==0:
   # Rescaling template
@@ -220,18 +220,17 @@ if config['m_RegType']==0:
 else:
 # Filter case 1 DTI
   print("")
-  FilteredDTI= OutputPath + config['m_CasesIDs'][0]
+  FilteredDTI= OutputPath + "/" + config['m_CasesIDs'][0] +"_filteredDTI.nrrd"
   FilterDTICommand=  config['m_SoftPath'][1] +" " + allcases[0] + " " + FilteredDTI + " --correction zero"
   print("["+ config['m_CasesIDs'][0] +"] [Filter DTI] => $ " + FilterDTICommand)
-  if config['m_Overwrite'] :
+  if config['m_Overwrite']==1 :
     if not config['m_useGridProcess']:
-      if os.system(FilterDTICommand)!=0 : DisplayErrorAndQuit('['+config['m_CasesIDs'][0]+'] ResampleDTIlogEuclidean: Filter DTI to remove negative values')
+      if os.system(FilterDTICommand)!=0 : DisplayErrorAndQuit('['+config['m_CasesIDs'][0]+'] ResampleDTIlogEuclidean: 1ow Filter DTI to remove negative values')
   else:
     if not CheckFileExists(FilteredDTI, 0, "" + config["m_CasesIDs"][0] + "" ) :
-      if os.system(FilterDTICommand)!=0 : DisplayErrorAndQuit('['+config['m_CasesIDs'][0]+'] ResampleDTIlogEuclidean: Filter DTI to remove negative values')
+      if os.system(FilterDTICommand)!=0 : DisplayErrorAndQuit('['+config['m_CasesIDs'][0]+'] ResampleDTIlogEuclidean: 1 Filter DTI to remove negative values')
     else : print("=> The file \'" + FilteredDTI + "\' already exists so the command will not be executed")
   # Generating case 
-  DTI=None
   if config['m_NeedToBeCropped']==1:
     DTI= OutputPath + "/" + config['m_CasesIDs'][0]+"_croppedDTI.nrrd"
   else:
@@ -279,7 +278,7 @@ while n <= config['m_nbLoops'] :
   if config["m_RegType"]==1: 
     case = (n==0) # (n==0) -> bool: =1(true) =0(false) : the first case is the reference for the first loop so it will not be normalized or registered (it is cropped and FAed before the loop)
   
-  GridProcessCaseCommandsArray=None 
+  #GridProcessCaseCommandsArray=None 
   while case < len(allcases):
 
     if config["m_useGridProcess"]:
@@ -292,7 +291,7 @@ while n <= config['m_nbLoops'] :
       FilterDTICommand= config["m_SoftPath"][1] + " " + allcases[case] + " " + FilteredDTI + " --correction zero"
       print("[" + allcasesIDs[case] + "] [Filter DTI] => $ " + FilterDTICommand)
 
-      pyExecuteCommandPreprocessCase(FilteredDTI,FilterDTICommand,"ResampleDTIlogEuclidean: Filter DTI to remove negative values",case)
+      pyExecuteCommandPreprocessCase(FilteredDTI,FilterDTICommand,"ResampleDTIlogEuclidean: 2 Filter DTI to remove negative values",case)
       # if 1 :
       #   if os.system(FilterDTICommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] ResampleDTIlogEuclidean: Filter DTI to remove negative values')
       # else : print("=> The file \'" + FilteredDTI + "\' already exists so the command will not be executed")
@@ -304,7 +303,7 @@ while n <= config['m_nbLoops'] :
 
 
 # Generating FA/MD.
-      DTI=None
+      # DTI=None
       if config["m_NeedToBeCropped"]==1:
         DTI=OutputPath + "/" + allcasesIDs[case] + "_croppedDTI.nrrd"
       else:
@@ -368,7 +367,8 @@ while n <= config['m_nbLoops'] :
 
 # Generating FA/MA of registered images
     LinearTransDTI= OutputPath + "/Loop" + str(n) + "/" + allcasesIDs[case] + "_Loop" + str(n) + "_LinearTrans_DTI.nrrd"
-    if n == 1 : LoopScalarMeasurement= OutputPath + "/Loop"+str(config["m_nbLoops"])+"/" + allcasesIDs[case] + "_Loop"+str(config["m_nbLoops"])+"_Final"+config["m_ScalarMeasurement"]+".nrrd" # the last FA will be the Final output
+    # if n == 1 : LoopScalarMeasurement= OutputPath + "/Loop"+str(config["m_nbLoops"])+"/" + allcasesIDs[case] + "_Loop"+str(config["m_nbLoops"])+"_Final"+config["m_ScalarMeasurement"]+".nrrd" # the last FA will be the Final output
+    if n == config["m_nbLoops"] : LoopScalarMeasurement= OutputPath + "/Loop"+str(n)+"/" + allcasesIDs[case] + "_Loop"+ str(n)+"_Final"+config["m_ScalarMeasurement"]+".nrrd" # the last FA will be the Final output
     else : LoopScalarMeasurement= OutputPath + "/Loop" + str(n) + "/" + allcasesIDs[case] + "_Loop" + str(n) + "_"+config["m_ScalarMeasurement"]+".nrrd"
     
     GeneLoopScalarMeasurementCommand= config["m_SoftPath"][3]+" --dti_image " + LinearTransDTI + " -m " + LoopScalarMeasurement
@@ -402,12 +402,13 @@ while n <= config['m_nbLoops'] :
 
 
 # FA/MA Average of registered images with ImageMath
-  ScalarMeasurementAverage=None
-  AverageCommand=None
-  ScalarMeasurementforAVG=None 
+  # ScalarMeasurementAverage=None
+  # AverageCommand=None
+  # ScalarMeasurementforAVG=None 
   if config["m_nbLoops"]!=0:
     if n != int(config["m_nbLoops"]) : # this will not be done for the last lap
       ScalarMeasurementAverage = OutputPath + "/Loop" + str(n) + "/Loop" + str(n) + "_"+config["m_ScalarMeasurement"]+"Average.nrrd"
+      ScalarMeasurementforAVG= OutputPath + "/Loop" + str(n) + "/" + config["m_CasesIDs"][0] + "_Loop" + str(n) + "_" + config["m_ScalarMeasurement"] + ".nrrd"
       if config["m_RegType"]==1:
         if n == 0 : ScalarMeasurementforAVG= OutputPath + "/"+config["m_CasesIDs"][0]+"_"+config["m_ScalarMeasurement"]+".nrrd"
         else : ScalarMeasurementforAVG= OutputPath + "/Loop" + str(n) + "/"+config["m_CasesIDs"][0]+"_Loop" + str(n) + "_"+config["m_ScalarMeasurement"]+".nrrd"
@@ -439,6 +440,7 @@ while n <= config['m_nbLoops'] :
   else:
     if 1:
       ScalarMeasurementAverage = OutputPath + "/Loop" + str(n) + "/Loop" + str(n) + "_"+config["m_ScalarMeasurement"]+"Average.nrrd"
+      ScalarMeasurementforAVG= OutputPath + "/Loop" + str(n) + "/" + config["m_CasesIDs"][0] + "_Loop" + str(n) + "_" + config["m_ScalarMeasurement"] + ".nrrd"
       if config["m_RegType"]==1:
         if n == 0 : ScalarMeasurementforAVG= OutputPath + "/"+config["m_CasesIDs"][0]+"_"+config["m_ScalarMeasurement"]+".nrrd"
         else : ScalarMeasurementforAVG= OutputPath + "/Loop" + str(n) + "/"+config["m_CasesIDs"][0]+"_Loop" + str(n) + "_"+config["m_ScalarMeasurement"]+".nrrd"
