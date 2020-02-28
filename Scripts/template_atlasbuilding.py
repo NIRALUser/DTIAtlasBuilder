@@ -3,24 +3,100 @@
 import os # To run a shell command : os.system("[shell command]")
 import sys # to return an exit code
 import shutil # to remove a non empty directory and copy files
+import time 
 
-PIDlogFile = "/work/DTIAtlas/Script/PID.log"
+PIDlogFile = config['m_OutputPath']+"/DTIAtlas/Script/PID.log"
 PIDfile = open( PIDlogFile, 'a') # open in Append mode
 PIDfile.write( str(os.getpid()) + "\n" )
 PIDfile.close()
 
+config={}
+with open(configPath,'r') as f:
+  config=json.load(f)
+
+m_OutputPath=config["m_OutputPath"]
+m_ScalarMeasurement=config["m_ScalarMeasurement"]
+m_GridAtlasCommand=config["m_GridAtlasCommand"]
+m_RegType=config["m_RegType"]
+m_Overwrite=config["m_Overwrite"]
+m_useGridProcess=config["m_useGridProcess"]
+m_SoftPath=config["m_SoftPath"]
+m_nbLoops=config["m_nbLoops"]
+m_TensTfm=config["m_TensTfm"]
+m_TemplatePath=config["m_TemplatePath"]
+m_BFAffineTfmMode=config["m_BFAffineTfmMode"]
+m_CasesIDs=config["m_CasesIDs"]
+m_CasesPath=config["m_CasesPath"]
+m_CropSize=config["m_CropSize"]
+m_DTIRegExtraPath=config["m_DTIRegExtraPath"]
+m_DTIRegOptions=config["m_DTIRegOptions"]
+m_GridAtlasCommand=config["m_GridAtlasCommand"]
+m_GridGeneralCommand=config["m_GridGeneralCommand"]
+m_InterpolLogOption=config["m_InterpolLogOption"]
+m_InterpolType=config["m_InterpolType"]
+m_NbThreadsString=config["m_NbThreadsString"]
+m_NeedToBeCropped=config["m_NeedToBeCropped"]
+m_PythonPath=config["m_PythonPath"]
+m_TensInterpol=config["m_TensInterpol"]
+
 print("\n============ Atlas Building =============")
 
 # Files Paths
-DeformPath= "/work/DTIAtlas/2_NonLinear_Registration"
-AffinePath= "/work/DTIAtlas/1_Affine_Registration"
-FinalPath= "/work/DTIAtlas/3_Diffeomorphic_Atlas"
-FinalResampPath= "/work/DTIAtlas/4_Final_Resampling"
+DeformPath= m_OutputPath+"/DTIAtlas/2_NonLinear_Registration"
+AffinePath= m_OutputPath+"/DTIAtlas/1_Affine_Registration"
+FinalPath= m_OutputPath+"/DTIAtlas/3_Diffeomorphic_Atlas"
+FinalResampPath= m_OutputPath+"/DTIAtlas/4_Final_Resampling"
 
 def DisplayErrorAndQuit ( Error ):
   print '\n\nERROR DETECTED IN WORKFLOW:',Error
   print 'ABORT'
   sys.exit(1)
+
+def TestGridProcess ( FilesFolder, NbCases , NoCase1=None):
+  if NoCase1 is not None:
+    if NbCases>0 : print("\n| Waiting for all batches (" + str(NbCases-NoCase1) + ") to be processed on grid...")
+    else : print("\n| Waiting for 1 batch to be processed on grid...")
+    filesOK = 0
+    OldNbFilesOK = 0
+    while not filesOK :
+      filesOK = 1
+      if NbCases>0 :
+        NbfilesOK = 0
+        case = int(NoCase1) # NoCase1 is 0 or 1 (bool)
+        while case < NbCases:
+          if not os.path.isfile( FilesFolder + "/Case" + str(case+1) ) : filesOK = 0
+          else : NbfilesOK = NbfilesOK + 1
+          case += 1
+        if NbfilesOK != OldNbFilesOK : print("| [" + str(NbfilesOK) + "\t / " + str(NbCases-NoCase1) + " ] cases processed")
+        OldNbFilesOK=NbfilesOK  
+      elif not os.path.isfile( FilesFolder + "/file" ) : filesOK = 0
+      time.sleep(60) # Test only every minute\n"
+    print("\n=> All files processed\n")
+    shutil.rmtree(FilesFolder) # clear directory and recreate it\n"
+    os.mkdir(FilesFolder)
+
+  else:
+    if NbCases>0 : print("\n| Waiting for all batches (" + str(NbCases) + ") to be processed on grid...")
+    else : print("\n| Waiting for 1 batch to be processed on grid...")
+    filesOK = 0
+    OldNbFilesOK = 0
+    while not filesOK :
+      filesOK = 1
+      if NbCases>0 :
+        NbfilesOK = 0
+        case = 0
+        while case < NbCases:
+          if not os.path.isfile( FilesFolder + "/Case" + str(case+1) ) : filesOK = 0
+          else : NbfilesOK = NbfilesOK + 1
+          case += 1
+
+        if NbfilesOK != OldNbFilesOK : print("| [" + str(NbfilesOK) + "\t / " + str(NbCases) + " ] cases processed")
+        OldNbFilesOK=NbfilesOK
+      elif not os.path.isfile( FilesFolder + "/file" ) : filesOK = 0
+      time.sleep(60) # Test only every minute\n"
+    print("\n=> All files processed\n")
+    shutil.rmtree(FilesFolder) # clear directory and recreate it\n"
+    os.mkdir(FilesFolder)
 
 # Function that checks if file exist and replace old names by new names if needed
 def CheckFileExists ( File, case, caseID ) : # returns 1 if file exists or has been renamed and 0 if not
@@ -40,14 +116,14 @@ def CheckFileExists ( File, case, caseID ) : # returns 1 if file exists or has b
         OldFile = File.replace( caseID, "Case" + str(case+1) ).replace("DiffeomorphicDTI", "AWDTI")
         if os.path.isfile( OldFile ) : # old file exists: rename and return 1
           os.rename(OldFile, File)
-          os.rename(OldFile.replace("AWDTI","AWFA"), File.replace("DiffeomorphicDTI","DiffeomorphicFA"))
+          os.rename(OldFile.replace("AWDTI","AW"+config['m_ScalarMeasurement']), File.replace("DiffeomorphicDTI","Diffeomorphic"+config['m_ScalarMeasurement']))
           os.rename(OldFile.replace("AWDTI","AWDTI_float"), File.replace("DiffeomorphicDTI","DiffeomorphicDTI_float"))
           return 1
         else : # test other old name
           OldFile = File.replace( caseID, "Case" + str(case+1) )
           if os.path.isfile( OldFile ) : # old file exists: rename and return 1
             os.rename(OldFile, File)
-            os.rename(OldFile.replace("DiffeomorphicDTI","DiffeomorphicFA"), File.replace("DiffeomorphicDTI","DiffeomorphicFA"))
+            os.rename(OldFile.replace("DiffeomorphicDTI","Diffeomorphic"+config['m_ScalarMeasurement']), File.replace("DiffeomorphicDTI","Diffeomorphic"+config['m_ScalarMeasurement']))
             os.rename(OldFile.replace("DiffeomorphicDTI","DiffeomorphicDTI_float"), File.replace("DiffeomorphicDTI","DiffeomorphicDTI_float"))
             return 1
           else:
@@ -56,7 +132,7 @@ def CheckFileExists ( File, case, caseID ) : # returns 1 if file exists or has b
         OldFile = File.replace("DiffeomorphicAtlasDTI", "AWAtlasDTI")
         if os.path.isfile( OldFile ) : # old file exists: rename and return 1
           os.rename(OldFile, File)
-          os.rename(OldFile.replace("AWAtlasDTI","AWAtlasFA"), File.replace("DiffeomorphicAtlasDTI","DiffeomorphicAtlasFA"))
+          os.rename(OldFile.replace("AWAtlasDTI","AWAtlas"+config['m_ScalarMeasurement']), File.replace("DiffeomorphicAtlasDTI","DiffeomorphicAtlas"+config['m_ScalarMeasurement']))
           os.rename(OldFile.replace("AWAtlasDTI","AWAtlasDTI_float"), File.replace("DiffeomorphicAtlasDTI","DiffeomorphicAtlasDTI_float"))
           return 1
         else:
@@ -96,9 +172,38 @@ def CheckFileExists ( File, case, caseID ) : # returns 1 if file exists or has b
       else: # for averages
         return 0
 
+
+GridApostrophe=""
+GridProcessCmd=""
+GridProcessFileExistCmd1 = ""
+GridProcessCmdNoCase = ""
+GridProcessCmdAverage = ""
+GridProcessFileExistCmdNoCase = ""
+GridProcessFileExistIndent = ""
+GridProcessFileExistIndent1 = ""
+
+#<<<<<< CURRENT
+FilesFolder=""
+if config["m_useGridProcess"]:
+  FilesFolder= m_OutputPath + '/DTIAtlas/GridProcessingFiles'
+  GridApostrophe="'"
+  File=FilesFolder + "/Case" + str(case+1)
+  GridProcessCmd = m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py " +  " " + File  + " " + GridApostrophe 
+  
+  GridProcessFileExistCmd1 = "    f = open( " + File + ", 'w')\n    f.close()\n" ### This is problematic 
+
+  FileNoCase = FilesFolder + "/file"
+  GridProcessCmdNoCase = m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py " + " " + FileNoCase + " " + GridApostrophe 
+  
+  GridProcessFileExistCmdNoCase = "  f = open( " + FileNoCase + ", 'w')\n  f.close()\n" ### This is problematic 
+  
+  GridProcessCmdAverage = m_GridAtlasCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py " + " " + FileNoCase + " "  + GridApostrophe 
+  GridProcessFileExistIndent = "\n  "
+  GridProcessFileExistIndent1 = "\n    "
+
 # Create directory for temporary files and final
 if not os.path.isdir(DeformPath):
-  OldDeformPath= "/work/DTIAtlas/2_NonLinear_Registration_AW"
+  OldDeformPath= m_OutputPath + "/DTIAtlas/2_NonLinear_Registration_AW"
   if os.path.isdir(OldDeformPath):
     os.rename(OldDeformPath,DeformPath)
   else:
@@ -106,7 +211,7 @@ if not os.path.isdir(DeformPath):
     os.mkdir(DeformPath)
 
 if not os.path.isdir(FinalPath):
-  OldFinalPath= "/work/DTIAtlas/3_AW_Atlas"
+  OldFinalPath= m_OutputPath+"/DTIAtlas/3_AW_Atlas"
   if os.path.isdir(OldFinalPath):
     os.rename(OldFinalPath,FinalPath)
   else:
@@ -134,11 +239,26 @@ if not os.path.isdir(FinalResampPath + "/FinalDeformationFields"):
   os.mkdir(FinalResampPath + "/FinalDeformationFields")
 
 # Cases variables
-alltfms = [AffinePath + "/Loop1/ImageTest1_Loop1_LinearTrans.txt", AffinePath + "/Loop1/ImageTest2_Loop1_LinearTrans.txt", AffinePath + "/Loop1/ImageTest3_Loop1_LinearTrans.txt"]
+#alltfms = [AffinePath + "/Loop"+ m_nbLoops +"/ImageTest1_Loop1_LinearTrans.txt", AffinePath + "/Loop1/ImageTest2_Loop1_LinearTrans.txt", AffinePath + "/Loop1/ImageTest3_Loop1_LinearTrans.txt"]
+alltfms=[]
+for i,c in enumerate(m_CasesPath):
+  alltmfs.append(AffinePath+"/Loop"+m_nbLoops+"/" m_CaseIDs[i] + "_Loop" + m_nbLoops +"_LinearTrans.txt")
 
-allcases = ["/work/dtiatlasbuilder/Data/Testing/ImageTest1.nrrd", "/work/dtiatlasbuilder/Data/Testing/ImageTest2.nrrd", "/work/dtiatlasbuilder/Data/Testing/ImageTest3.nrrd"]
+allcases=[]
+if m_NeedToBeCropped==1:
+  for i,c in enumerate(m_CasesPath):
+    allcases.append(AffinePath + "/" + m_CasesIDs[i] + "_croppedDTI.nrrd")
+else:
+  for i,c in enumerate(m_CasesPath):
+    allcases.append(m_CasesIDs[i] + "_croppedDTI.nrrd")
+#allcases = ["/work/dtiatlasbuilder/Data/Testing/ImageTest1.nrrd", "/work/dtiatlasbuilder/Data/Testing/ImageTest2.nrrd", "/work/dtiatlasbuilder/Data/Testing/ImageTest3.nrrd"]
+allcasesIDs=[]
+for i,c in enumerate(m_CasesIDs):
+  allcasesIDs.append(m_CasesIDs[i])
+#allcasesIDs = ["ImageTest1", "ImageTest2", "ImageTest3"]
 
-allcasesIDs = ["ImageTest1", "ImageTest2", "ImageTest3"]
+
+#### <<<< CURRENT POSITION
 
 # GreedyAtlas Command
 XMLFile= DeformPath + "/GreedyAtlasParameters.xml"
