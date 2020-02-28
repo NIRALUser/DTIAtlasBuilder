@@ -37,13 +37,13 @@ std::string pyTestGridProcess ( bool NoCase1 )
     Script = Script + "def TestGridProcess ( FilesFolder, NbCases ): # if NbCases == 0, then just search the file \'file\' (unique command)\n";
     Script = Script + "  if NbCases>0 : print(\"\\n| Waiting for all batches (\" + str(NbCases) + \") to be processed on grid...\")\n";
   }
-  Script = Script + "  else : print(\"\\n| Waiting for 1 batch to be processed on grid...\")\n";
-  Script = Script + "  filesOK = 0\n";
+  Script = Script +   "  else : print(\"\\n| Waiting for 1 batch to be processed on grid...\")\n";
+  Script = Script +   "  filesOK = 0\n";
   Script = Script + "  OldNbFilesOK = 0\n";
   Script = Script + "  while not filesOK :\n";
   Script = Script + "    filesOK = 1\n";
   Script = Script + "    if NbCases>0 :\n";
-  Script = Script + "      NbfilesOK = 0\n";
+  Script = Script +   "      NbfilesOK = 0\n";
   if( NoCase1 ) 
   {
     Script = Script + "      case = int(NoCase1) # NoCase1 is 0 or 1 (bool)\n";
@@ -52,10 +52,10 @@ std::string pyTestGridProcess ( bool NoCase1 )
   {
     Script = Script + "      case = 0\n";
   }
-  Script = Script + "      while case < NbCases:\n";
-  Script = Script + "        if not os.path.isfile( FilesFolder + \"/Case\" + str(case+1) ) : filesOK = 0\n";
-  Script = Script + "        else : NbfilesOK = NbfilesOK + 1\n";
-  Script = Script + "        case += 1\n";
+    Script = Script + "      while case < NbCases:\n";
+    Script = Script + "        if not os.path.isfile( FilesFolder + \"/Case\" + str(case+1) ) : filesOK = 0\n";
+    Script = Script + "        else : NbfilesOK = NbfilesOK + 1\n";
+    Script = Script + "        case += 1\n";
   if( NoCase1 )
   {
     Script = Script + "      if NbfilesOK != OldNbFilesOK : print(\"| [\" + str(NbfilesOK) + \"\\t / \" + str(NbCases-NoCase1) + \" ] cases processed\")\n";
@@ -64,12 +64,12 @@ std::string pyTestGridProcess ( bool NoCase1 )
   {
     Script = Script + "      if NbfilesOK != OldNbFilesOK : print(\"| [\" + str(NbfilesOK) + \"\\t / \" + str(NbCases) + \" ] cases processed\")\n";
   }
-  Script = Script + "      OldNbFilesOK=NbfilesOK\n";
-  Script = Script + "    elif not os.path.isfile( FilesFolder + \"/file\" ) : filesOK = 0\n";
-  Script = Script + "    time.sleep(60) # Test only every minute\n";
-  Script = Script + "  print(\"\\n=> All files processed\\n\")\n";
-  Script = Script + "  shutil.rmtree(FilesFolder) # clear directory and recreate it\n";
-  Script = Script + "  os.mkdir(FilesFolder)\n";
+  Script = Script +   "      OldNbFilesOK=NbfilesOK\n";
+  Script = Script +   "    elif not os.path.isfile( FilesFolder + \"/file\" ) : filesOK = 0\n";
+  Script = Script +   "    time.sleep(60) # Test only every minute\n";
+  Script = Script +   "  print(\"\\n=> All files processed\\n\")\n";
+  Script = Script +   "  shutil.rmtree(FilesFolder) # clear directory and recreate it\n";
+  Script = Script +   "  os.mkdir(FilesFolder)\n";
 
   return Script;
 }

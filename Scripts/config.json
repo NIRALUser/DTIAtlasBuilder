@@ -1,0 +1,54 @@
+{
+    "m_BFAffineTfmMode": "useCenterOfHeadAlign",
+    "m_CasesIDs": [
+        "ImageTest1",
+        "ImageTest2",
+        "ImageTest3"
+    ],
+    "m_CasesPath": [
+        "/work/dtiatlasbuilder/Data/Testing/ImageTest1.nrrd",
+        "/work/dtiatlasbuilder/Data/Testing/ImageTest2.nrrd",
+        "/work/dtiatlasbuilder/Data/Testing/ImageTest3.nrrd"
+    ],
+    "m_CropSize": [
+        "",
+        "",
+        ""
+    ],
+    "m_DTIRegExtraPath": "",
+    "m_DTIRegOptions": [
+        "BRAINS",
+        "Diffeomorphic",
+        "Use computed affine transform",
+        "5",
+        "300,50,30,20,15"
+    ],
+    "m_GridAtlasCommand": "",
+    "m_GridGeneralCommand": "",
+    "m_InterpolLogOption": "",
+    "m_InterpolOption": "",
+    "m_InterpolType": "Linear",
+    "m_NbThreadsString": "0",
+    "m_NeedToBeCropped": 0,
+    "m_OutputPath": "/work",
+    "m_Overwrite": 0,
+    "m_PythonPath": "/usr/bin/python",
+    "m_RegType": 1,
+    "m_ScalarMeasurement": "FA",
+    "m_SoftPath": [
+        "/work/dtiatlasbuilder-build/niral_utilities-install/bin/ImageMath",
+        "/work/dtiatlasbuilder-build/ResampleDTIlogEuclidean-install/bin/ResampleDTIlogEuclidean",
+        "/work/dtiatlasbuilder-build/niral_utilities-install/bin/CropDTI",
+        "/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiprocess",
+        "/work/dtiatlasbuilder-build/BRAINSTools-install/bin/BRAINSFit",
+        "/work/dtiatlasbuilder-build/AtlasWerks-build/bin/GreedyAtlas",
+        "/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiaverage",
+        "/work/dtiatlasbuilder-build/DTI-Reg-install/bin/DTI-Reg",
+        "/work/dtiatlasbuilder-build/teem-install/bin/unu"
+    ],
+    "m_TemplatePath": "",
+    "m_TensInterpol": "Log Euclidean",
+    "m_TensTfm": "Preservation of the Principal Direction (PPD)",
+    "m_nbLoops": 1,
+    "m_useGridProcess": false
+}
