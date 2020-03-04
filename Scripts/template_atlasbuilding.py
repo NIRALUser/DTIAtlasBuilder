@@ -4,15 +4,19 @@ import os # To run a shell command : os.system("[shell command]")
 import sys # to return an exit code
 import shutil # to remove a non empty directory and copy files
 import time 
+import json
+
+configPath=os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.json")
+config={}
+with open(configPath,'r') as f:
+  config=json.load(f)
 
 PIDlogFile = config['m_OutputPath']+"/DTIAtlas/Script/PID.log"
 PIDfile = open( PIDlogFile, 'a') # open in Append mode
 PIDfile.write( str(os.getpid()) + "\n" )
 PIDfile.close()
 
-config={}
-with open(configPath,'r') as f:
-  config=json.load(f)
+
 
 m_OutputPath=config["m_OutputPath"]
 m_ScalarMeasurement=config["m_ScalarMeasurement"]
@@ -243,7 +247,7 @@ if not os.path.isdir(FinalResampPath + "/FinalDeformationFields"):
 #alltfms = [AffinePath + "/Loop"+ m_nbLoops +"/ImageTest1_Loop1_LinearTrans.txt", AffinePath + "/Loop1/ImageTest2_Loop1_LinearTrans.txt", AffinePath + "/Loop1/ImageTest3_Loop1_LinearTrans.txt"]
 alltfms=[]
 for i,c in enumerate(m_CasesPath):
-  alltmfs.append(AffinePath+"/Loop"+m_nbLoops+"/" m_CaseIDs[i] + "_Loop" + m_nbLoops +"_LinearTrans.txt")
+  alltfms.append(AffinePath+"/Loop"+str(m_nbLoops)+"/" +m_CasesIDs[i] + "_Loop" + str(m_nbLoops) +"_LinearTrans.txt")
 
 allcases=[]
 if m_NeedToBeCropped==1:
@@ -251,7 +255,7 @@ if m_NeedToBeCropped==1:
     allcases.append(AffinePath + "/" + m_CasesIDs[i] + "_croppedDTI.nrrd")
 else:
   for i,c in enumerate(m_CasesPath):
-    allcases.append(m_CasesIDs[i] + "_croppedDTI.nrrd")
+    allcases.append(m_CasesPath[i])
 #allcases = ["/work/dtiatlasbuilder/Data/Testing/ImageTest1.nrrd", "/work/dtiatlasbuilder/Data/Testing/ImageTest2.nrrd", "/work/dtiatlasbuilder/Data/Testing/ImageTest3.nrrd"]
 allcasesIDs=[]
 for i,c in enumerate(m_CasesIDs):
@@ -266,7 +270,7 @@ XMLFile= DeformPath + "/GreedyAtlasParameters.xml"
 ParsedFile= DeformPath + "/ParsedXML.xml"
 AtlasBCommand= GridProcessCmdAverage + " "+ m_SoftPath[5] + " -f " + XMLFile + " -o " + ParsedFile + GridApostrophe
 print("[Computing the Deformation Fields with GreedyAtlas] => $ " + AtlasBCommand)
-if m_Overwrite=1:
+if m_Overwrite==1:
   if 1 :
     if os.system(AtlasBCommand)!=0 : DisplayErrorAndQuit('GreedyAtlas: Computing non-linear atlas from affine registered images')
     if m_useGridProcess:
@@ -290,7 +294,7 @@ if m_Overwrite=1:
     if not CheckFileExists(DeformPath + "/MeanImage.mhd", 0, "") :
       if os.system(AtlasBCommand)!=0 : DisplayErrorAndQuit('GreedyAtlas: Computing non-linear atlas from affine registered images')
       if m_useGridProcess:
-      TestGridProcess( FilesFolder, 0) # stays in the function until all process is done : 0 makes the function look for 'file\'
+        TestGridProcess( FilesFolder, 0) # stays in the function until all process is done : 0 makes the function look for 'file\'
     else:
       print("=> The file '" + DeformPath + "/MeanImage.mhd' already exists so the command will not be executed")
       # Renaming possible existing old named files from GreedyAtlas\n";
@@ -311,14 +315,14 @@ if m_useGridProcess:
 case = 0
 while case < len(allcases):
   FinalDTI= FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI.nrrd"
-  if m_NeedToBeCropped=1:
+  if m_NeedToBeCropped==1:
     originalDTI= AffinePath + "/" + allcasesIDs[case] + "_croppedDTI.nrrd"
   else:
     originalDTI= allcases[case]
   if m_nbLoops==0:
     Ref = AffinePath + "/Loop0/Loop0_"+m_ScalarMeasurement+"Average.nrrd"
   else:
-    Ref = AffinePath + "/Loop" + IntToStr(m_nbLoops-1) + "/Loop" + IntToStr(m_nbLoops-1) + "_" + m_ScalarMeasurement + "Average.nrrd"
+    Ref = AffinePath + "/Loop" + str(m_nbLoops-1) + "/Loop" + str(m_nbLoops-1) + "_" + m_ScalarMeasurement + "Average.nrrd"
 
   HField= DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
   FinalReSampCommand= m_SoftPath[1] +" -R " + Ref + " -H " + HField + " -f " + alltfms[case] + " " + originalDTI + " " + FinalDTI
@@ -347,9 +351,9 @@ while case < len(allcases):
     if 1 :
       DiffeomorphicCaseScalarMeasurement = FinalPath + "/" + allcasesIDs[case] + "_Diffeomorphic"+m_ScalarMeasurement+".nrrd"
       if m_ScalarMeasurement=="FA":
-        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -f " + DiffeomorphicCaseScalarMeasurement
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]+" --scalar_float --dti_image " + FinalDTI + " -f " + DiffeomorphicCaseScalarMeasurement
       else:
-        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -m " + DiffeomorphicCaseScalarMeasurement
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]+" --scalar_float --dti_image " + FinalDTI + " -m " + DiffeomorphicCaseScalarMeasurement
       CaseDbleToFloatCommand=m_SoftPath[8] +" convert -t float -i " + FinalDTI + " | " + m_SoftPath[8] +" save -f nrrd -e gzip -o " + FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI_float.nrrd"
 
       if not m_useGridProcess:
@@ -376,9 +380,9 @@ while case < len(allcases):
     if not CheckFileExists(FinalDTI, case, allcasesIDs[case]) :
       DiffeomorphicCaseScalarMeasurement = FinalPath + "/" + allcasesIDs[case] + "_Diffeomorphic"+m_ScalarMeasurement+".nrrd"
       if m_ScalarMeasurement=="FA":
-        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -f " + DiffeomorphicCaseScalarMeasurement
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]+" --scalar_float --dti_image " + FinalDTI + " -f " + DiffeomorphicCaseScalarMeasurement
       else:
-        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -m " + DiffeomorphicCaseScalarMeasurement
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]+" --scalar_float --dti_image " + FinalDTI + " -m " + DiffeomorphicCaseScalarMeasurement
       CaseDbleToFloatCommand=m_SoftPath[8] +" convert -t float -i " + FinalDTI + " | " + m_SoftPath[8] +" save -f nrrd -e gzip -o " + FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI_float.nrrd"
 
       if not m_useGridProcess:
@@ -418,52 +422,115 @@ while case < len(allcases):
 AverageCommand = AverageCommand + "--tensor_output " + DTIAverage
 print("\n[Computing the Diffeomorphic DTI average] => $ " + AverageCommand)
 
-##### <<< CURRENT POS 2020.3.4
 
-if 1 : 
+
+if m_Overwrite==1 or not CheckFileExists(DTIAverage, 0, "") : 
 # Computing some images from the final DTI with dtiprocess
   FA= FinalPath + "/DiffeomorphicAtlasFA.nrrd"
   cFA= FinalPath + "/DiffeomorphicAtlasColorFA.nrrd"
   RD= FinalPath + "/DiffeomorphicAtlasRD.nrrd"
   MD= FinalPath + "/DiffeomorphicAtlasMD.nrrd"
   AD= FinalPath + "/DiffeomorphicAtlasAD.nrrd"
-  GeneScalarMeasurementCommand="/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiprocess --scalar_float --dti_image " + DTIAverage + " -f " + FA + " -m " + MD + " --color_fa_output " + cFA + " --RD_output " + RD + " --lambda1_output " + AD
+  GeneScalarMeasurementCommand=m_SoftPath[3] + " --scalar_float --dti_image " + DTIAverage + " -f " + FA + " -m " + MD + " --color_fa_output " + cFA + " --RD_output " + RD + " --lambda1_output " + AD
+  DbleToFloatCommand=m_SoftPath[8]+" convert -t float -i " + DTIAverage + " | " + m_SoftPath[8] + " save -f nrrd -e gzip -o " + FinalPath + "/DiffeomorphicAtlasDTI_float.nrrd"
+  if not m_useGridProcess:
+    if os.system(AverageCommand)!=0 : DisplayErrorAndQuit('dtiaverage: Computing the final DTI average')
+    print("[Computing some images from the final DTI with dtiprocess] => $ " + GeneScalarMeasurementCommand)
+    if os.system(GeneScalarMeasurementCommand)!=0 : DisplayErrorAndQuit('dtiprocess: Computing Diffeomorphic FA, color FA, MD, RD and AD')
+    print("[Computing some images from the final DTI with dtiprocess] => $ " + DbleToFloatCommand)
+    if os.system(DbleToFloatCommand)!=0 : DisplayErrorAndQuit('unu: Converting the final DTI atlas from double to float DTI')
+  else:
+    AverageGridCommand=AverageCommand + "' " + "'" + GeneScalarMeasurementCommand + "' " + "'" + DbleToFloatCommand + "'"
+    if os.system(AverageGridCommand)!=0 : DisplayErrorAndQuit('Computing the final DTI average')
+else: print("=> The file '" + DTIAverage + "' already exists so the command will not be executed")
+if m_useGridProcess:
+  TestGridProcess( FilesFolder, 0 ) # stays in the function until all process is done : 0 makes the function look for \'file\'
 
-  DbleToFloatCommand="/work/dtiatlasbuilder-build/teem-install/bin/unu convert -t float -i " + DTIAverage + " | /work/dtiatlasbuilder-build/teem-install/bin/unu save -f nrrd -e gzip -o " + FinalPath + "/DiffeomorphicAtlasDTI_float.nrrd"
-
-  if os.system(AverageCommand)!=0 : DisplayErrorAndQuit('dtiaverage: Computing the final DTI average')
-  print("[Computing some images from the final DTI with dtiprocess] => $ " + GeneScalarMeasurementCommand)
-  if os.system(GeneScalarMeasurementCommand)!=0 : DisplayErrorAndQuit('dtiprocess: Computing Diffeomorphic FA, color FA, MD, RD and AD')
-  print("[Computing some images from the final DTI with dtiprocess] => $ " + DbleToFloatCommand)
-  if os.system(DbleToFloatCommand)!=0 : DisplayErrorAndQuit('unu: Converting the final DTI atlas from double to float DTI')
+##### <<< CURRENT POS 2020.3.4. (Line 1072 in ScriptWriter.h )
 
 # Computing global deformation fields
 case = 0
 while case < len(allcases):
-  origDTI= allcases[case]
+  if m_NeedToBeCropped==1:
+    origDTI= AffinePath + "/" + allcasesIDs[case] + "_croppedDTI.nrrd"
+  else:
+    origDTI= allcases[case]
   GlobalDefField = FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_GlobalDisplacementField.nrrd"
   FinalDef = FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_DeformedDTI.nrrd"
-  GlobalDefFieldCommand="/work/dtiatlasbuilder-build/DTI-Reg-install/bin/DTI-Reg --fixedVolume " + DTIAverage + " --movingVolume " + origDTI + " --scalarMeasurement FA --outputDisplacementField " + GlobalDefField + " --outputVolume " + FinalDef
-  GlobalDefFieldCommand = GlobalDefFieldCommand + " --ProgramsPathsVector ,/work/dtiatlasbuilder-build/BRAINSTools-install/bin,/work/dtiatlasbuilder-build/DTIProcess-install/bin,/work/dtiatlasbuilder-build/ResampleDTIlogEuclidean-install/bin"
-  GlobalDefFieldCommand= GlobalDefFieldCommand + " --method useScalar-BRAINS"
-  GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSRegistrationType Diffeomorphic"
-  GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSnumberOfPyramidLevels 5"
-  GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSarrayOfPyramidLevelIterations 300,50,30,20,15"
-  GlobalDefFieldCommand= GlobalDefFieldCommand + " --initialAffine " + alltfms[case]
-  BRAINSTempTfm = FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_FA_AffReg.txt"
-  GlobalDefFieldCommand= GlobalDefFieldCommand + " --outputTransform " + BRAINSTempTfm
-  print("\n[" + allcasesIDs[case] + "] [Computing global deformation fields] => $ " + GlobalDefFieldCommand)
-  if 1 :
-    GlobDbleToFloatCommand="/work/dtiatlasbuilder-build/teem-install/bin/unu convert -t float -i " + FinalDef + " | /work/dtiatlasbuilder-build/teem-install/bin/unu save -f nrrd -e gzip -o " + FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_DeformedDTI_float.nrrd"
+  GlobalDefFieldCommand="/work/dtiatlasbuilder-build/DTI-Reg-install/bin/DTI-Reg --fixedVolume " + DTIAverage + " --movingVolume " + origDTI + " --scalarMeasurement "+m_ScalarMeasurement+" --outputDisplacementField " + GlobalDefField + " --outputVolume " + FinalDef
+  
+  BRAINSExecDir = os.path.dirname(m_SoftPath[4])
+  dtiprocessExecDir = os.path.dirname(m_SoftPath[3])
+  ResampExecDir = os.path.dirname(m_SoftPath[1])
 
-    if os.system(GlobalDefFieldCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] DTI-Reg: Computing global deformation fields')
-    print("\n[" + allcasesIDs[case] + "] [Converting the deformed images from double to float DTI] => $ " + GlobDbleToFloatCommand)
-    if os.system(GlobDbleToFloatCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] unu: Converting the deformed images from double to float DTI')
+  GlobalDefFieldCommand = GlobalDefFieldCommand + " --ProgramsPathsVector "+m_DTIRegExtraPath+","+BRAINSExecDir+","+dtiprocessExecDir+","+ResampExecDir
+  
+  if m_DTIRegOptions[0]=="BRAINS":
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --method useScalar-BRAINS"
+    if m_DTIRegOptions[1]=="GreedyDiffeo (SyN)":
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSRegistrationType GreedyDiffeo"
+    elif m_DTIRegOptions[1]=="SpatioTempDiffeo":
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSRegistrationType SpatioTempDiffeo"
+    else:
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSRegistrationType " + m_DTIRegOptions[1] + ""
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSnumberOfPyramidLevels " + m_DTIRegOptions[3] + ""
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSarrayOfPyramidLevelIterations " + m_DTIRegOptions[4] + ""
+    if m_DTIRegOptions[2]=="Use computed affine transform":
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --initialAffine " + alltfms[case]
+    else:
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --BRAINSinitializeTransformMode " + m_DTIRegOptions[2] + ""
+    BRAINSTempTfm = FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_" + m_ScalarMeasurement + "_AffReg.txt"
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --outputTransform " + BRAINSTempTfm
+
+  if m_DTIRegOptions[0]=="ANTS":
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --method useScalar-ANTS"
+    if m_DTIRegOptions[1]=="GreedyDiffeo (SyN)":
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSRegistrationType GreedyDiffeo"
+    elif m_DTIRegOptions[1]=="SpatioTempDiffeo (SyN)":
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSRegistrationType SpatioTempDiffeo"
+    else:
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSRegistrationType " + m_DTIRegOptions[1] + ""
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSTransformationStep " + m_DTIRegOptions[2] + ""
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSIterations " + m_DTIRegOptions[3] + ""
+    if m_DTIRegOptions[4]=="Cross-Correlation (CC)" :
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSSimilarityMetric CC"
+    elif m_DTIRegOptions[4]=="Mutual Information (MI)" :
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSSimilarityMetric MI"
+    elif m_DTIRegOptions[4]=="Mean Square Difference (MSQ)":
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSSimilarityMetric MSQ"
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSSimilarityParameter " + m_DTIRegOptions[5] + ""
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSGaussianSigma " + m_DTIRegOptions[6] + ""
+    if m_DTIRegOptions[7]=="1":
+      GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSGaussianSmoothingOff"
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --initialAffine " + alltfms[case]
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSUseHistogramMatching "
+    ANTSTempFileBase = FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_" + m_ScalarMeasurement + "_"
+    GlobalDefFieldCommand= GlobalDefFieldCommand + " --ANTSOutbase " + ANTSTempFileBase
+
+  print("\n[" + allcasesIDs[case] + "] [Computing global deformation fields] => $ " + GlobalDefFieldCommand)
+
+
+  if m_Overwrite==1 or not CheckFileExists(FinalDef, case, allcasesIDs[case]) :
+    GlobDbleToFloatCommand=m_SoftPath[8]+" convert -t float -i " + FinalDef + " | "+m_SoftPath[8]+" save -f nrrd -e gzip -o " + FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_DeformedDTI_float.nrrd"
+
+    if not m_useGridProcess:
+      if os.system(GlobalDefFieldCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] DTI-Reg: Computing global deformation fields')
+      print("\n[" + allcasesIDs[case] + "] [Converting the deformed images from double to float DTI] => $ " + GlobDbleToFloatCommand)
+      if os.system(GlobDbleToFloatCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] unu: Converting the deformed images from double to float DTI')
+    else:
+      GlobDefFieldGridCommand=GridProcessCmd +" " + GlobalDefFieldCommand + "' " + "'" + GlobDbleToFloatCommand + "'"
+      if os.system(GlobDefFieldGridCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] Computing global deformation fields')
+
+  else:
+    print("=> The file '" + FinalDef + "' already exists so the command will not be executed")
   case += 1
+
+if m_useGridProcess:
+  TestGridProcess( FilesFolder, len(allcases) ) # stays in the function until all process is done : 0 makes the function look for \'file\'
 
 # dtiaverage recomputing
 DTIAverage2 = FinalResampPath + "/FinalAtlasDTI.nrrd"
-AverageCommand2 = "/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiaverage "
+AverageCommand2 = m_SoftPath[6]+" "
 case = 0
 while case < len(allcases):
   DTIforAVG2= "--inputs " + FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_DeformedDTI.nrrd "
@@ -471,52 +538,115 @@ while case < len(allcases):
   case += 1
 AverageCommand2 = AverageCommand2 + "--tensor_output " + DTIAverage2
 print("\n[Recomputing the final DTI average] => $ " + AverageCommand2)
-if 1 : 
+
+
+if m_Overwrite==1 or not CheckFileExists(DTIAverage2, 0, "") : 
 # Computing some images from the final DTI with dtiprocess
   FA2= FinalResampPath + "/FinalAtlasFA.nrrd"
   cFA2= FinalResampPath + "/FinalAtlasColorFA.nrrd"
   RD2= FinalResampPath + "/FinalAtlasRD.nrrd"
   MD2= FinalResampPath + "/FinalAtlasMD.nrrd"
   AD2= FinalResampPath + "/FinalAtlasAD.nrrd"
-  GeneScalarMeasurementCommand2="/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiprocess --scalar_float --dti_image " + DTIAverage2 + " -f " + FA2 + " -m " + MD2 + " --color_fa_output " + cFA2 + " --RD_output " + RD2 + " --lambda1_output " + AD2
+  GeneScalarMeasurementCommand2=m_SoftPath[3]+" --scalar_float --dti_image " + DTIAverage2 + " -f " + FA2 + " -m " + MD2 + " --color_fa_output " + cFA2 + " --RD_output " + RD2 + " --lambda1_output " + AD2
+  DbleToFloatCommand2=m_SoftPath[8]+" convert -t float -i " + DTIAverage2 + " | "+m_SoftPath[8]+" save -f nrrd -e gzip -o " + FinalResampPath + "/FinalAtlasDTI_float.nrrd"
+  if not m_useGridProcess:
+    if os.system(AverageCommand2)!=0 : DisplayErrorAndQuit('dtiaverage: Recomputing the final DTI average')
+    print("[Computing some images from the final DTI with dtiprocess] => $ " + GeneScalarMeasurementCommand2)
+    if os.system(GeneScalarMeasurementCommand2)!=0 : DisplayErrorAndQuit('dtiprocess: Recomputing final FA, color FA, MD, RD and AD')
+    print("[Computing some images from the final DTI with dtiprocess] => $ " + DbleToFloatCommand2)
+    if os.system(DbleToFloatCommand2)!=0 : DisplayErrorAndQuit('unu: Converting the final resampled DTI atlas from double to float DTI')
+  else:
+    Average2GridCommand=GridProcessCmdNoCase + " "+AverageCommand2 + "' " + "'" + GeneScalarMeasurementCommand2 + "' " + "'" + DbleToFloatCommand2 + "'"
+    if os.system(Average2GridCommand)!=0 : DisplayErrorAndQuit('Recomputing the final DTI average')
+else:
+  print("=> The file '" + DTIAverage2 + "' already exists so the command will not be executed")
 
-  DbleToFloatCommand2="/work/dtiatlasbuilder-build/teem-install/bin/unu convert -t float -i " + DTIAverage2 + " | /work/dtiatlasbuilder-build/teem-install/bin/unu save -f nrrd -e gzip -o " + FinalResampPath + "/FinalAtlasDTI_float.nrrd"
-
-  if os.system(AverageCommand2)!=0 : DisplayErrorAndQuit('dtiaverage: Recomputing the final DTI average')
-  print("[Computing some images from the final DTI with dtiprocess] => $ " + GeneScalarMeasurementCommand2)
-  if os.system(GeneScalarMeasurementCommand2)!=0 : DisplayErrorAndQuit('dtiprocess: Recomputing final FA, color FA, MD, RD and AD')
-  print("[Computing some images from the final DTI with dtiprocess] => $ " + DbleToFloatCommand2)
-  if os.system(DbleToFloatCommand2)!=0 : DisplayErrorAndQuit('unu: Converting the final resampled DTI atlas from double to float DTI')
+if m_useGridProcess:
+  TestGridProcess( FilesFolder, 0 ) # stays in the function until all process is done : 0 makes the function look for \'file\'
 
 # Recomputing global deformation fields
 SecondResampRecomputed = [0] * len(allcases) # array of 1s and 0s to know what has been recomputed to know what to copy to final folders
 case = 0
 while case < len(allcases):
-  origDTI2= allcases[case]
+  if m_NeedToBeCropped==1:
+    origDTI2= AffinePath + "/" + allcasesIDs[case] + "_croppedDTI.nrrd"
+  else:
+    origDTI2= allcases[case]
   GlobalDefField2 = FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_GlobalDisplacementField.nrrd"
   FinalDef2 = FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FinalDeformedDTI.nrrd"
-  GlobalDefFieldCommand2="/work/dtiatlasbuilder-build/DTI-Reg-install/bin/DTI-Reg --fixedVolume " + DTIAverage2 + " --movingVolume " + origDTI2 + " --scalarMeasurement FA --outputDisplacementField " + GlobalDefField2 + " --outputVolume " + FinalDef2
-  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --ProgramsPathsVector ,/work/dtiatlasbuilder-build/BRAINSTools-install/bin,/work/dtiatlasbuilder-build/DTIProcess-install/bin,/work/dtiatlasbuilder-build/ResampleDTIlogEuclidean-install/bin"
-  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --method useScalar-BRAINS"
-  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --BRAINSRegistrationType Diffeomorphic"
-  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --BRAINSnumberOfPyramidLevels 5"
-  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --BRAINSarrayOfPyramidLevelIterations 300,50,30,20,15"
-  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --initialAffine " + alltfms[case]
-  BRAINSTempTfm2 = FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FA_AffReg.txt"
-  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --outputTransform " + BRAINSTempTfm2
+  GlobalDefFieldCommand2=m_SoftPath[7]+" --fixedVolume " + DTIAverage2 + " --movingVolume " + origDTI2 + " --scalarMeasurement "+m_ScalarMeasurement+" --outputDisplacementField " + GlobalDefField2 + " --outputVolume " + FinalDef2
+  GlobalDefFieldCommand2 = GlobalDefFieldCommand2 + " --ProgramsPathsVector " + m_DTIRegExtraPath + "," + BRAINSExecDir + "," + dtiprocessExecDir + "," + ResampExecDir + ""
+
+  #Line 1273
+  if m_DTIRegOptions[0]=="BRAINS":
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --method useScalar-BRAINS"
+    if m_DTIRegOptions[1]=="GreedyDiffeo (SyN)":
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --BRAINSRegistrationType GreedyDiffeo"
+    elif m_DTIRegOptions[1]=="SpatioTempDiffeo":
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --BRAINSRegistrationType SpatioTempDiffeo"
+    else:
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --BRAINSRegistrationType " + m_DTIRegOptions[1] + ""
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --BRAINSnumberOfPyramidLevels " + m_DTIRegOptions[3] + ""
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --BRAINSarrayOfPyramidLevelIterations " + m_DTIRegOptions[4] + ""
+    if m_DTIRegOptions[2]=="Use computed affine transform":
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --initialAffine " + alltfms[case]
+    else:
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --BRAINSinitializeTransformMode " + m_DTIRegOptions[2] + ""
+    BRAINSTempTfm = FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_" + m_ScalarMeasurement + "_AffReg.txt"
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --outputTransform " + BRAINSTempTfm
+
+  if m_DTIRegOptions[0]=="ANTS":
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --method useScalar-ANTS"
+    if m_DTIRegOptions[1]=="GreedyDiffeo (SyN)":
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSRegistrationType GreedyDiffeo"
+    elif m_DTIRegOptions[1]=="SpatioTempDiffeo (SyN)":
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSRegistrationType SpatioTempDiffeo"
+    else:
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSRegistrationType " + m_DTIRegOptions[1] + ""
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSTransformationStep " + m_DTIRegOptions[2] + ""
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSIterations " + m_DTIRegOptions[3] + ""
+    if m_DTIRegOptions[4]=="Cross-Correlation (CC)" :
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSSimilarityMetric CC"
+    elif m_DTIRegOptions[4]=="Mutual Information (MI)" :
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSSimilarityMetric MI"
+    elif m_DTIRegOptions[4]=="Mean Square Difference (MSQ)":
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSSimilarityMetric MSQ"
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSSimilarityParameter " + m_DTIRegOptions[5] + ""
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSGaussianSigma " + m_DTIRegOptions[6] + ""
+    if m_DTIRegOptions[7]=="1":
+      GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSGaussianSmoothingOff"
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --initialAffine " + alltfms[case]
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSUseHistogramMatching "
+    ANTSTempFileBase2 = FinalResampPath + "/First_Resampling/" + allcasesIDs[case] + "_" + m_ScalarMeasurement + "_"
+    GlobalDefFieldCommand2= GlobalDefFieldCommand2 + " --ANTSOutbase " + ANTSTempFileBase2
+
   print("\n[" + allcasesIDs[case] + "] [Recomputing global deformation fields] => $ " + GlobalDefFieldCommand2)
-  if 1 :
+
+  if m_Overwrite==1 or not CheckFileExists(FinalDef2, case, allcasesIDs[case])  :
     SecondResampRecomputed[case] = 1
-    DTIRegCaseScalarMeasurement = FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FinalDeformedFA.nrrd"
-    GeneDTIRegCaseScalarMeasurementCommand="/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiprocess --scalar_float --dti_image " + FinalDef2 + " -f " + DTIRegCaseScalarMeasurement
-    GlobDbleToFloatCommand2="/work/dtiatlasbuilder-build/teem-install/bin/unu convert -t float -i " + FinalDef2 + " | /work/dtiatlasbuilder-build/teem-install/bin/unu save -f nrrd -e gzip -o " + FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FinalDeformedDTI_float.nrrd"
-    if os.system(GlobalDefFieldCommand2)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] DTI-Reg: Computing global deformation fields')
-    print("\n[" + allcasesIDs[case] + "] [Converting the deformed images from double to float DTI] => $ " + GlobDbleToFloatCommand2)
-    if os.system(GlobDbleToFloatCommand2)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] unu: Converting the deformed images from double to float DTI')
-    print("\n[" + allcasesIDs[case] + "] [Computing DTIReg FA] => $ " + GeneDTIRegCaseScalarMeasurementCommand)
-    if os.system(GeneDTIRegCaseScalarMeasurementCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] dtiprocess: Computing DTIReg FA')
+    DTIRegCaseScalarMeasurement = FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FinalDeformed"+m_ScalarMeasurement+".nrrd"
+    if m_ScalarMeasurement=="FA":
+      GeneDTIRegCaseScalarMeasurementCommand=m_SoftPath[3]+" --scalar_float --dti_image " + FinalDef2 + " -f " + DTIRegCaseScalarMeasurement
+    else:
+      GeneDTIRegCaseScalarMeasurementCommand=m_SoftPath[3]+" --scalar_float --dti_image " + FinalDef2 + " -m " + DTIRegCaseScalarMeasurement
+
+    GlobDbleToFloatCommand2=m_SoftPath[8]+" convert -t float -i " + FinalDef2 + " | "+m_SoftPath[8]+" save -f nrrd -e gzip -o " + FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FinalDeformedDTI_float.nrrd"
+    
+    if not m_useGridProcess:
+      if os.system(GlobalDefFieldCommand2)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] DTI-Reg: Computing global deformation fields')
+      print("\n[" + allcasesIDs[case] + "] [Converting the deformed images from double to float DTI] => $ " + GlobDbleToFloatCommand2)
+      if os.system(GlobDbleToFloatCommand2)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] unu: Converting the deformed images from double to float DTI')
+      print("\n[" + allcasesIDs[case] + "] [Computing DTIReg "+m_ScalarMeasurement+"] => $ " + GeneDTIRegCaseScalarMeasurementCommand)
+      if os.system(GeneDTIRegCaseScalarMeasurementCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] dtiprocess: Computing DTIReg '+m_ScalarMeasurement)
+    else:
+      GlobDefField2GridCommand=GridProcessCmd +" " + GlobalDefFieldCommand2 + "' " + "'" + GlobDbleToFloatCommand2 + "' " + "'" + GeneDTIRegCaseScalarMeasurementCommand + "'"
+      if os.system(GlobDefField2GridCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] Recomputing global deformation fields')
+  else:
+    print("=> The file '" + FinalDef2 + "' already exists so the command will not be executed")
   case += 1
 
+if m_useGridProcess:
+  TestGridProcess( FilesFolder, len(allcases) ) # stays in the function until all process is done : 0 makes the function look for \'file\'
 
 # Moving final images to final folders
 print("\n=> Moving final images to final folders")
@@ -539,8 +669,8 @@ while case < len(allcases):
     NewFinalDef2f = FinalResampPath + "/FinalTensors/" + allcasesIDs[case] + "_FinalDeformedDTI_float.nrrd"
     if CheckFileExists(FinalDef2f, case, allcasesIDs[case]) :
       shutil.copy(FinalDef2f, NewFinalDef2f)
-    DTIRegCaseScalarMeasurement = FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FinalDeformedFA.nrrd"
-    NewDTIRegCaseScalarMeasurement = FinalResampPath + "/FinalTensors/" + allcasesIDs[case] + "_FinalDeformedFA.nrrd"
+    DTIRegCaseScalarMeasurement = FinalResampPath + "/Second_Resampling/" + allcasesIDs[case] + "_FinalDeformed"+m_ScalarMeasurement+".nrrd"
+    NewDTIRegCaseScalarMeasurement = FinalResampPath + "/FinalTensors/" + allcasesIDs[case] + "_FinalDeformed"+m_ScalarMeasurement+".nrrd"
     if CheckFileExists(DTIRegCaseScalarMeasurement, case, allcasesIDs[case]) :
       shutil.copy(DTIRegCaseScalarMeasurement, NewDTIRegCaseScalarMeasurement)
   case += 1
