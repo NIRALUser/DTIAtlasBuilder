@@ -895,7 +895,7 @@ void ScriptWriter::AtlasBuilding()
 
   /* options */
   if(m_InterpolType.compare("Linear")==0) Script = Script + "  FinalReSampCommand = FinalReSampCommand + \" -i linear\"\n";
-  if(m_InterpolType.compare("Nearest Neighborhoor")==0) Script = Script + "  FinalReSampCommand = FinalReSampCommand + \" -i nn\"\n";
+  if(m_InterpolType.compare("Nearest Neighborhood")==0) Script = Script + "  FinalReSampCommand = FinalReSampCommand + \" -i nn\"\n";
   if(m_InterpolType.compare("Windowed Sinc")==0)
   {
     if(m_InterpolOption.compare("Hamming")==0) Script = Script + "  FinalReSampCommand = FinalReSampCommand + \" -i ws -W h\"\n";

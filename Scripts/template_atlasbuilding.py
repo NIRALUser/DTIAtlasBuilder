@@ -33,6 +33,7 @@ m_DTIRegOptions=config["m_DTIRegOptions"]
 m_GridAtlasCommand=config["m_GridAtlasCommand"]
 m_GridGeneralCommand=config["m_GridGeneralCommand"]
 m_InterpolLogOption=config["m_InterpolLogOption"]
+m_InterpolOption=config["m_InterpolOption"]
 m_InterpolType=config["m_InterpolType"]
 m_NbThreadsString=config["m_NbThreadsString"]
 m_NeedToBeCropped=config["m_NeedToBeCropped"]
@@ -263,53 +264,152 @@ for i,c in enumerate(m_CasesIDs):
 # GreedyAtlas Command
 XMLFile= DeformPath + "/GreedyAtlasParameters.xml"
 ParsedFile= DeformPath + "/ParsedXML.xml"
-AtlasBCommand= "/work/dtiatlasbuilder-build/AtlasWerks-build/bin/GreedyAtlas -f " + XMLFile + " -o " + ParsedFile
+AtlasBCommand= GridProcessCmdAverage + " "+ m_SoftPath[5] + " -f " + XMLFile + " -o " + ParsedFile + GridApostrophe
 print("[Computing the Deformation Fields with GreedyAtlas] => $ " + AtlasBCommand)
-if 1 :
-  if os.system(AtlasBCommand)!=0 : DisplayErrorAndQuit('GreedyAtlas: Computing non-linear atlas from affine registered images')
-  case = 0
-  while case < len(allcases): # Renaming
-    originalImage=DeformPath + "/" + allcasesIDs[case] + "_Loop1_FinalFADefToMean.mhd"
-    originalHField=DeformPath + "/" + allcasesIDs[case] + "_Loop1_FinalFADefFieldImToMean.mhd"
-    originalInvHField=DeformPath + "/" + allcasesIDs[case] + "_Loop1_FinalFADefFieldMeanToIm.mhd"
-    NewImage= DeformPath + "/" + allcasesIDs[case] + "_NonLinearTrans_FA.mhd"
-    NewHField=DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
-    NewInvHField=DeformPath + "/" + allcasesIDs[case] + "_InverseHField.mhd"
-    print("[" + allcasesIDs[case] + "] => Renaming \'" + originalImage + "\' to \'" + NewImage + "\'")
-    os.rename(originalImage,NewImage)
-    print("[" + allcasesIDs[case] + "] => Renaming \'" + originalHField + "\' to \'" + NewHField + "\'")
-    os.rename(originalHField,NewHField)
-    print("[" + allcasesIDs[case] + "] => Renaming \'" + originalInvHField + "\' to \'" + NewInvHField + "\'")
-    os.rename(originalInvHField,NewInvHField)
-    case += 1
+if m_Overwrite=1:
+  if 1 :
+    if os.system(AtlasBCommand)!=0 : DisplayErrorAndQuit('GreedyAtlas: Computing non-linear atlas from affine registered images')
+    if m_useGridProcess:
+      TestGridProcess( FilesFolder, 0) # stays in the function until all process is done : 0 makes the function look for 'file\'
+    case = 0
+    while case < len(allcases): # Renaming
+      originalImage=DeformPath + "/" + allcasesIDs[case] + "_Loop"+str(m_nbLoops)+"_Final"+m_ScalarMeasurement+"DefToMean.mhd"
+      originalHField=DeformPath + "/" + allcasesIDs[case] + "_Loop"+str(m_nbLoops)+"_Final"+m_ScalarMeasurement+"DefFieldImToMean.mhd"
+      originalInvHField=DeformPath + "/" + allcasesIDs[case] + "_Loop"+str(m_nbLoops)+"_Final"+m_ScalarMeasurement+"DefFieldMeanToIm.mhd"
+      NewImage= DeformPath + "/" + allcasesIDs[case] + "_NonLinearTrans_FA.mhd"
+      NewHField=DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
+      NewInvHField=DeformPath + "/" + allcasesIDs[case] + "_InverseHField.mhd"
+      print("[" + allcasesIDs[case] + "] => Renaming \'" + originalImage + "\' to \'" + NewImage + "\'")
+      os.rename(originalImage,NewImage)
+      print("[" + allcasesIDs[case] + "] => Renaming \'" + originalHField + "\' to \'" + NewHField + "\'")
+      os.rename(originalHField,NewHField)
+      print("[" + allcasesIDs[case] + "] => Renaming \'" + originalInvHField + "\' to \'" + NewInvHField + "\'")
+      os.rename(originalInvHField,NewInvHField)
+      case += 1
+  else:
+    if not CheckFileExists(DeformPath + "/MeanImage.mhd", 0, "") :
+      if os.system(AtlasBCommand)!=0 : DisplayErrorAndQuit('GreedyAtlas: Computing non-linear atlas from affine registered images')
+      if m_useGridProcess:
+      TestGridProcess( FilesFolder, 0) # stays in the function until all process is done : 0 makes the function look for 'file\'
+    else:
+      print("=> The file '" + DeformPath + "/MeanImage.mhd' already exists so the command will not be executed")
+      # Renaming possible existing old named files from GreedyAtlas\n";
+      case = 0
+      while case < len(allcases): # Updating old names if needed\n";
+        NewImage= DeformPath + "/" + allcasesIDs[case] + "_NonLinearTrans_" + m_ScalarMeasurement + ".mhd"
+        CheckFileExists(NewImage, case, allcasesIDs[case])
+        NewHField=DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
+        CheckFileExists(NewHField, case, allcasesIDs[case])
+        NewInvHField=DeformPath + "/" + allcasesIDs[case] + "_InverseHField.mhd"
+        CheckFileExists(NewInvHField, case, allcasesIDs[case])
+        case += 1
 
 # Apply deformation fields
+if m_useGridProcess:
+  GridProcessCommandArray=[]
+  NbGridCommandsRan=0
 case = 0
 while case < len(allcases):
   FinalDTI= FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI.nrrd"
-  originalDTI= allcases[case]
-  Ref = AffinePath + "/Loop0/Loop0_FAAverage.nrrd"
-  HField= DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
-  FinalReSampCommand="/work/dtiatlasbuilder-build/ResampleDTIlogEuclidean-install/bin/ResampleDTIlogEuclidean -R " + Ref + " -H " + HField + " -f " + alltfms[case] + " " + originalDTI + " " + FinalDTI
-  FinalReSampCommand = FinalReSampCommand + " -i linear"
-  FinalReSampCommand = FinalReSampCommand + " -T PPD"
-  print("\n[" + allcasesIDs[case] + "] [Applying deformation fields to original DTIs] => $ " + FinalReSampCommand)
-  if 1 :
-    DiffeomorphicCaseScalarMeasurement = FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicFA.nrrd"
-    GeneDiffeomorphicCaseScalarMeasurementCommand="/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiprocess --scalar_float --dti_image " + FinalDTI + " -f " + DiffeomorphicCaseScalarMeasurement
-    CaseDbleToFloatCommand="/work/dtiatlasbuilder-build/teem-install/bin/unu convert -t float -i " + FinalDTI + " | /work/dtiatlasbuilder-build/teem-install/bin/unu save -f nrrd -e gzip -o " + FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI_float.nrrd"
+  if m_NeedToBeCropped=1:
+    originalDTI= AffinePath + "/" + allcasesIDs[case] + "_croppedDTI.nrrd"
+  else:
+    originalDTI= allcases[case]
+  if m_nbLoops==0:
+    Ref = AffinePath + "/Loop0/Loop0_"+m_ScalarMeasurement+"Average.nrrd"
+  else:
+    Ref = AffinePath + "/Loop" + IntToStr(m_nbLoops-1) + "/Loop" + IntToStr(m_nbLoops-1) + "_" + m_ScalarMeasurement + "Average.nrrd"
 
-    if os.system(FinalReSampCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] ResampleDTIlogEuclidean: Applying deformation fields to original DTIs')
-    print("[" + allcasesIDs[case] + "] => $ " + GeneDiffeomorphicCaseScalarMeasurementCommand)
-    if os.system(GeneDiffeomorphicCaseScalarMeasurementCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] dtiprocess: Computing Diffeomorphic FA')
-    print("[" + allcasesIDs[case] + "] => $ " + CaseDbleToFloatCommand + "\n")
-    if os.system(CaseDbleToFloatCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] unu: Converting the final DTI images from double to float DTI')
-  else : print("=> The file \'" + FinalDTI + "\' already exists so the command will not be executed")
+  HField= DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
+  FinalReSampCommand= m_SoftPath[1] +" -R " + Ref + " -H " + HField + " -f " + alltfms[case] + " " + originalDTI + " " + FinalDTI
+
+  ### options
+  if m_InterpolType=="Linear" : FinalReSampCommand = FinalReSampCommand + " -i linear"
+  if m_InterpolType=="Nearest Neighborhood" : FinalReSampCommand = FinalReSampCommand + " -i nn"
+  if m_InterpolType=="Windowed Sinc":
+    if m_InterpolOption=="Hamming": FinalReSampCommand = FinalReSampCommand + " -i ws -W h"
+    if m_InterpolOption=="Cosine" : FinalReSampCommand = FinalReSampCommand + " -i ws -W c"
+    if m_InterpolOption=="Welch"  : FinalReSampCommand = FinalReSampCommand + " -i ws -W w"
+    if m_InterpolOption=="Lanczos": FinalReSampCommand = FinalReSampCommand + " -i ws -W l"
+    if m_InterpolOption=="Blackman":FinalReSampCommand = FinalReSampCommand + " -i ws -W b"
+  if m_InterpolType=="BSpline":
+    FinalReSampCommand = FinalReSampCommand + " -i bs -o " + m_InterpolOption + ""
+  if m_TensInterpol=="Non Log Euclidean":
+    if m_InterpolLogOption=="Zero" :  FinalReSampCommand = FinalReSampCommand + " --nolog --correction zero"
+    if m_InterpolLogOption=="None" :  FinalReSampCommand = FinalReSampCommand + " --nolog --correction none"
+    if m_InterpolLogOption=="Absolute Value" : FinalReSampCommand = FinalReSampCommand + " --nolog --correction abs"
+    if m_InterpolLogOption=="Nearest" : FinalReSampCommand = FinalReSampCommand + " --nolog --correction nearest"
+  if m_TensTfm=="Preservation of the Principal Direction (PPD)": FinalReSampCommand = FinalReSampCommand + " -T PPD"
+  if m_TensTfm=="Finite Strain (FS)" : FinalReSampCommand = FinalReSampCommand + " -T FS"
+  print("\n[" + allcasesIDs[case] + "] [Applying deformation fields to original DTIs] => $ " + FinalReSampCommand)
+
+  if m_Overwrite==1:
+    if 1 :
+      DiffeomorphicCaseScalarMeasurement = FinalPath + "/" + allcasesIDs[case] + "_Diffeomorphic"+m_ScalarMeasurement+".nrrd"
+      if m_ScalarMeasurement=="FA":
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -f " + DiffeomorphicCaseScalarMeasurement
+      else:
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -m " + DiffeomorphicCaseScalarMeasurement
+      CaseDbleToFloatCommand=m_SoftPath[8] +" convert -t float -i " + FinalDTI + " | " + m_SoftPath[8] +" save -f nrrd -e gzip -o " + FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI_float.nrrd"
+
+      if not m_useGridProcess:
+        if os.system(FinalReSampCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] ResampleDTIlogEuclidean: Applying deformation fields to original DTIs')
+        print("[" + allcasesIDs[case] + "] => $ " + GeneDiffeomorphicCaseScalarMeasurementCommand)
+        if os.system(GeneDiffeomorphicCaseScalarMeasurementCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] dtiprocess: Computing Diffeomorphic '+m_ScalarMeasurement)
+        print("[" + allcasesIDs[case] + "] => $ " + CaseDbleToFloatCommand + "\n")
+        if os.system(CaseDbleToFloatCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] unu: Converting the final DTI images from double to float DTI')
+      else:
+        GridProcessCommandsArray.append(FinalReSampCommand)
+        GridProcessCommandsArray.append(GeneDiffeomorphicCaseScalarMeasurementCommand)
+        GridProcessCommandsArray.append(CaseDbleToFloatCommand)
+        if len(GridProcessCommandsArray)>=50 or case==len(allcases)-1 : # launch a script if more than 50 operations or if last case\n";
+          GridProcessCmd= "" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py " + FilesFolder + "/Case" + str(NbGridCommandsRan+1)
+          GridCmd = 0
+          while GridCmd < len(GridProcessCommandsArray):
+            GridProcessCmd = GridProcessCmd + " '" + GridProcessCommandsArray[GridCmd] + "'"
+            GridCmd += 1
+          GridProcessCommandsArray=[] # Empty the cmds array\n";
+          NbGridCommandsRan += 1
+          if os.system(GridProcessCmd)!=0 : # Run script and collect error if so\n";
+            DisplayErrorAndQuit('[] Applying deformation fields to original DTIs')
+  else:
+    if not CheckFileExists(FinalDTI, case, allcasesIDs[case]) :
+      DiffeomorphicCaseScalarMeasurement = FinalPath + "/" + allcasesIDs[case] + "_Diffeomorphic"+m_ScalarMeasurement+".nrrd"
+      if m_ScalarMeasurement=="FA":
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -f " + DiffeomorphicCaseScalarMeasurement
+      else:
+        GeneDiffeomorphicCaseScalarMeasurementCommand=m_SoftPath[3]" --scalar_float --dti_image " + FinalDTI + " -m " + DiffeomorphicCaseScalarMeasurement
+      CaseDbleToFloatCommand=m_SoftPath[8] +" convert -t float -i " + FinalDTI + " | " + m_SoftPath[8] +" save -f nrrd -e gzip -o " + FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI_float.nrrd"
+
+      if not m_useGridProcess:
+        if os.system(FinalReSampCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] ResampleDTIlogEuclidean: Applying deformation fields to original DTIs')
+        print("[" + allcasesIDs[case] + "] => $ " + GeneDiffeomorphicCaseScalarMeasurementCommand)
+        if os.system(GeneDiffeomorphicCaseScalarMeasurementCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] dtiprocess: Computing Diffeomorphic '+m_ScalarMeasurement)
+        print("[" + allcasesIDs[case] + "] => $ " + CaseDbleToFloatCommand + "\n")
+        if os.system(CaseDbleToFloatCommand)!=0 : DisplayErrorAndQuit('[' + allcasesIDs[case] + '] unu: Converting the final DTI images from double to float DTI')
+      else:
+        GridProcessCommandsArray.append(FinalReSampCommand)
+        GridProcessCommandsArray.append(GeneDiffeomorphicCaseScalarMeasurementCommand)
+        GridProcessCommandsArray.append(CaseDbleToFloatCommand)
+        if len(GridProcessCommandsArray)>=50 or case==len(allcases)-1 : # launch a script if more than 50 operations or if last case\n";
+          GridProcessCmd= "" + m_GridGeneralCommand + " " + m_PythonPath + " " + m_OutputPath + "/DTIAtlas/Script/RunCommandOnServer.py " + FilesFolder + "/Case" + str(NbGridCommandsRan+1)
+          GridCmd = 0
+          while GridCmd < len(GridProcessCommandsArray):
+            GridProcessCmd = GridProcessCmd + " '" + GridProcessCommandsArray[GridCmd] + "'"
+            GridCmd += 1
+          GridProcessCommandsArray=[] # Empty the cmds array\n";
+          NbGridCommandsRan += 1
+          if os.system(GridProcessCmd)!=0 : # Run script and collect error if so\n";
+            DisplayErrorAndQuit('[] Applying deformation fields to original DTIs')      
+    else : print("=> The file \'" + FinalDTI + "\' already exists so the command will not be executed")
   case += 1
+
+if m_useGridProcess:
+  if NbGridCommandsRan!=0 : TestGridProcess( FilesFolder, NbGridCommandsRan ) # stays in the function until all process is done : 0 cmds makes the function look for 'file'
 
 # DTIaverage computing
 DTIAverage = FinalPath + "/DiffeomorphicAtlasDTI.nrrd"
-AverageCommand = "/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiaverage "
+AverageCommand = m_SoftPath[6] + " " # e.g. "/work/dtiatlasbuilder-build/DTIProcess-install/bin/dtiaverage "
 case = 0
 while case < len(allcases):
   DTIforAVG= "--inputs " + FinalPath + "/" + allcasesIDs[case] + "_DiffeomorphicDTI.nrrd "
@@ -317,6 +417,9 @@ while case < len(allcases):
   case += 1
 AverageCommand = AverageCommand + "--tensor_output " + DTIAverage
 print("\n[Computing the Diffeomorphic DTI average] => $ " + AverageCommand)
+
+##### <<< CURRENT POS 2020.3.4
+
 if 1 : 
 # Computing some images from the final DTI with dtiprocess
   FA= FinalPath + "/DiffeomorphicAtlasFA.nrrd"
