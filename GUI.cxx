@@ -3324,7 +3324,8 @@ int GUI::LaunchScriptWriter()
   SetOtherOptions();
 
 /* Launch writing */
-  m_scriptwriter->WriteScript(); // Master Function : get pid to send a signal to Qt process to move progress bar
+  //m_scriptwriter->WriteScript(); // Master Function : get pid to send a signal to Qt process to move progress bar
+  m_scriptwriter->WriteScriptFromTemplate("New"); //New Writer from template python source file
 
   GenerateXMLForGA();
 

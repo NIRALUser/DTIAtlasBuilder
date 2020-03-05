@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <sstream> // to convert int to std::string
+#include <fstream>
 #include <math.h> // for the absolute value
 
 /*itk classes*/
@@ -228,6 +229,71 @@ void ScriptWriter::WriteScript()
   Preprocess();
   AtlasBuilding();
   MainScript();
+}
+
+void ScriptWriter::WriteScriptFromTemplate(std::string templateName)
+{
+  std::cout<<"| Write script configuration file"<<std::endl;
+  SaveScriptConfiguration();
+  std::cout<<"| Script file written"<<std::endl;
+  std::cout<<"|"<<std::endl;
+  std::cout<<"|"<<std::endl; // command line display
+  std::cout<<"| Number of Cases: "<<m_CasesPath.size()<<std::endl; // command line display
+  std::cout<<"| Output Directory : "<<m_OutputPath<<"/DTIAtlas"<<std::endl; // command line display
+  if( m_useGridProcess )
+  {
+    std::cout<<"| Using grid processing"<<std::endl; // command line display
+  }
+  if(m_RegType==1)
+  {
+    std::cout<<"| Using Case 1 (" << m_CasesIDs[0] << ") as reference in the first Registration Loop"<<std::endl; // command line display
+  }
+  else
+  {
+    std::cout<<"| Using Template as reference for the Registration: "<<m_TemplatePath<<std::endl; // command line display
+  }
+  std::cout<<"| Number of loops in the Registration Loop : "<<m_nbLoops<<std::endl; // command line display
+  std::cout<<"| Writing begin: "; // command line display (no endl)
+
+  PreprocessFromTemplate("Script/DTIAtlasBuilder_Preprocess.py");
+  AtlasBuildingFromTemplate("Script/DTIAtlasBuilder_AtlasBuilding.py");
+  MainScriptFromTemplate("Script/DTIAtlasBuilder_Main.py");
+}
+
+void ScriptWriter::PreprocessFromTemplate(std::string filename)
+{
+  std::string Script;
+  std::ifstream f(filename);
+  if(f){
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    Script=ss.str();
+  }
+  m_Script_Preprocess= Script;
+}
+
+void ScriptWriter::AtlasBuildingFromTemplate(std::string filename)
+{
+  std::string Script;
+  std::ifstream f(filename);
+  if(f){
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    Script=ss.str();
+  }
+  m_Script_AtlasBuilding= Script;
+}
+
+void ScriptWriter::MainScriptFromTemplate(std::string filename)
+{
+  std::string Script;
+  std::ifstream f(filename);
+  if(f){
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    Script=ss.str();
+  }
+  m_Script_Main= Script;
 }
 
 void ScriptWriter::Preprocess ()

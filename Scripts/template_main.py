@@ -17,8 +17,6 @@ print(json.dumps(config,indent=4))
 print("\nThe current date and time are:")
 print( time.strftime('%x %X %Z') )
 
-exit(1)
-
 print("\n=============== Main Script ================")
 
 OutputPath= config['m_OutputPath']+"/DTIAtlas"

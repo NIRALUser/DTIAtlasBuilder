@@ -35,6 +35,11 @@ class ScriptWriter
     void Preprocess();
     void AtlasBuilding();
     void MainScript();
+    // New code with template python code
+    void WriteScriptFromTemplate(std::string);
+    void PreprocessFromTemplate(std::string);
+    void AtlasBuildingFromTemplate(std::string);
+    void MainScriptFromTemplate(std::string);
 
 /*SCRIPT ACCESSORS*/
     std::string getScript_Preprocess();
