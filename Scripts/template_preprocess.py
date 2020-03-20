@@ -231,6 +231,25 @@ else:
     if not CheckFileExists(FilteredDTI, 0, "" + config["m_CasesIDs"][0] + "" ) :
       if os.system(FilterDTICommand)!=0 : DisplayErrorAndQuit('['+config['m_CasesIDs'][0]+'] ResampleDTIlogEuclidean: 1 Filter DTI to remove negative values')
     else : print("=> The file \'" + FilteredDTI + "\' already exists so the command will not be executed")
+
+  # Cropping case 1 DTI
+  if config['m_NeedToBeCropped']==1:
+    croppedDTI = OutputPath + "/" + config['m_CasesIDs'][0] + "_croppedDTI.nrrd"
+    CropCommand =  config['m_SoftPath'][2] + " " + FilteredDTI + " -o " + croppedDTI + " -size " + config['m_CropSize'][0] + "," + config['m_CropSize'][1] + "," + config['m_CropSize'][2] + " -v"
+    print("[" +config['m_CasesIDs'][0] + "] [Cropping DTI Image] => $ " + CropCommand)
+    
+    if config["m_Overwrite"]==1:
+      if not config["m_useGridProcess"]:
+        if os.system(CropCommand)!=0 : DisplayErrorAndQuit('[' + config["m_CasesIDs"][0] + '] CropDTI: Cropping DTI image')
+    else:
+      if not CheckFileExists(croppedDTI, 0, "" + config['m_CasesIDs'][0] + "" ) :
+        if not config["m_useGridProcess"]:
+          if os.system(CropCommand)!=0 : DisplayErrorAndQuit('[' + config["m_CasesIDs"][0] + '] CropDTI: Cropping DTI image')
+      else:
+        print("=> The file '" + croppedDTI + "' already exists so the command will not be executed")
+
+
+
   # Generating case 
   if config['m_NeedToBeCropped']==1:
     DTI= OutputPath + "/" + config['m_CasesIDs'][0]+"_croppedDTI.nrrd"
@@ -482,4 +501,5 @@ while n <= config['m_nbLoops'] :
 print("\n============ End of Pre processing =============")
 
 sys.exit(0)
+
 
