@@ -290,23 +290,38 @@ if m_Overwrite==1:
       print("[" + allcasesIDs[case] + "] => Renaming \'" + originalInvHField + "\' to \'" + NewInvHField + "\'")
       os.rename(originalInvHField,NewInvHField)
       case += 1
+else:
+  if not CheckFileExists(DeformPath + "/MeanImage.mhd", 0, "") :
+    if os.system(AtlasBCommand)!=0 : DisplayErrorAndQuit('GreedyAtlas: Computing non-linear atlas from affine registered images')
+    if m_useGridProcess:
+      TestGridProcess( FilesFolder, 0) # stays in the function until all process is done : 0 makes the function look for 'file\'
+    case = 0
+    while case < len(allcases): # Renaming
+      originalImage=DeformPath + "/" + allcasesIDs[case] + "_Loop"+str(m_nbLoops)+"_Final"+m_ScalarMeasurement+"DefToMean.mhd"
+      originalHField=DeformPath + "/" + allcasesIDs[case] + "_Loop"+str(m_nbLoops)+"_Final"+m_ScalarMeasurement+"DefFieldImToMean.mhd"
+      originalInvHField=DeformPath + "/" + allcasesIDs[case] + "_Loop"+str(m_nbLoops)+"_Final"+m_ScalarMeasurement+"DefFieldMeanToIm.mhd"
+      NewImage= DeformPath + "/" + allcasesIDs[case] + "_NonLinearTrans_FA.mhd"
+      NewHField=DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
+      NewInvHField=DeformPath + "/" + allcasesIDs[case] + "_InverseHField.mhd"
+      print("[" + allcasesIDs[case] + "] => Renaming \'" + originalImage + "\' to \'" + NewImage + "\'")
+      os.rename(originalImage,NewImage)
+      print("[" + allcasesIDs[case] + "] => Renaming \'" + originalHField + "\' to \'" + NewHField + "\'")
+      os.rename(originalHField,NewHField)
+      print("[" + allcasesIDs[case] + "] => Renaming \'" + originalInvHField + "\' to \'" + NewInvHField + "\'")
+      os.rename(originalInvHField,NewInvHField)
+      case += 1
   else:
-    if not CheckFileExists(DeformPath + "/MeanImage.mhd", 0, "") :
-      if os.system(AtlasBCommand)!=0 : DisplayErrorAndQuit('GreedyAtlas: Computing non-linear atlas from affine registered images')
-      if m_useGridProcess:
-        TestGridProcess( FilesFolder, 0) # stays in the function until all process is done : 0 makes the function look for 'file\'
-    else:
-      print("=> The file '" + DeformPath + "/MeanImage.mhd' already exists so the command will not be executed")
-      # Renaming possible existing old named files from GreedyAtlas\n";
-      case = 0
-      while case < len(allcases): # Updating old names if needed\n";
-        NewImage= DeformPath + "/" + allcasesIDs[case] + "_NonLinearTrans_" + m_ScalarMeasurement + ".mhd"
-        CheckFileExists(NewImage, case, allcasesIDs[case])
-        NewHField=DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
-        CheckFileExists(NewHField, case, allcasesIDs[case])
-        NewInvHField=DeformPath + "/" + allcasesIDs[case] + "_InverseHField.mhd"
-        CheckFileExists(NewInvHField, case, allcasesIDs[case])
-        case += 1
+    print("=> The file '" + DeformPath + "/MeanImage.mhd' already exists so the command will not be executed")
+    # Renaming possible existing old named files from GreedyAtlas\n";
+    case = 0
+    while case < len(allcases): # Updating old names if needed\n";
+      NewImage= DeformPath + "/" + allcasesIDs[case] + "_NonLinearTrans_" + m_ScalarMeasurement + ".mhd"
+      CheckFileExists(NewImage, case, allcasesIDs[case])
+      NewHField=DeformPath + "/" + allcasesIDs[case] + "_HField.mhd"
+      CheckFileExists(NewHField, case, allcasesIDs[case])
+      NewInvHField=DeformPath + "/" + allcasesIDs[case] + "_InverseHField.mhd"
+      CheckFileExists(NewInvHField, case, allcasesIDs[case])
+      case += 1
 
 # Apply deformation fields
 if m_useGridProcess:
@@ -678,4 +693,5 @@ while case < len(allcases):
 print("\n============ End of Atlas Building =============")
 
 sys.exit(0)
+
 

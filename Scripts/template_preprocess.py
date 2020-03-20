@@ -23,6 +23,7 @@ allcasesIDs = config['m_CasesIDs']
 OutputPath= config['m_OutputPath']+ "/DTIAtlas/1_Affine_Registration"
 AtlasScalarMeasurementref=None 
 FilesFolder=None
+GridProcessCaseCommandsArray=[]
 
 if config['m_RegType']==1:
   AtlasScalarMeasurementref= OutputPath + '/' + config['m_CasesIDs'][0] + '_'+ config['m_ScalarMeasurement'] + ".nrrd" #"/ImageTest1_FA.nrrd" #the reference will be the first case for the first loop

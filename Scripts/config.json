@@ -31,7 +31,7 @@
     "m_NbThreadsString": "0",
     "m_NeedToBeCropped": 0,
     "m_OutputPath": "/work",
-    "m_Overwrite": 1,
+    "m_Overwrite": 0,
     "m_PythonPath": "/usr/bin/python",
     "m_RegType": 1,
     "m_ScalarMeasurement": "FA",
