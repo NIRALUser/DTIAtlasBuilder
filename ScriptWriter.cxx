@@ -1683,7 +1683,8 @@ void ScriptWriter::SaveScriptConfiguration(void)
     {"m_BFAffineTfmMode", m_BFAffineTfmMode},
     {"m_GridGeneralCommand",m_GridGeneralCommand},
     {"m_GridAtlasCommand",m_GridAtlasCommand},
-    {"m_ScalarMeasurement",m_ScalarMeasurement}
+    {"m_ScalarMeasurement",m_ScalarMeasurement},
+    {"m_nbLoopsDTIReg", m_nbLoopsDTIReg}
   };
   std::cout << std::setw(4) << obj << std::endl;
 
@@ -1727,6 +1728,11 @@ void ScriptWriter::setRegType(int RegType)
 void ScriptWriter::setnbLoops(int nbLoops)
 {
   m_nbLoops = nbLoops;
+}
+
+void ScriptWriter::setnbLoopsDTIReg(int nbLoopsDTIReg)
+{
+  m_nbLoopsDTIReg=nbLoopsDTIReg;
 }
 
 void ScriptWriter::setTemplatePath(std::string TemplatePath)

@@ -1099,6 +1099,37 @@ as an Affine transform already computed, it will be used as an input for the Aff
             </layout>
            </item>
            <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_18">
+             <item>
+              <widget class="QLabel" name="nbLoopsDTIRegLabel">
+               <property name="text">
+                <string>Number of iterations for DTI Registration</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="NbLoopsDTIRegSpinBox">
+               <property name="minimum">
+                <number>1</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_21">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_14">
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -1481,7 +1512,7 @@ It will be read at the beginning of the program.</string>
            <string>$ setenv DTIAtlasBuilderSoftPath [your config file]</string>
           </property>
           <property name="textFormat">
-           <enum>Qt::TextFormat::AutoText</enum>
+           <enum>Qt::PlainText</enum>
           </property>
           <property name="margin">
            <number>0</number>
@@ -1855,7 +1886,7 @@ paths configured.</string>
      <x>0</x>
      <y>0</y>
      <width>1196</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

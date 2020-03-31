@@ -3199,7 +3199,7 @@ void GUI::SetOtherOptions()
   else m_scriptwriter->setOverwrite(0);
 
   m_scriptwriter->setnbLoops(NbLoopsSpinBox->value());
-
+  m_scriptwriter->setnbLoopsDTIReg(NbLoopsDTIRegSpinBox->value());
   m_scriptwriter->setBFAffineTfmMode(BFAffineTfmModecomboBox->currentText().toStdString());
 
   m_scriptwriter->setGridProcess( GridProcesscheckBox->isChecked() ); // isChecked() returns true or false
