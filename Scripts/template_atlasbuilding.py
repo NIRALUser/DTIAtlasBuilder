@@ -561,11 +561,11 @@ if m_useGridProcess:
 
 ### looping begins
 cnt=0
-if m_Overwrite==0:
-  for i in range(m_nbLoopsDTIReg):
-    if os.path.isdir(FinalResampPath+"/Second_Resampling"+"/Loop_"+str(i)):
-      cnt=i 
-  cnt=max(cnt,0)
+# if m_Overwrite==0:
+#   for i in range(m_nbLoopsDTIReg):
+#     if os.path.isdir(FinalResampPath+"/Second_Resampling"+"/Loop_"+str(i)):
+#       cnt=i 
+#   cnt=max(cnt,0)
 
 while cnt < m_nbLoopsDTIReg:
   print("-----------------------------------------------------------")
@@ -578,7 +578,7 @@ while cnt < m_nbLoopsDTIReg:
   # dtiaverage recomputing
   IterDir="Loop_"+str(cnt)+"/"
   PrevIterDir="Loop_"+str(cnt-1)+"/"
-  DTIAverage2 = FinalResampPath + "/FinalAtlasDTI.nrrd"
+  DTIAverage2 = FinalResampPath + "/Second_Resampling/" + IterDir+ "/FinalAtlasDTI.nrrd"
   AverageCommand2 = m_SoftPath[6]+" "  #dtiaverage
   
   if cnt==0:
@@ -601,13 +601,13 @@ while cnt < m_nbLoopsDTIReg:
 
   if m_Overwrite==1 or not CheckFileExists(DTIAverage2, 0, ""): 
   # Computing some images from the final DTI with dtiprocess
-    FA2= FinalResampPath + "/FinalAtlasFA.nrrd"
-    cFA2= FinalResampPath + "/FinalAtlasColorFA.nrrd"
-    RD2= FinalResampPath + "/FinalAtlasRD.nrrd"
-    MD2= FinalResampPath + "/FinalAtlasMD.nrrd"
-    AD2= FinalResampPath + "/FinalAtlasAD.nrrd"
+    FA2= FinalResampPath + "/Second_Resampling/" +IterDir+ "/FinalAtlasFA.nrrd"
+    cFA2= FinalResampPath +"/Second_Resampling/" +IterDir+ "/FinalAtlasColorFA.nrrd"
+    RD2= FinalResampPath + "/Second_Resampling/" +IterDir+"/FinalAtlasRD.nrrd"
+    MD2= FinalResampPath + "/Second_Resampling/" +IterDir+"/FinalAtlasMD.nrrd"
+    AD2= FinalResampPath + "/Second_Resampling/" +IterDir+"/FinalAtlasAD.nrrd"
     GeneScalarMeasurementCommand2=m_SoftPath[3]+" --scalar_float --dti_image " + DTIAverage2 + " -f " + FA2 + " -m " + MD2 + " --color_fa_output " + cFA2 + " --RD_output " + RD2 + " --lambda1_output " + AD2
-    DbleToFloatCommand2=m_SoftPath[8]+" convert -t float -i " + DTIAverage2 + " | "+m_SoftPath[8]+" save -f nrrd -e gzip -o " + FinalResampPath + "/FinalAtlasDTI_float.nrrd"
+    DbleToFloatCommand2=m_SoftPath[8]+" convert -t float -i " + DTIAverage2 + " | "+m_SoftPath[8]+" save -f nrrd -e gzip -o " + FinalResampPath + "/Second_Resampling/" +IterDir+ "/FinalAtlasDTI_float.nrrd"
     if not m_useGridProcess:
       if os.system(AverageCommand2)!=0 : DisplayErrorAndQuit('dtiaverage: Recomputing the final DTI average')
       print("[Computing some images from the final DTI with dtiprocess] => $ " + GeneScalarMeasurementCommand2)
@@ -740,6 +740,7 @@ while case < len(allcases):
 print("\n============ End of Atlas Building =============")
 
 sys.exit(0)
+
 
 
 
