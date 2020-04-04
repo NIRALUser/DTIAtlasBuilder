@@ -25,6 +25,10 @@ std::string IntToStr(int IntVar)
 /////////////////////////////////////////
 // to avoid having to write twice the same and reduce writing functions size
 
+void ScriptWriter::setExecutableDir(std::string path)
+{
+  m_ExecutableDir = path;
+}
 std::string pyTestGridProcess ( bool NoCase1 )
 {
   std::string Script = "\n# Function that tests if all batches have been processed on the grid\n";
@@ -255,9 +259,9 @@ void ScriptWriter::WriteScriptFromTemplate(std::string templateName)
   std::cout<<"| Number of loops in the Registration Loop : "<<m_nbLoops<<std::endl; // command line display
   std::cout<<"| Writing begin: "; // command line display (no endl)
 
-  PreprocessFromTemplate("Script/DTIAtlasBuilder_Preprocess.py");
-  AtlasBuildingFromTemplate("Script/DTIAtlasBuilder_AtlasBuilding.py");
-  MainScriptFromTemplate("Script/DTIAtlasBuilder_Main.py");
+  PreprocessFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Preprocess.py");
+  AtlasBuildingFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_AtlasBuilding.py");
+  MainScriptFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Main.py");
 }
 
 void ScriptWriter::PreprocessFromTemplate(std::string filename)

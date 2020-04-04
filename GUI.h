@@ -73,6 +73,8 @@ class GUI : public QMainWindow, public Ui::MainWindow
 /*XML FILE*/
     void GenerateXMLForGA();
 
+
+
 /*SOFT CONFIG*/
     int LoadConfig(QString ConfigFile); // returns -1 if fails, otherwise 0
     bool LoadConfigReturnTrueIfCorrupted(QString ReadProgram, const char* Program);
@@ -191,6 +193,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
     std::vector< std::string > m_FindProgramDTIABExecDirVec;
     std::string m_DTIABSlicerExtensionExternalBinDir;
     std::string m_PythonPath;
+    std::string m_ExecutableDir;
 
 /*CASES*/  std::vector < QLineEdit* > m_CasesQ; // index begin at 0
     std::vector < std::string > m_CasesPath; // index begin at 0

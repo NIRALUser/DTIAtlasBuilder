@@ -105,6 +105,9 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   m_scriptwriter = new ScriptWriter; // delete in "void GUI::ExitProgram()"
 
 /* Variables */
+  m_ExecutableDir = commandRan;
+  m_scriptwriter->setExecutableDir(m_ExecutableDir); 
+
   m_CSVseparator = QString(",");
   m_ParamSaved=1;
   m_lastCasePath="";
@@ -328,19 +331,29 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     DTIRegExtraPathlineEdit->setText( listPath ) ;
   }
 
-  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../ResampleDTIlogEuclidean/" + std::string(Slicer_CLIMODULES_BIN_DIR));
-  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../ResampleDTIlogEuclidean/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
-  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTI-Reg/" + std::string(Slicer_CLIMODULES_BIN_DIR));
-  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTI-Reg/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
-  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTIProcess/" + std::string(Slicer_CLIMODULES_BIN_DIR));
-  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTIProcess/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
+  // m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../ResampleDTIlogEuclidean/" + std::string(Slicer_CLIMODULES_BIN_DIR));
+  // m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../ResampleDTIlogEuclidean/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
+  // m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTI-Reg/" + std::string(Slicer_CLIMODULES_BIN_DIR));
+  // m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTI-Reg/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
+  // m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTIProcess/" + std::string(Slicer_CLIMODULES_BIN_DIR));
+  // m_FindProgramDTIABExecDirVec.push_back(commandRan + "/../../../../DTIProcess/" + std::string(Slicer_CLIMODULES_BIN_DIR) + "/../ExternalBin");
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/ResampleDTIlogEuclidean/bin/");
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/DTI-Reg/bin/" );
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/DTIProcess/bin/");
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/niral_utilities/bin/");
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/AtlasWerks/bin/" );
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/teem/bin/" );
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/BRAINSTools/bin/" );
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/MriWatcher/bin/");
   
-
   // look for the programs with the itk function
   ConfigDefault(commandRan);
 
   // Look for the config file in the executable directory
-  std::string SoftConfigPath= DTIABExecutablePath + "/DTIAtlasBuilderSoftConfig.txt";
+  //std::string SoftConfigPath= DTIABExecutablePath + "/DTIAtlasBuilderSoftConfig.txt";
+  std::string SoftConfigPath= m_ExecutableDir + "/DTIAtlasBuilderSoftConfig.txt";
+  std::cout << m_ExecutableDir;
+
   if( itksys::SystemTools::GetPermissions(SoftConfigPath.c_str(),ITKmode_F_OK) )
   {
     if( LoadConfig(QString( SoftConfigPath.c_str() )) == -1 )
@@ -352,6 +365,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   // Look for the config file in the current directory
   std::string CurrentPath = itksys::SystemTools::GetRealPath( itksys::SystemTools::GetCurrentWorkingDirectory().c_str() ); //GetRealPath() to remove symlinks
   SoftConfigPath = CurrentPath + "/DTIAtlasBuilderSoftConfig.txt";
+
   if( itksys::SystemTools::GetPermissions( SoftConfigPath.c_str() , ITKmode_F_OK) )
   {
     if( LoadConfig(QString( SoftConfigPath.c_str() )) == -1 )
@@ -2186,8 +2200,8 @@ void GUI::ConfigDefault(std::string commandRan) /*SLOT*/
   std::string notFound;
 
   // get the directory where the running executable is
-  std::string DTIAtlasBuilderPath = itksys::SystemTools::GetRealPath(itksys::SystemTools::GetParentDirectory(commandRan));
-  
+  //std::string DTIAtlasBuilderPath = itksys::SystemTools::GetRealPath(itksys::SystemTools::GetParentDirectory(commandRan));
+  std::string DTIAtlasBuilderPath=m_ExecutableDir;
   std::vector< std::string > tools_paths_hints;
 
   if(commandRan.compare("") != 0){

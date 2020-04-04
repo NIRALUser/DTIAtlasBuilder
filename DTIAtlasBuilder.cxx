@@ -14,8 +14,8 @@ int main(int argc, char* argv[])
 
   QApplication app(argc, argv);
 
-  std::string commandDirectory = itksys::SystemTools::GetFilenamePath(itksys::SystemTools::GetRealPath( argv[0] ));
-  
+  std::string commandDirectory = app.applicationDirPath().toStdString();//itksys::SystemTools::GetFilenamePath(itksys::SystemTools::GetRealPath( argv[0] ));
+  std::cout << "Executable : " << commandDirectory <<std::endl;
   GUI AtlasGUI(ParamFile, ConfigFile, CSVFile, Overwrite, noGUI, false, commandDirectory); // argv[0] is the command that the user has ran -> to search the config file in the same directory
 
 /* Launch App */

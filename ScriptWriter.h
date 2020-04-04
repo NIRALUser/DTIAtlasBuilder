@@ -42,6 +42,7 @@ class ScriptWriter
     void MainScriptFromTemplate(std::string);
 
 /*SCRIPT ACCESSORS*/
+    void setExecutableDir(std::string);
     std::string getScript_Preprocess();
     std::string getScript_AtlasBuilding();
     std::string getScript_Main();
@@ -81,6 +82,8 @@ class ScriptWriter
     int setScalarMeasurement( std::string scalarMeasurement ) ;
 
   private:
+/* Environment */
+    std::string m_ExecutableDir;
 /* VALUES */
     std::vector < std::string > m_CasesPath;
     std::vector < std::string > m_CasesIDs;
