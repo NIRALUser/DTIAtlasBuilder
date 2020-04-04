@@ -2561,7 +2561,7 @@ void GUI::ReadMe()  /*SLOT*/ /////to UPDATE
   std::string info = "<p><b>DTIAtlasBuilder: "+std::string(DTIAtlasBuilder_VERSION)+"</b><br>";
   info = info + "<i>A tool to create an atlas from several DTI images</i><br><br>";
   info = info + "Homepage: <a href=\"http://www.nitrc.org/projects/dtiatlasbuilder\" target=\"_blank\">On NITRC</a><br><br>";
-  info = info + "For any question, suggestion or remark, please contact <a href=\"mailto:akaiser@unc.edu\" target=\"_blank\">akaiser@unc.edu</a>.<br><br>";
+  info = info + "For any question, suggestion or remark, please contact <a href=\"mailto:sangkyoon_park@med.unc.edu\" target=\"_blank\">sangkyoon_park@med.unc.edu</a>.<br><br>";
   info = info + "Read the <a href=\"http://github.com/NIRALUser/DTIAtlasBuilder/blob/master/README.md\" target=\"_blank\">full Read Me</a>.</p>";
 
   QLabel *InfoLabel = new QLabel ( info.c_str(), this );

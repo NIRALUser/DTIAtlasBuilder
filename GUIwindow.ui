@@ -1103,7 +1103,7 @@ as an Affine transform already computed, it will be used as an input for the Aff
              <item>
               <widget class="QLabel" name="nbLoopsDTIRegLabel">
                <property name="text">
-                <string>Number of iterations for DTI Registration</string>
+                <string>Iterations for the final DTI Atlas Registration</string>
                </property>
               </widget>
              </item>
