@@ -4,7 +4,7 @@
   <description>A tool to create an atlas from several DTI images. For any suggestion or question, please contact akaiser[at]unc.edu</description>
   <contributor>Adrien Kaiser</contributor>
   <category>Diffusion.Diffusion Tensor Images</category>
-  <version>1.5.0</version>
+  <version>1.5.1</version>
   <parameters>
     <label>Inputs</label>
     <description>Inputs of the program</description>

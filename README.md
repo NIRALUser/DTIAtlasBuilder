@@ -54,6 +54,14 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
+#### [v1.5.1]() (04/09/2020)
+- Superbuild pattern renewed 
+- Scripts are now extracted into independent python codes. Hard coded scripts are no more to be used.
+- JSON incorporated
+- Final resampling iteration implemented
+- Automatic cleanup for intermediate files in final resampling steps
+
+
 #### [v1.5](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.0) (11/12/2018)
 
 - Fix superbuild mechanism for SlicerExtension
