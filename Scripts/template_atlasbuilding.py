@@ -561,11 +561,11 @@ if m_useGridProcess:
 
 ### looping begins
 cnt=0
-# if m_Overwrite==0:
-#   for i in range(m_nbLoopsDTIReg):
-#     if os.path.isdir(FinalResampPath+"/Second_Resampling"+"/Loop_"+str(i)):
-#       cnt=i 
-#   cnt=max(cnt,0)
+if m_Overwrite==0:
+  for i in range(m_nbLoopsDTIReg):
+    if os.path.isdir(FinalResampPath+"/Second_Resampling"+"/Loop_"+str(i)):
+      cnt=i 
+  cnt=max(cnt,0)
 
 while cnt < m_nbLoopsDTIReg:
   print("-----------------------------------------------------------")
@@ -705,7 +705,16 @@ while cnt < m_nbLoopsDTIReg:
 
   if m_useGridProcess:
     TestGridProcess( FilesFolder, len(allcases) ) # stays in the function until all process is done : 0 makes the function look for \'file\'
+  ### Cleanup - delete PrevIterDir
+  if cnt > 1:
+    PrevPrevIterDir="Loop_"+str(cnt-2)+"/"
+    DirToRemove = FinalResampPath + "/Second_Resampling/" + PrevPrevIterDir
+    if os.path.exists(DirToRemove):
+      shutil.rmtree(DirToRemove)
+
   cnt+=1
+
+
 # End while cnt < m_nbLoopDTIReg
 
 # Moving final images to final folders
@@ -740,6 +749,7 @@ while case < len(allcases):
 print("\n============ End of Atlas Building =============")
 
 sys.exit(0)
+
 
 
 
