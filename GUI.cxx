@@ -1406,7 +1406,7 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
 
 void GUI::LoadParametersSlot() /*SLOT*/
 {
-  QString ParamBrowse=QFileDialog::getOpenFileName(this, "Open Parameter File", QString(), ".txt Files (*.txt)");
+  QString ParamBrowse=QFileDialog::getOpenFileName(this, "Open Parameter File", QString(), ".txt Files (*.txt);;All Files (*.*)");
 
   if(!ParamBrowse.isEmpty())
   {
