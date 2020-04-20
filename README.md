@@ -54,6 +54,9 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
+#### [v1.5.2]() (04/20/2020)
+- Final Atlas will be copied into 5_Final_Atlas  directory once completed
+
 #### [v1.5.1]() (04/09/2020)
 - Superbuild pattern renewed 
 - Scripts are now extracted into independent python codes. Hard coded scripts are no more to be used.

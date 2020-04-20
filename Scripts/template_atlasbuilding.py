@@ -55,6 +55,7 @@ DeformPath= m_OutputPath+"/DTIAtlas/2_NonLinear_Registration"
 AffinePath= m_OutputPath+"/DTIAtlas/1_Affine_Registration"
 FinalPath= m_OutputPath+"/DTIAtlas/3_Diffeomorphic_Atlas"
 FinalResampPath= m_OutputPath+"/DTIAtlas/4_Final_Resampling"
+FinalAtlasPath= m_OutputPath+"/DTIAtlas/5_Final_Atlas"
 
 def DisplayErrorAndQuit ( Error ):
   print '\n\nERROR DETECTED IN WORKFLOW:',Error
@@ -238,6 +239,10 @@ if not os.path.isdir(FinalResampPath + "/First_Resampling"):
 if not os.path.isdir(FinalResampPath + "/Second_Resampling"):
   print("\n=> Creation of the Second Final Resampling directory = " + FinalResampPath + "/Second_Resampling")
   os.mkdir(FinalResampPath + "/Second_Resampling")
+
+if not os.path.isdir(FinalAtlasPath):
+  print("\n=> Creation of the Final Atlas directory = " + FinalAtlasPath)
+  os.mkdir(FinalAtlasPath)
 
 # for i in range(m_nbLoopsDTIReg):
 #   if not os.path.isdir(FinalResampPath+"/Second_Resampling"+"/Loop_"+str(i)):
@@ -745,6 +750,14 @@ while case < len(allcases):
     if CheckFileExists(DTIRegCaseScalarMeasurement, case, allcasesIDs[case]) :
       shutil.copy(DTIRegCaseScalarMeasurement, NewDTIRegCaseScalarMeasurement)
   case += 1
+
+# Copy final atlas components to FinalAtlasPath directory
+
+print("Copying Final atlas components to " + FinalAtlasPath)
+shutil.rmtree(FinalAtlasPath)
+shutil.copytree(FinalResampPath+"/"+"/Second_Resampling/"+LastIterDir,FinalAtlasPath)
+shutil.copytree(FinalResampPath+"/FinalDeformationFields",FinalAtlasPath+"/FinalDeformationFields")
+shutil.copytree(FinalResampPath+"/FinalTensors",FinalAtlasPath+"/FinalTensors")
 
 print("\n============ End of Atlas Building =============")
 
