@@ -29,6 +29,7 @@
 #include "ui_GUIwindow.h"
 
 #include "ScriptWriter.h"
+#include "HierarchyModel.h"
 
 class GUI : public QMainWindow, public Ui::MainWindow 
 {
@@ -131,6 +132,12 @@ class GUI : public QMainWindow, public Ui::MainWindow
 /*EXIT*/
     void ExitProgram();
 
+/*HIERARCHY*/
+    void openHierarchyFile();
+    void saveHierarchyFile();
+    void addNode();
+    void removeNode();
+
 /*DATASET*/
     void ReadCSVSlot();
     void SaveCSVDatasetBrowse();
@@ -194,6 +201,9 @@ class GUI : public QMainWindow, public Ui::MainWindow
     std::string m_DTIABSlicerExtensionExternalBinDir;
     std::string m_PythonPath;
     std::string m_ExecutableDir;
+
+/*HIERARCHY*/
+    CaseHierarchyModel* m_HierarchyModel;
 
 /*CASES*/  std::vector < QLineEdit* > m_CasesQ; // index begin at 0
     std::vector < std::string > m_CasesPath; // index begin at 0

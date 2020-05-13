@@ -125,7 +125,7 @@ ADD_DEFINITIONS(-DDTIAtlasBuilder_VERSION="${version_number}")
 #target_link_libraries(DTIAtlasBuilder ${QT_LIBRARIES} ${ITK_LIBRARIES})
 #install(TARGETS DTIAtlasBuilder DESTINATION bin)
 
-set(DTIABsources GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
+set(DTIABsources GUI.h GUI.cxx ScriptWriter.h ScriptWriter.cxx HierarchyModel.cxx HierarchyModel.h ${QtProject_HEADERS_MOC} ${UI_FILES} ${RCC_SRCS})
 
 #Find SlicerExecutionModel
 FIND_PACKAGE(SlicerExecutionModel REQUIRED)

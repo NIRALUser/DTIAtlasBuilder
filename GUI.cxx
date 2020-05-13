@@ -101,6 +101,9 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
 
   m_ErrorDetectedInConstructor=false;
 
+/* Hierarchy model */
+  m_HierarchyModel= new CaseHierarchyModel();
+
 /* Script writing object */
   m_scriptwriter = new ScriptWriter; // delete in "void GUI::ExitProgram()"
 
@@ -135,6 +138,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
 
   if(!m_noGUI)
   {
+
 /* Objects connections */
     QObject::connect(ComputepushButton, SIGNAL(clicked()), this, SLOT(Compute()));
     // Compute button triggered when user presses ENTER key
@@ -143,6 +147,15 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     QShortcut* NumPadEnterShortcut = new QShortcut(QKeySequence(Qt::Key_Enter), this); // ENTER on num pad
     QObject::connect(NumPadEnterShortcut, SIGNAL(activated()), ComputepushButton, SLOT(click()));
 
+    // Hierarchical objects & Treeview set
+    QObject::connect(openHierarchyButton,SIGNAL(clicked()), this, SLOT(openHierarchyFile()));
+    QObject::connect(saveHierarchyButton,SIGNAL(clicked()), this, SLOT(saveHierarchyFile()));
+    QObject::connect(addNodeButton,SIGNAL(clicked()), this, SLOT(addNode()));
+    QObject::connect(removeNodeButton,SIGNAL(clicked()), this, SLOT(removeNode()));
+
+    caseHierarchyTreeView->setModel(m_HierarchyModel);
+
+    //
     QObject::connect(StoppushButton, SIGNAL(clicked()), this, SLOT(KillScriptQProcess()));
     QObject::connect(BrowseCSVPushButton, SIGNAL(clicked()), this, SLOT(ReadCSVSlot()));
     QObject::connect(SaveCSVPushButton, SIGNAL(clicked()), this, SLOT(SaveCSVDatasetBrowse()));
@@ -667,7 +680,41 @@ void GUI::InitOptions()
 }
 
   /////////////////////////////////////////
+ //                Hierarchy            //
+/////////////////////////////////////////
+
+void GUI::openHierarchyFile() /*SLOT*/
+{
+  QString fileBrowse=QFileDialog::getOpenFileName(this, "Open Case Hierarchy File", QString(), "JSON File (*.json);;All Files (*.*)");
+  if(!fileBrowse.isEmpty())
+  {
+    //load and set the caseHierarchyTreeView
+    m_HierarchyModel->loadFile(fileBrowse);
+
+  }
+}
+
+void GUI::saveHierarchyFile() /*SLOT*/
+{
+  QString fileBrowse=QFileDialog::getOpenFileName(this, "Open Case Hierarchy File", QString(), "JSON File (*.json);;All Files (*.*)");
+  if(!fileBrowse.isEmpty())
+  {
+    //load and set the caseHierarchyTreeView
+    m_HierarchyModel->saveFile(fileBrowse);
+  }
+}
+
+void GUI::addNode(){
+
+}
+
+void GUI::removeNode(){
+
+}
+
+  /////////////////////////////////////////
  //                CASES                //
+
 /////////////////////////////////////////
 
 bool GUI::FileIsParameterFile( std::string filepath ) // TODO
