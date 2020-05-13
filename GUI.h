@@ -186,6 +186,11 @@ class GUI : public QMainWindow, public Ui::MainWindow
 
   protected :
 
+/*HIERARCHY*/
+    void updateHierarchyFiles();
+    void enableCaseWidget(bool);
+
+
 /*CASES*/
     void dragEnterEvent(QDragEnterEvent*event);
     void dropEvent(QDropEvent* event);

@@ -18,6 +18,7 @@
 #include <QLineEdit>
 #include <QTimer>
 #include <QDebug>
+#include <QItemSelection>
 
 /*std classes*/
 #include <stdio.h>
@@ -158,6 +159,11 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     //std::cout << b << std::endl;
   
     //
+    enableCaseWidget(0);
+    QModelIndex idx= m_HierarchyModel->item(0)->index();
+    caseHierarchyTreeView->clicked(idx);
+    caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx), QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+
     QObject::connect(StoppushButton, SIGNAL(clicked()), this, SLOT(KillScriptQProcess()));
     QObject::connect(BrowseCSVPushButton, SIGNAL(clicked()), this, SLOT(ReadCSVSlot()));
     QObject::connect(SaveCSVPushButton, SIGNAL(clicked()), this, SLOT(SaveCSVDatasetBrowse()));
@@ -719,12 +725,38 @@ void GUI::treeViewItemSelected(const QModelIndex idx){
   std::cout << "item clicked (" << idx.row()<<","<<idx.column() << ")" <<std::endl;
   QString tag = idx.data().toString();
   std::cout << tag.toStdString() << std::endl;
-
+  m_HierarchyModel->setCurrentTag(tag);
+  QString _type=m_HierarchyModel->getCurrentType();
   CaseListWidget->clear();
   QStringList CL=m_HierarchyModel->getFileList(tag);
   AddCasesToListWidget(CL,QString(""));
+  if(_type==QString("node")){
+    enableCaseWidget(0);
+  }else{
+    enableCaseWidget(1);
+  }
 
 }
+
+void GUI::updateHierarchyFiles(){
+  QStringList ql;
+  QString nodename = m_HierarchyModel->getCurrentTag();
+  for(int i=0; i < CaseListWidget->count() ;i++){
+      QString s=CaseListWidget->item(i)->text().split(QString(": ")).at(1);
+      //std::cout << s.toStdString() << std::endl;
+      ql.append(s);
+  }
+  m_HierarchyModel->setFiles(nodename,ql);
+}
+
+void GUI::enableCaseWidget(bool tf){
+  CaseListWidget->setEnabled(tf);
+  AddPushButton->setEnabled(tf);
+  RemovePushButton->setEnabled(tf);
+  BrowseCSVPushButton->setEnabled(tf);
+  SaveCSVPushButton->setEnabled(tf);
+}
+
 
   /////////////////////////////////////////
  //                CASES                //
@@ -821,6 +853,7 @@ void GUI::dropEvent(QDropEvent* event)
     }
  
     AddCasesToListWidget(pathList, QString(""));
+    updateHierarchyFiles();
   } // if mimedata hasurls
 
 } // dropEvent
@@ -829,6 +862,7 @@ void GUI::OpenAddCaseBrowseWindow() /*SLOT*/
 {
   QStringList CaseListBrowse = QFileDialog::getOpenFileNames(this, "Open Cases", m_lastCasePath, "ITK format Images (*.nrrd *.nhdr *.nii *.nii.gz *.*)");
   AddCasesToListWidget(CaseListBrowse, QString(""));
+  updateHierarchyFiles();
 }
 
 void GUI::AddCasesToListWidget(QStringList CaseList, QString CSVfiletext) // called when drag&dropping any file or adding files with the + button or loading CSV file
@@ -872,6 +906,7 @@ void GUI::AddCasesToListWidget(QStringList CaseList, QString CSVfiletext) // cal
 
     CheckCasesIndex();
   }
+  updateHierarchyFiles();
 }
 
 void GUI::RemoveSelectedCases() /*SLOT*/
@@ -899,6 +934,7 @@ void GUI::RemoveSelectedCases() /*SLOT*/
 
     CheckCasesIndex();
   }
+  updateHierarchyFiles();
 }
 
 void GUI::CheckCasesIndex() /* Check duplicates Change ids at the begining of the lines */

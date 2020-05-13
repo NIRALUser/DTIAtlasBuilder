@@ -12,6 +12,10 @@
 CaseHierarchyModel::CaseHierarchyModel(){
 	m_rootNode=new QStandardItem(QString("target"));
 	appendRow(m_rootNode);
+	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",{}}};
+	m_CaseHierarchy["build"]["target"]=obj;
+	m_currentTag="target";
+
 }
 CaseHierarchyModel::CaseHierarchyModel(QString filename){ // hbuild filename
 	CaseHierarchyModel();
@@ -29,6 +33,14 @@ void CaseHierarchyModel::initialize(QString filename){
 void CaseHierarchyModel::initialize(){
 
 }
+
+
+QString CaseHierarchyModel::getCurrentType(){
+	std::string s=m_CaseHierarchy["build"][m_currentTag.toStdString()]["type"];
+	return QString(s.c_str());
+}
+
+
 void CaseHierarchyModel::loadFile(QString filename){
 	QFile file(filename);
 	file.open(QIODevice::ReadOnly);
@@ -70,15 +82,15 @@ void CaseHierarchyModel::expandNode(QStandardItem* p_node,json hbuild){
 		std::string _ft=obj["filetype"];
 		if(QString(_ft.c_str())==QString("list")){
 			std::vector<std::string> fl= obj["datasetfiles"];
-			foreach(const std::string &str, fl){
-				std::cout << str << std::endl;
-			}
+			// foreach(const std::string &str, fl){
+			// 	//std::cout << str << std::endl;
+			// }
 		}else if(QString(_ft.c_str())==QString("dataset")){
 			std::string s=obj["datasetfiles"];
 			QStringList ql=readCSV(QString(s.c_str()));
 			std::vector<std::string> fl;
 			foreach(const QString &str, ql){
-				std::cout << str.toStdString() << std::endl;
+				//std::cout << str.toStdString() << std::endl;
 				fl.push_back(str.toStdString());
 			}
 			m_CaseHierarchy["build"][tag.toStdString()]["filetype"]=std::string("list");
@@ -103,6 +115,16 @@ void CaseHierarchyModel::generateEntries(json obj){
 }
 void CaseHierarchyModel::generateEntries(){
 	generateEntries(m_CaseHierarchy);
+}
+
+void CaseHierarchyModel::setFiles(QString nodename, QStringList ql){
+	std::vector<std::string> v;
+	foreach(const QString& str, ql){
+		//std::cout << "In HM : " << str.toStdString() << std::endl;
+		v.push_back(str.toStdString());
+	}
+	m_CaseHierarchy["build"][nodename.toStdString()]["filetype"]=std::string("list");
+	m_CaseHierarchy["build"][nodename.toStdString()]["datasetfiles"]=v;
 }
 
 QStringList CaseHierarchyModel::getFileList(QString nodestr){

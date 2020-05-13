@@ -29,11 +29,18 @@ public:
 	void generateEntries(); // regenerate from cseHierarchy
 
 	QStringList getFileList(QString node); // get the list of files of a node
+	void setCurrentTag(QString s){m_currentTag=s;}; 
+	QString getCurrentTag(){return m_currentTag;};
+	QString getCurrentType();
+
+	void setFiles(QString nodename, QStringList ql);
+
 protected:
 	void expandNode(QStandardItem*,json);	
 	QStringList readCSV(QString filename);// load csv file
 private:
 	json m_CaseHierarchy;  // hierarchy json object 
 	QStandardItem* m_rootNode; //root node ("target")
+	QString m_currentTag; // current tag of a node
 };
 #endif
