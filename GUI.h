@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QStackedWidget>
+#include <QModelIndex>
 
 /*std classes*/
 #include <stdio.h>
@@ -137,6 +138,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
     void saveHierarchyFile();
     void addNode();
     void removeNode();
+    void treeViewItemSelected(const QModelIndex);
 
 /*DATASET*/
     void ReadCSVSlot();

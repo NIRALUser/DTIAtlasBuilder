@@ -25,7 +25,7 @@
 #include <vector>
 #include <string>
 #include <iomanip>
-
+#include <iostream>
 
 /*itk classes*/
 #include "itkImage.h"
@@ -154,7 +154,9 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     QObject::connect(removeNodeButton,SIGNAL(clicked()), this, SLOT(removeNode()));
 
     caseHierarchyTreeView->setModel(m_HierarchyModel);
-
+    bool b=QObject::connect(caseHierarchyTreeView, SIGNAL(clicked(const QModelIndex)), this, SLOT(treeViewItemSelected(const QModelIndex)));
+    //std::cout << b << std::endl;
+  
     //
     QObject::connect(StoppushButton, SIGNAL(clicked()), this, SLOT(KillScriptQProcess()));
     QObject::connect(BrowseCSVPushButton, SIGNAL(clicked()), this, SLOT(ReadCSVSlot()));
@@ -709,6 +711,18 @@ void GUI::addNode(){
 }
 
 void GUI::removeNode(){
+
+}
+
+void GUI::treeViewItemSelected(const QModelIndex idx){
+
+  std::cout << "item clicked (" << idx.row()<<","<<idx.column() << ")" <<std::endl;
+  QString tag = idx.data().toString();
+  std::cout << tag.toStdString() << std::endl;
+
+  CaseListWidget->clear();
+  QStringList CL=m_HierarchyModel->getFileList(tag);
+  AddCasesToListWidget(CL,QString(""));
 
 }
 
