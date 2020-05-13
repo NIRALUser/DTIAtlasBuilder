@@ -42,7 +42,7 @@ void CaseHierarchyModel::saveFile(QString filename){
 	QFile file(filename);
 	file.open(QIODevice::WriteOnly);
 	QTextStream fs(&file);
-	std::string str=m_CaseHierarchy.dump();
+	std::string str=m_CaseHierarchy.dump(4);
 	fs << QString(str.c_str());
 }
 
