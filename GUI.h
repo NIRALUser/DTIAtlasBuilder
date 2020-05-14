@@ -14,6 +14,7 @@
 #include <QComboBox>
 #include <QStackedWidget>
 #include <QModelIndex>
+#include <QInputDialog>
 
 /*std classes*/
 #include <stdio.h>

@@ -698,13 +698,16 @@ void GUI::openHierarchyFile() /*SLOT*/
   {
     //load and set the caseHierarchyTreeView
     m_HierarchyModel->loadFile(fileBrowse);
-
+    QModelIndex idx=m_HierarchyModel->getCurrentItem()->index();
+    caseHierarchyTreeView->clicked(idx);
+    caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+    caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
   }
 }
 
 void GUI::saveHierarchyFile() /*SLOT*/
 {
-  QString fileBrowse=QFileDialog::getOpenFileName(this, "Open Case Hierarchy File", QString(), "JSON File (*.json);;All Files (*.*)");
+  QString fileBrowse=QFileDialog::getSaveFileName(this, "Save Case Hierarchy File", QString(), "JSON File (*.json);;All Files (*.*)");
   if(!fileBrowse.isEmpty())
   {
     //load and set the caseHierarchyTreeView
@@ -713,19 +716,48 @@ void GUI::saveHierarchyFile() /*SLOT*/
 }
 
 void GUI::addNode(){
+  std::cout << " Adding node" << std::endl;
+  // first to change the node type to 'node' to current selected item
+  // second to choose the node type of generated node. (node / end_node)
 
+  //production codes
+
+  bool ok;
+  QString prefix="";
+  
+  if(m_HierarchyModel->getCurrentItem()!=m_HierarchyModel->getRoot()){
+    prefix=m_HierarchyModel->getCurrentTag() + QString("-");
+  }
+  QString name= QInputDialog::getText(this, QString("Input the name of new atlas node"), QString("New atlas name : ") + prefix, QLineEdit::Normal, "myatlas", &ok);
+
+  if(ok){
+    if(m_HierarchyModel->checkNodename(prefix+name)){
+      QMessageBox::warning(this, "Failed to add a node", QString("There is an existing node with the name of ")+name);
+    }else{
+     m_HierarchyModel->addNode(prefix+name);
+     caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+     caseHierarchyTreeView->clicked(m_HierarchyModel->getCurrentItem()->index());     
+    }   
+  }
 }
 
 void GUI::removeNode(){
-
+  //std::cout << " Current node " << m_HierarchyModel->getCurrentItem()->text().toStdString() << std::endl;
+  m_HierarchyModel->removeCurrentNode();
+  QModelIndexList idxl=caseHierarchyTreeView->selectionModel()->selectedIndexes();
+  foreach(const QModelIndex &idx, idxl){
+    //std::cout << idx.data().toString().toStdString() << std::endl;
+    m_HierarchyModel->setCurrentTag(idx);
+  }
+  caseHierarchyTreeView->clicked(m_HierarchyModel->getCurrentItem()->index());
 }
 
 void GUI::treeViewItemSelected(const QModelIndex idx){
 
-  std::cout << "item clicked (" << idx.row()<<","<<idx.column() << ")" <<std::endl;
+  //std::cout << "item clicked (" << idx.row()<<","<<idx.column() << ")" <<std::endl;
   QString tag = idx.data().toString();
-  std::cout << tag.toStdString() << std::endl;
-  m_HierarchyModel->setCurrentTag(tag);
+  //std::cout << tag.toStdString() << std::endl;
+  m_HierarchyModel->setCurrentTag(idx);
   QString _type=m_HierarchyModel->getCurrentType();
   CaseListWidget->clear();
   QStringList CL=m_HierarchyModel->getFileList(tag);
