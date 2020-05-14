@@ -91,14 +91,14 @@
                <item>
                 <widget class="QPushButton" name="addNodeButton">
                  <property name="text">
-                  <string>Add Node</string>
+                  <string>Add Child Node</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QPushButton" name="removeNodeButton">
                  <property name="text">
-                  <string>Remove Node</string>
+                  <string>Remove Current Node</string>
                  </property>
                 </widget>
                </item>
@@ -118,14 +118,14 @@
                <item>
                 <widget class="QPushButton" name="openHierarchyButton">
                  <property name="text">
-                  <string>Load Hierarchy</string>
+                  <string>Load Hierarchy File</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QPushButton" name="saveHierarchyButton">
                  <property name="text">
-                  <string>Save Hierarchy</string>
+                  <string>Save Hierarchy File</string>
                  </property>
                 </widget>
                </item>
