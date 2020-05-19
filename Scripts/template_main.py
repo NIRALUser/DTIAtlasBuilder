@@ -19,6 +19,8 @@ def unique(list1):
     return unique_list
 
 def parse_hbuild(hb,root_path,root_node="target"): #hbuild parser to generate build sequence
+    if root_node is None:
+        root_node=hb['project']['target_node']
     root=hb['build'][root_node]
     seq=[]
     nodeFiles=[] ## sub node's final atlases
@@ -158,7 +160,7 @@ def main(args):
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description="Argument Parser")
-    parser.add_argument('--node',help="node to build",default='target',type=str)
+    parser.add_argument('--node',help="node to build",type=str)
     parser.add_argument('--buildsequence',help='build sequence file, if this option is inputted then build sequence process will be skipped',type=str)
     args=parser.parse_args()
 
