@@ -10,29 +10,52 @@
 
 
 CaseHierarchyModel::CaseHierarchyModel(){
-	m_rootNode=new QStandardItem(QString("target"));
-	appendRow(m_rootNode);
-	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",{}}};
-	m_CaseHierarchy["build"]["target"]=obj;
-	m_currentTag="target";
-	m_currentItem=m_rootNode;
+	CaseHierarchyModel(QString("final"));
 
 }
-CaseHierarchyModel::CaseHierarchyModel(QString filename){ // hbuild filename
-	CaseHierarchyModel();
+CaseHierarchyModel::CaseHierarchyModel(QString project_name){
+	m_projectName=project_name;
+	m_rootNode=new QStandardItem(m_projectName);
+	appendRow(m_rootNode);
+	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",{}}};
+	m_CaseHierarchy["project"]["target_node"]=m_projectName.toStdString();
+	m_CaseHierarchy["build"][m_projectName.toStdString()]=obj;
+	m_currentTag=m_projectName;
+	m_currentItem=m_rootNode;
+	// QObject::connect(this, SIGNAL(dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)), this, SLOT(onItemChanged(const QModelIndex &topLeft)));
+
+}
+CaseHierarchyModel::CaseHierarchyModel(QString name, bool fromFile){ // hbuild filename
+	// CaseHierarchyModel(name);
 	
 	// Todos
-	initialize(filename);
+	if(fromFile){
+		initializeFromFile(name);
+	}else{
+		CaseHierarchyModel(name);
+	}
+	
 }
 CaseHierarchyModel::~CaseHierarchyModel(){}
 
-void CaseHierarchyModel::initialize(QString filename){
+void CaseHierarchyModel::initializeFromFile(QString filename){
 	//setHorizontalHeaderLabels(QStringList(["Nodes"]));
 	loadFile(filename);
+	std::string s= m_CaseHierarchy["project"]["target_node"];
+	m_projectName=QString(s.c_str());
+	m_rootNode=new QStandardItem(m_projectName);
 	generateEntries();
 }
-void CaseHierarchyModel::initialize(){
-
+void CaseHierarchyModel::initialize(QString project_name){
+	clear();
+	m_projectName=project_name;
+	m_rootNode=new QStandardItem(m_projectName);
+	appendRow(m_rootNode);
+	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",{}}};
+	m_CaseHierarchy["project"]["target_node"]=m_projectName.toStdString();
+	m_CaseHierarchy["build"][m_projectName.toStdString()]=obj;
+	m_currentTag=m_projectName;
+	m_currentItem=m_rootNode;
 }
 
 
@@ -122,6 +145,38 @@ void CaseHierarchyModel::setCurrentTag(QModelIndex idx){
 	m_currentItem=itemFromIndex(idx);
 	m_currentTag=m_currentItem->text();
 
+
+}
+
+void CaseHierarchyModel::changeCurrentNode(QModelIndex idx,QString newName){
+	QString oldName=m_currentTag;
+	if(checkNodename(newName)){
+		std::cout << "It is redundant node name" << std::endl;
+		//((QStandardItem*)idx.internalPointer())->setText(oldName);
+		QStandardItemModel* m = (QStandardItemModel*)(idx.model());
+		m->itemFromIndex(idx)->setText(oldName);
+
+	}else{
+		m_CaseHierarchy["build"][newName.toStdString()]=m_CaseHierarchy["build"][oldName.toStdString()];
+		m_CaseHierarchy["build"].erase(oldName.toStdString());
+		if (idx.parent()==QModelIndex()){
+			std::cout << "There is no parent" << std::endl;
+			m_CaseHierarchy["project"]["target_node"]=newName.toStdString();
+		}else{
+			QModelIndex parent=idx.parent();
+			std::vector<std::string> v = m_CaseHierarchy["build"][parent.data().toString().toStdString()]["components"];
+			std::vector<std::string> r;
+			foreach(const std::string &str, v){
+				if(QString(str.c_str())==oldName){
+					r.push_back(newName.toStdString());
+				}else{
+					r.push_back(str);
+				}
+			}
+			m_CaseHierarchy["build"][parent.data().toString().toStdString()]["components"]=r;
+		}
+	}	
+	update();
 }
 
 QString CaseHierarchyModel::getCurrentType(){
@@ -137,6 +192,7 @@ void CaseHierarchyModel::loadFile(QString filename){
 	QString str=s.readAll();
 	m_CaseHierarchy=json::parse(str.toStdString());
 	generateEntries();
+	m_CaseHierarchy["project"]["target_node"]=m_projectName.toStdString();
 
 }
 
@@ -193,21 +249,27 @@ void CaseHierarchyModel::expandNode(QStandardItem* p_node,json hbuild){
 }
 
 void CaseHierarchyModel::generateEntries(json obj){
-	json hbuild=obj["build"];
+	json hbuild=obj;
 	//std::cout << hbuild.dump() << std::endl;
 	//std::cout << root->text().toStdString() << std::endl;
-	delete m_rootNode;
+	// if(m_rootNode!=NULL){
+	// 	delete m_rootNode;
+	// }
 	clear();
-	m_rootNode=new QStandardItem(QString("target"));
+	std::string prj=hbuild["project"]["target_node"];
+	m_projectName=QString(prj.c_str());
+	m_rootNode=new QStandardItem(m_projectName);
+	m_CaseHierarchy["project"]["target_node"]=m_projectName.toStdString();
 	appendRow(m_rootNode);
-	expandNode(m_rootNode,hbuild);
+	expandNode(m_rootNode,hbuild["build"]);
 	m_currentItem=m_rootNode;
-	m_currentTag=QString("target");
+	m_currentTag=QString(m_projectName);
 
 }
 void CaseHierarchyModel::generateEntries(){
 	generateEntries(m_CaseHierarchy);
 }
+
 
 void CaseHierarchyModel::setFiles(QString nodename, QStringList ql){
 	std::vector<std::string> v;
@@ -257,3 +319,17 @@ QStringList CaseHierarchyModel::readCSV(QString CSVfile)
   	   }
 	}
 }
+
+void CaseHierarchyModel::update(){
+	m_projectName=m_rootNode->text();
+	m_CaseHierarchy["project"]["target_node"]=m_projectName.toStdString();
+}
+
+QString CaseHierarchyModel::toString(){
+	json obj=m_CaseHierarchy;
+	std::string s=obj.dump(4);
+	return QString(s.c_str());
+}
+// void CaseHierarchyModel::onItemChanged(const QModelIndex &item){
+// 	std::cout << item.data().toString().toStdString() << std::endl;
+// }

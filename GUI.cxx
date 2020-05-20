@@ -20,6 +20,7 @@
 #include <QDebug>
 #include <QItemSelection>
 
+
 /*std classes*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,7 +104,8 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   m_ErrorDetectedInConstructor=false;
 
 /* Hierarchy model */
-  m_HierarchyModel= new CaseHierarchyModel();
+  m_HierarchyModel= new CaseHierarchyModel(QString(""));
+
 
 /* Script writing object */
   m_scriptwriter = new ScriptWriter; // delete in "void GUI::ExitProgram()"
@@ -155,7 +157,9 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     QObject::connect(removeNodeButton,SIGNAL(clicked()), this, SLOT(removeNode()));
 
     caseHierarchyTreeView->setModel(m_HierarchyModel);
-    bool b=QObject::connect(caseHierarchyTreeView, SIGNAL(clicked(const QModelIndex)), this, SLOT(treeViewItemSelected(const QModelIndex)));
+    caseHierarchyTreeView->setEnabled(false);
+    QObject::connect(caseHierarchyTreeView, SIGNAL(clicked(const QModelIndex)), this, SLOT(treeViewItemSelected(const QModelIndex)));
+    QObject::connect(m_HierarchyModel, SIGNAL(dataChanged(const QModelIndex, const QModelIndex)),this,SLOT(treeViewItemChanged(const QModelIndex)));
     //std::cout << b << std::endl;
   
     //
@@ -187,6 +191,11 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     StoppushButton->setEnabled(false);
     CleanOutputPushButton->setEnabled(false);
     DisableQC(); // will be enable when cases are loaded
+
+    
+    QObject::connect(actionNew_Project, SIGNAL(triggered()), this, SLOT(newHierarchyProject()));
+    QObject::connect(actionOpen_Project_File, SIGNAL(triggered()), this, SLOT(openHierarchyFile()));
+    QObject::connect(actionSave_Project_File, SIGNAL(triggered()), this, SLOT(saveHierarchyFile()));
 
     QObject::connect(actionLoad_parameters, SIGNAL(triggered()), this, SLOT(LoadParametersSlot()));
     QObject::connect(actionSave_parameters, SIGNAL(triggered()), this, SLOT(SaveParametersSlot()));
@@ -691,6 +700,16 @@ void GUI::InitOptions()
  //                Hierarchy            //
 /////////////////////////////////////////
 
+void GUI::newHierarchyProject(){
+  bool ok;
+  QString name= QInputDialog::getText(this, QString("Project Name"), QString("Project Name : "), QLineEdit::Normal, "FinalAtlas", &ok);
+  if(ok){
+    m_HierarchyModel->initialize(name);
+    caseHierarchyTreeView->setModel(m_HierarchyModel);
+    caseHierarchyTreeView->setEnabled(true);
+    std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
+  }
+}
 void GUI::openHierarchyFile() /*SLOT*/
 {
   QString fileBrowse=QFileDialog::getOpenFileName(this, "Open Case Hierarchy File", QString(), "JSON File (*.json);;All Files (*.*)");
@@ -699,9 +718,11 @@ void GUI::openHierarchyFile() /*SLOT*/
     //load and set the caseHierarchyTreeView
     m_HierarchyModel->loadFile(fileBrowse);
     QModelIndex idx=m_HierarchyModel->getCurrentItem()->index();
+    caseHierarchyTreeView->setEnabled(true);
     caseHierarchyTreeView->clicked(idx);
     caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
     caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+    std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
 
@@ -712,6 +733,7 @@ void GUI::saveHierarchyFile() /*SLOT*/
   {
     //load and set the caseHierarchyTreeView
     m_HierarchyModel->saveFile(fileBrowse);
+    std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
 
@@ -769,6 +791,14 @@ void GUI::treeViewItemSelected(const QModelIndex idx){
   }
 
 }
+
+void GUI::treeViewItemChanged(const QModelIndex idx){
+  QString tag = idx.data().toString();
+  m_HierarchyModel->changeCurrentNode(idx,tag);
+  m_HierarchyModel->update();
+  std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
+}
+
 
 void GUI::updateHierarchyFiles(){
   QStringList ql;

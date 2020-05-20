@@ -135,12 +135,13 @@ class GUI : public QMainWindow, public Ui::MainWindow
     void ExitProgram();
 
 /*HIERARCHY*/
+    void newHierarchyProject();
     void openHierarchyFile();
     void saveHierarchyFile();
     void addNode();
     void removeNode();
     void treeViewItemSelected(const QModelIndex);
-
+    void treeViewItemChanged(const QModelIndex);
 /*DATASET*/
     void ReadCSVSlot();
     void SaveCSVDatasetBrowse();

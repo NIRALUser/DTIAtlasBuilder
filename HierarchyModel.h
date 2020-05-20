@@ -16,12 +16,14 @@ class CaseHierarchyModel : public QStandardItemModel{
 
 
 public:
+
 	CaseHierarchyModel();
-	CaseHierarchyModel(QString filename);
+	CaseHierarchyModel(QString);
+	CaseHierarchyModel(QString,bool);
 	~CaseHierarchyModel();
 
-	void initialize();
-	void initialize(QString filename);
+	void initialize(QString);
+	void initializeFromFile(QString);
 	void loadFile(QString filename); // load json file to store json object 
 	void saveFile(QString filename); // save caseHiearchy to file
 
@@ -33,6 +35,8 @@ public:
 
 	void removeNode(QStandardItem* ); // remove node
 	void removeCurrentNode(); // remove current Node
+
+	void changeCurrentNode(QModelIndex idx,QString newName);
 
 	void removeNodeRecursivelyInJson(QString node); // remove a node and its child
 	
@@ -46,11 +50,15 @@ public:
 	QStandardItem* getCurrentItem(){return m_currentItem;};
 
 	void setFiles(QString nodename, QStringList ql);
+	void onItemChanged(const QModelIndex &);
+	QString toString(); // dump json
 
+	void update(); // set things updated
 protected:
 	void expandNode(QStandardItem*,json);	
 	QStringList readCSV(QString filename);// load csv file
 private:
+	QString m_projectName; // Project target node
 	json m_CaseHierarchy;  // hierarchy json object 
 	QStandardItem* m_rootNode; //root node ("target")
 	QString m_currentTag; // current tag of a node
