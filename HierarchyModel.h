@@ -36,11 +36,13 @@ public:
 	void removeNode(QStandardItem* ); // remove node
 	void removeCurrentNode(); // remove current Node
 
-	void changeCurrentNode(QModelIndex idx,QString newName);
+	int changeCurrentNode(QModelIndex idx,QString newName); // change current node's name, return 0 is success, 1 is there is same name
 
 	void removeNodeRecursivelyInJson(QString node); // remove a node and its child
 	
 	bool checkNodename(QString); //check node name exists in the build file (1 : exists, 0 : not existing) 
+	bool checkCaseExists(QString); // check if the node has datasetfile entries
+	bool isRoot(QString);// ceck if the tag is root node
 
 	QStringList getFileList(QString node); // get the list of files of a node
 	QStandardItem* getRoot(){return m_rootNode;};
@@ -50,7 +52,7 @@ public:
 	QStandardItem* getCurrentItem(){return m_currentItem;};
 
 	void setFiles(QString nodename, QStringList ql);
-	void onItemChanged(const QModelIndex &);
+	//void onItemChanged(const QModelIndex &);
 	QString toString(); // dump json
 
 	void update(); // set things updated

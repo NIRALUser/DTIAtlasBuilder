@@ -157,16 +157,18 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     QObject::connect(removeNodeButton,SIGNAL(clicked()), this, SLOT(removeNode()));
 
     caseHierarchyTreeView->setModel(m_HierarchyModel);
-    caseHierarchyTreeView->setEnabled(false);
+    enableTreeViewWidget(false);
     QObject::connect(caseHierarchyTreeView, SIGNAL(clicked(const QModelIndex)), this, SLOT(treeViewItemSelected(const QModelIndex)));
     QObject::connect(m_HierarchyModel, SIGNAL(dataChanged(const QModelIndex, const QModelIndex)),this,SLOT(treeViewItemChanged(const QModelIndex)));
     //std::cout << b << std::endl;
   
     //
+    
+    //QModelIndex idx= m_HierarchyModel->item(0)->index();
+    //caseHierarchyTreeView->clicked(idx);
+    //caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx), QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
     enableCaseWidget(0);
-    QModelIndex idx= m_HierarchyModel->item(0)->index();
-    caseHierarchyTreeView->clicked(idx);
-    caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx), QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+
 
     QObject::connect(StoppushButton, SIGNAL(clicked()), this, SLOT(KillScriptQProcess()));
     QObject::connect(BrowseCSVPushButton, SIGNAL(clicked()), this, SLOT(ReadCSVSlot()));
@@ -705,9 +707,13 @@ void GUI::newHierarchyProject(){
   QString name= QInputDialog::getText(this, QString("Project Name"), QString("Project Name : "), QLineEdit::Normal, "FinalAtlas", &ok);
   if(ok){
     m_HierarchyModel->initialize(name);
+    QModelIndex idx=m_HierarchyModel->getCurrentItem()->index();
     caseHierarchyTreeView->setModel(m_HierarchyModel);
-    caseHierarchyTreeView->setEnabled(true);
-    std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
+    enableTreeViewWidget(true);
+    caseHierarchyTreeView->clicked(idx);
+    caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+    caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+    //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
 void GUI::openHierarchyFile() /*SLOT*/
@@ -718,11 +724,11 @@ void GUI::openHierarchyFile() /*SLOT*/
     //load and set the caseHierarchyTreeView
     m_HierarchyModel->loadFile(fileBrowse);
     QModelIndex idx=m_HierarchyModel->getCurrentItem()->index();
-    caseHierarchyTreeView->setEnabled(true);
+    enableTreeViewWidget(true);
     caseHierarchyTreeView->clicked(idx);
     caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
     caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
-    std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
+    //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
 
@@ -733,7 +739,7 @@ void GUI::saveHierarchyFile() /*SLOT*/
   {
     //load and set the caseHierarchyTreeView
     m_HierarchyModel->saveFile(fileBrowse);
-    std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
+    //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
 
@@ -746,32 +752,50 @@ void GUI::addNode(){
 
   bool ok;
   QString prefix="";
-  
-  if(m_HierarchyModel->getCurrentItem()!=m_HierarchyModel->getRoot()){
-    prefix=m_HierarchyModel->getCurrentTag() + QString("-");
-  }
-  QString name= QInputDialog::getText(this, QString("Input the name of new atlas node"), QString("New atlas name : ") + prefix, QLineEdit::Normal, "myatlas", &ok);
+  QString currentTag=m_HierarchyModel->getCurrentTag();
+  QString currentType=m_HierarchyModel->getCurrentType();
+  int dlg_ret=QMessageBox::Yes;
 
-  if(ok){
-    if(m_HierarchyModel->checkNodename(prefix+name)){
-      QMessageBox::warning(this, "Failed to add a node", QString("There is an existing node with the name of ")+name);
-    }else{
-     m_HierarchyModel->addNode(prefix+name);
-     caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
-     caseHierarchyTreeView->clicked(m_HierarchyModel->getCurrentItem()->index());     
-    }   
+  if(m_HierarchyModel->checkCaseExists(currentTag))
+  {
+      dlg_ret=QMessageBox::warning(this,"Containing filed","This operation removes the current node's case list, are you sure to proceed?",QMessageBox::No|QMessageBox::Yes);
+  }
+  if(dlg_ret==QMessageBox::Yes){
+      if(m_HierarchyModel->getCurrentItem()!=m_HierarchyModel->getRoot()){
+        prefix=m_HierarchyModel->getCurrentTag() + QString("-");
+      }
+      QString name= QInputDialog::getText(this, QString("Input the name of new atlas node"), QString("New atlas name : ") + prefix, QLineEdit::Normal, "myatlas", &ok);
+
+      if(ok){
+        if(m_HierarchyModel->checkNodename(prefix+name)){
+          QMessageBox::warning(this, "Failed to add a node", QString("There is an existing node with the name of ")+name);
+        }else{
+         m_HierarchyModel->addNode(prefix+name);
+         caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+         caseHierarchyTreeView->clicked(m_HierarchyModel->getCurrentItem()->index());     
+        }   
+      }
   }
 }
 
 void GUI::removeNode(){
   //std::cout << " Current node " << m_HierarchyModel->getCurrentItem()->text().toStdString() << std::endl;
-  m_HierarchyModel->removeCurrentNode();
-  QModelIndexList idxl=caseHierarchyTreeView->selectionModel()->selectedIndexes();
-  foreach(const QModelIndex &idx, idxl){
-    //std::cout << idx.data().toString().toStdString() << std::endl;
-    m_HierarchyModel->setCurrentTag(idx);
+  bool ok;
+  QString currentTag=m_HierarchyModel->getCurrentTag();
+  if(m_HierarchyModel->isRoot(currentTag)){
+    QMessageBox::warning(this,"Warning","Root node cannot be removed. If you want to start a new project, select New project in menu");
+  }else{
+    int ret=QMessageBox::warning(this,"Remove Node","Are you sure to delete the node :  " + currentTag + " ?",QMessageBox::No | QMessageBox::Yes);
+    if(ret==QMessageBox::Yes){
+        m_HierarchyModel->removeCurrentNode();
+        QModelIndexList idxl=caseHierarchyTreeView->selectionModel()->selectedIndexes();
+        foreach(const QModelIndex &idx, idxl){
+          //std::cout << idx.data().toString().toStdString() << std::endl;
+          m_HierarchyModel->setCurrentTag(idx);
+        }
+        caseHierarchyTreeView->clicked(m_HierarchyModel->getCurrentItem()->index());
+      }
   }
-  caseHierarchyTreeView->clicked(m_HierarchyModel->getCurrentItem()->index());
 }
 
 void GUI::treeViewItemSelected(const QModelIndex idx){
@@ -794,9 +818,10 @@ void GUI::treeViewItemSelected(const QModelIndex idx){
 
 void GUI::treeViewItemChanged(const QModelIndex idx){
   QString tag = idx.data().toString();
-  m_HierarchyModel->changeCurrentNode(idx,tag);
+  int res=m_HierarchyModel->changeCurrentNode(idx,tag);
   m_HierarchyModel->update();
-  std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
+
+  //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
 }
 
 
@@ -817,6 +842,12 @@ void GUI::enableCaseWidget(bool tf){
   RemovePushButton->setEnabled(tf);
   BrowseCSVPushButton->setEnabled(tf);
   SaveCSVPushButton->setEnabled(tf);
+}
+
+void GUI::enableTreeViewWidget(bool tf){
+  caseHierarchyTreeView->setEnabled(tf);
+  addNodeButton->setEnabled(tf);
+  removeNodeButton->setEnabled(tf);
 }
 
 

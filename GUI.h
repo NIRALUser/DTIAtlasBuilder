@@ -191,7 +191,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
 /*HIERARCHY*/
     void updateHierarchyFiles();
     void enableCaseWidget(bool);
-
+    void enableTreeViewWidget(bool);
 
 /*CASES*/
     void dragEnterEvent(QDragEnterEvent*event);

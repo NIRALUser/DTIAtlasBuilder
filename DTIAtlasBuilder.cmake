@@ -197,18 +197,6 @@ set(BRAINSFitPath  ${CMAKE_INSTALL_PREFIX}/bin/BRAINSTools/bin/BRAINSFit)
 set(ResampleDTIlogEuclideanPath  ${CMAKE_INSTALL_PREFIX}/bin/ResampleDTIlogEuclidean/bin/ResampleDTIlogEuclidean)
 set(MriWatcherPath  ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher/bin/MriWatcher)
 
-# find_program(DTI-RegPath DTI-Reg PATHS ${DTI-Reg_BINARY_DIR})
-# find_program(dtiaveragePath dtiaverage PATHS ${DTIProcess_BINARY_DIR})
-# find_program(dtiprocessPath dtiprocess PATHS ${DTIProcess_BINARY_DIR})
-# find_program(GreedyAtlasPath GreedyAtlas PATHS ${AtlasWerks_BINARY_DIR})
-# find_program(GreedyWarp GreedyWarp PATHS ${AtlasWerks_BINARY_DIR})
-# find_program(unuPath unu PATHS ${teem_BINARY_DIR})
-# find_program(CropDTIPath CropDTI PATHS ${niral_utilities_BINARY_DIR})
-# find_program(ImageMathPath ImageMath PATHS ${niral_utilities_BINARY_DIR})
-# find_program(BRAINSFitPath BRAINSFit PATHS ${BRAINSTools_BINARY_DIR})
-# find_program(ResampleDTIlogEuclideanPath ResampleDTIlogEuclidean PATHS ${ResampleDTIlogEuclidean_BINARY_DIR})
-# find_program(MriWatcherPath MriWatcher PATHS ${MriWatcher_BINARY_DIR})
-
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_INSTALL_PREFIX}/bin/DTIAtlasBuilderSoftConfig.txt)
 
 if(AtlasWerks_DIR)

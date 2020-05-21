@@ -7,7 +7,7 @@
 #include <QStringList>
 #include <string>
 #include <vector>
-
+#include <QMessageBox>
 
 CaseHierarchyModel::CaseHierarchyModel(){
 	CaseHierarchyModel(QString("final"));
@@ -17,7 +17,7 @@ CaseHierarchyModel::CaseHierarchyModel(QString project_name){
 	m_projectName=project_name;
 	m_rootNode=new QStandardItem(m_projectName);
 	appendRow(m_rootNode);
-	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",{}}};
+	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",json::array()}};
 	m_CaseHierarchy["project"]["target_node"]=m_projectName.toStdString();
 	m_CaseHierarchy["build"][m_projectName.toStdString()]=obj;
 	m_currentTag=m_projectName;
@@ -51,7 +51,8 @@ void CaseHierarchyModel::initialize(QString project_name){
 	m_projectName=project_name;
 	m_rootNode=new QStandardItem(m_projectName);
 	appendRow(m_rootNode);
-	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",{}}};
+	m_CaseHierarchy["build"].clear();
+	json obj={{"type","end_node"},{"filetype","list"},{"datasetfiles",json::array()}};
 	m_CaseHierarchy["project"]["target_node"]=m_projectName.toStdString();
 	m_CaseHierarchy["build"][m_projectName.toStdString()]=obj;
 	m_currentTag=m_projectName;
@@ -68,6 +69,21 @@ bool CaseHierarchyModel::checkNodename(QString name){
 		return 0;
 	}
 }
+bool CaseHierarchyModel::checkCaseExists(QString name){
+	std::string tmp=m_CaseHierarchy["build"][name.toStdString()]["type"];
+	QString nodeType=QString(tmp.c_str());
+	if(nodeType==QString("end_node")){
+	    int size = m_CaseHierarchy["build"][name.toStdString()]["datasetfiles"].size();
+	    if(size>0)
+	    {
+	    	return true;
+	    }
+	}
+	return false;
+}
+bool CaseHierarchyModel::isRoot(QString name){
+	return name==m_rootNode->text();
+}
 
 void CaseHierarchyModel::addNode(QString nodename){
 
@@ -77,7 +93,7 @@ void CaseHierarchyModel::addNode(QString nodename){
 		m_CaseHierarchy["build"][nodename.toStdString()]["type"]="end_node";
 		m_CaseHierarchy["build"][nodename.toStdString()]["filetype"]="list";
 		m_CaseHierarchy["build"][nodename.toStdString()]["components"]={};
-		m_CaseHierarchy["build"][nodename.toStdString()]["datasetfiles"]={};
+		m_CaseHierarchy["build"][nodename.toStdString()]["datasetfiles"]=json::array();
 		QStandardItem* itm = getCurrentItem();
 		QString p_nodename = getCurrentTag();
 		m_CaseHierarchy["build"][p_nodename.toStdString()]["type"]=std::string("node");
@@ -148,13 +164,16 @@ void CaseHierarchyModel::setCurrentTag(QModelIndex idx){
 
 }
 
-void CaseHierarchyModel::changeCurrentNode(QModelIndex idx,QString newName){
+int CaseHierarchyModel::changeCurrentNode(QModelIndex idx,QString newName){
+	int result=0;
 	QString oldName=m_currentTag;
 	if(checkNodename(newName)){
 		std::cout << "It is redundant node name" << std::endl;
 		//((QStandardItem*)idx.internalPointer())->setText(oldName);
 		QStandardItemModel* m = (QStandardItemModel*)(idx.model());
 		m->itemFromIndex(idx)->setText(oldName);
+    	//QMessageBox::warning(this, "Failed to change the name", "There is already existing node name : ");
+		result=1;
 
 	}else{
 		m_CaseHierarchy["build"][newName.toStdString()]=m_CaseHierarchy["build"][oldName.toStdString()];
@@ -177,6 +196,7 @@ void CaseHierarchyModel::changeCurrentNode(QModelIndex idx,QString newName){
 		}
 	}	
 	update();
+	return result;
 }
 
 QString CaseHierarchyModel::getCurrentType(){
