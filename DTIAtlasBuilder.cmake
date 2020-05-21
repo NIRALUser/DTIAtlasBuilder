@@ -36,6 +36,8 @@ if(Qt5_FOUND)
   set(QT_LIBRARIES ${Qt5Widgets_LIBRARIES})
 
   qt5_add_resources(RCC_SRCS DTIAtlasBuilder.qrc)
+  qt5_add_resources(RCC_SRCS Stylesheet/darkstylesheet.qrc)
+
   qt5_wrap_cpp(QtProject_HEADERS_MOC GUI.h)
   qt5_wrap_ui(UI_FILES GUIwindow.ui)
 else()
@@ -43,6 +45,7 @@ else()
   include(${QT_USE_FILE})
 
   QT4_ADD_RESOURCES(RCC_SRCS DTIAtlasBuilder.qrc) # QResource for the icon
+  QT4_ADD_RESOURCES(RCC_SRCS Stylesheet/darkstylesheet.qrc) # QResource for the icon
   QT4_WRAP_CPP(QtProject_HEADERS_MOC GUI.h)
   QT4_WRAP_UI(UI_FILES GUIwindow.ui)
 endif()
@@ -184,6 +187,7 @@ file(COPY ${niral_utilities_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/
 file(COPY ${BRAINSTools_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/BRAINSTools)
 file(COPY ${ResampleDTIlogEuclidean_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ResampleDTIlogEuclidean)
 file(COPY ${MriWatcher_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Stylesheet/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/Stylesheet)
 
 set(DTI-RegPath ${CMAKE_INSTALL_PREFIX}/bin/DTI-Reg/bin/DTI-Reg)
 set(dtiaveragePath  ${CMAKE_INSTALL_PREFIX}/bin/DTIProcess/bin/dtiaverage)
