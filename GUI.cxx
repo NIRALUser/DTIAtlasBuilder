@@ -713,6 +713,7 @@ void GUI::newHierarchyProject(){
     caseHierarchyTreeView->clicked(idx);
     caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
     caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+    SelectCasesLabel->setText(QString(""));
     //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
@@ -729,6 +730,7 @@ void GUI::openHierarchyFile() /*SLOT*/
       caseHierarchyTreeView->clicked(idx);
       caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
       caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+      SelectCasesLabel->setText(fileBrowse);
     }catch(const std::exception &e){
       m_HierarchyModel->clear();
       QMessageBox::warning(this,"Failed to load","Failed to load hierarchy file.");
@@ -745,6 +747,7 @@ void GUI::saveHierarchyFile() /*SLOT*/
   {
     //load and set the caseHierarchyTreeView
     m_HierarchyModel->saveFile(fileBrowse);
+    SelectCasesLabel->setText(fileBrowse);
     //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
@@ -1007,7 +1010,7 @@ void GUI::AddCasesToListWidget(QStringList CaseList, QString CSVfiletext) // cal
       }
     }
     m_ParamSaved=0;
-    SelectCasesLabel->setText( CSVfiletext );
+    //SelectCasesLabel->setText( CSVfiletext );
     m_lastCasePath = CaseList.last();
 
     CheckCasesIndex();
@@ -1387,8 +1390,11 @@ int GUI::ReadCSV(QString CSVfile)
           }
         }
   
+        // if (ret == QMessageBox::Yes) AddCasesToListWidget(CSVCaseList, QString("Current CSV file : ") + CSVfile);
+        // else AddCasesToListWidget(CSVCaseList, QString(""));
         if (ret == QMessageBox::Yes) AddCasesToListWidget(CSVCaseList, QString("Current CSV file : ") + CSVfile);
         else AddCasesToListWidget(CSVCaseList, QString(""));
+
 
         std::cout<<"DONE"<<std::endl; // command line display
       } 
