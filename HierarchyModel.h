@@ -43,6 +43,9 @@ public:
 	bool checkNodename(QString); //check node name exists in the build file (1 : exists, 0 : not existing) 
 	bool checkCaseExists(QString); // check if the node has datasetfile entries
 	bool isRoot(QString);// ceck if the tag is root node
+	bool checkValidity(); // check the hierarchy is valid (currently checking if end nodes has at least one case)
+
+	json getHierarchy(){return m_CaseHierarchy;}; // hierarchy 
 
 	QStringList getFileList(QString node); // get the list of files of a node
 	QStandardItem* getRoot(){return m_rootNode;};

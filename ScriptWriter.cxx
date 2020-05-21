@@ -20,15 +20,525 @@ std::string IntToStr(int IntVar)
   return oss.str();
 }
 
+void ScriptWriter::setExecutableDir(std::string path)
+{
+  m_ExecutableDir = path;
+}
+
+ScriptWriter::ScriptWriter()
+{
+  m_ScalarMeasurement = "FA" ;
+}
+
+
+void ScriptWriter::WriteScriptFromTemplate(std::string templateName)
+{
+  std::cout<<"| Write script configuration file"<<std::endl;
+  SaveScriptConfiguration();
+  std::cout<<"| Script file written"<<std::endl;
+  std::cout<<"|"<<std::endl;
+  std::cout<<"|"<<std::endl; // command line display
+  std::cout<<"| Number of Cases: "<<m_CasesPath.size()<<std::endl; // command line display
+  std::cout<<"| Output Directory : "<<m_OutputPath<<"/DTIAtlas"<<std::endl; // command line display
+  if( m_useGridProcess )
+  {
+    std::cout<<"| Using grid processing"<<std::endl; // command line display
+  }
+  if(m_RegType==1)
+  {
+    std::cout<<"| Using Case 1 (" << m_CasesIDs[0] << ") as reference in the first Registration Loop"<<std::endl; // command line display
+  }
+  else
+  {
+    std::cout<<"| Using Template as reference for the Registration: "<<m_TemplatePath<<std::endl; // command line display
+  }
+  std::cout<<"| Number of loops in the Registration Loop : "<<m_nbLoops<<std::endl; // command line display
+  std::cout<<"| Writing begin: "; // command line display (no endl)
+
+  PreprocessFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Preprocess.py");
+  AtlasBuildingFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_AtlasBuilding.py");
+  MainScriptFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Main.py");
+}
+
+void ScriptWriter::PreprocessFromTemplate(std::string filename)
+{
+  std::string Script;
+  std::ifstream f(filename);
+  if(f){
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    Script=ss.str();
+  }
+  m_Script_Preprocess= Script;
+}
+
+void ScriptWriter::AtlasBuildingFromTemplate(std::string filename)
+{
+  std::string Script;
+  std::ifstream f(filename);
+  if(f){
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    Script=ss.str();
+  }
+  m_Script_AtlasBuilding= Script;
+}
+
+void ScriptWriter::MainScriptFromTemplate(std::string filename)
+{
+  std::string Script;
+  std::ifstream f(filename);
+  if(f){
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    Script=ss.str();
+  }
+  m_Script_Main= Script;
+}
+
+
+  /////////////////////////////////////////
+ //         SCRIPT ACCESSORS            //
+/////////////////////////////////////////
+
+std::string ScriptWriter::getScript_Preprocess()
+{
+  return m_Script_Preprocess;
+}
+
+std::string ScriptWriter::getScript_AtlasBuilding()
+{
+  return m_Script_AtlasBuilding;
+}
+
+std::string ScriptWriter::getScript_Main()
+{
+  return m_Script_Main;
+}
+
+  /////////////////////////////////////////
+ //           CHECK DATASET             //
+/////////////////////////////////////////
+
+int ScriptWriter::setCroppingSize( bool SafetyMargin ) // returns 0 if no cropping , 1 if cropping needed
+{  
+  m_NeedToBeCropped=0;
+
+  int MaxSize [3] = {-1,-1,-1};
+
+/////////itk type definitions
+  typedef itk::Image < double , 4 > ImageType; //itk type for image
+  typedef itk::ImageFileReader <ImageType> ReaderType; //itk reader class to open an image
+  ReaderType::Pointer reader=ReaderType::New();
+  ImageType::RegionType region;
+
+//////////Testing all the cases
+  for (unsigned int i=0;i<m_CasesPath.size();i++) // read the headers of all files
+  {
+    reader->SetFileName( m_CasesPath[i] ); //Label is a path => open the image
+    reader->UpdateOutputInformation(); // get the informations in the header
+    region = reader->GetOutput()->GetLargestPossibleRegion();
+
+    if( (int)region.GetSize()[0] != MaxSize[0] ) //x coordinate
+    {
+      if( (int)region.GetSize()[0] > MaxSize[0] )
+      {
+        MaxSize[0]=region.GetSize()[0];
+      }
+      if( i > 0 )
+      {
+        m_NeedToBeCropped=1;
+      }
+    }
+    if( (int)region.GetSize()[1] != MaxSize[1] ) //y coordinate
+    {
+      if( (int)region.GetSize()[1] > MaxSize[1] )
+      {
+        MaxSize[1]=region.GetSize()[1];
+      }
+      if( i > 0 )
+      {
+        m_NeedToBeCropped=1;
+      }
+    }
+    if( (int)region.GetSize()[2] != MaxSize[2] ) //z coordinate
+    {
+      if( (int)region.GetSize()[2] > MaxSize[2] )
+      {
+        MaxSize[2]=region.GetSize()[2];
+      }
+      if( i > 0 )
+      {
+        m_NeedToBeCropped=1;
+      }
+    }
+  }
+
+  if(SafetyMargin) // bool SafetyMargin (CropDTI will add 2 voxels each size : place the image in the center)
+  {
+    m_NeedToBeCropped=1; 
+    MaxSize[0] = MaxSize[0] + 4; // add 2 voxels each side in each direction to the computed cropping size
+    MaxSize[1] = MaxSize[1] + 4; // add 2 voxels each side in each direction to the computed cropping size
+    MaxSize[2] = MaxSize[2] + 4; // add 2 voxels each side in each direction to the computed cropping size
+  }
+
+  if(m_NeedToBeCropped==1)
+  {
+    m_CropSize[0] = IntToStr(MaxSize[0]);
+    m_CropSize[1] = IntToStr(MaxSize[1]);
+    m_CropSize[2] = IntToStr(MaxSize[2]);
+
+    std::cout<<"| Crop size computed : ["<<m_CropSize[0]<<";"<<m_CropSize[1]<<";"<<m_CropSize[2]<<"]"<<std::endl;
+    return 1;
+  }
+
+  else return 0;
+}
+
+int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
+{  
+/////////itk definitions
+  typedef itk::Image < double , 4 > ImageType; //itk type for image
+  typedef itk::ImageFileReader <ImageType> ReaderType; //itk reader class to open an image
+
+  ReaderType::Pointer reader=ReaderType::New();
+  reader->SetFileName( m_CasesPath[0] ); //Label is a path => open the image
+  reader->UpdateOutputInformation();
+  const ImageType::SpacingType& sp = reader-> GetOutput()->GetSpacing();
+  double RefSpacing [3]; // the spacing of the first case is the reference for this computation
+  RefSpacing[0]=sp[0];
+  RefSpacing[1]=sp[1];
+  RefSpacing[2]=sp[2];
+
+//////////Testing all the cases
+  for (unsigned int i=1;i<m_CasesPath.size();i++) // read the headers of all files
+  {
+    reader->SetFileName( m_CasesPath[i] ); //Label is a path => open the image
+    reader->UpdateOutputInformation(); // get the informations in the header
+    const ImageType::SpacingType& sp = reader-> GetOutput() -> GetSpacing();
+
+    if( fabs(sp[0]-RefSpacing[0])/RefSpacing[0] > 0.05 ) return 1;
+    if( fabs(sp[1]-RefSpacing[1])/RefSpacing[1] > 0.05 ) return 1;
+    if( fabs(sp[2]-RefSpacing[2])/RefSpacing[2] > 0.05 ) return 1;
+  }
+
+  return 0;
+}
+
+  /////////////////////////////////////////
+ //           SET THE VALUES            //
+/////////////////////////////////////////
+void ScriptWriter::SaveScriptConfiguration(void)
+{
+  std::cout << "Script Configuration generated" << std::endl;
+  json obj={
+    {"m_OutputPath",m_OutputPath},
+    {"m_PythonPath", m_PythonPath},
+    {"m_useGridProcess", m_useGridProcess},
+    {"m_NbThreadsString" , m_NbThreadsString},
+    {"m_CasesPath", m_CasesPath},
+    {"m_CasesIDs", m_CasesIDs},
+    {"m_RegType", m_RegType},
+    {"m_nbLoops", m_nbLoops},
+    {"m_TemplatePath",m_TemplatePath},
+    {"m_CropSize", m_CropSize},
+    {"m_NeedToBeCropped", m_NeedToBeCropped},
+    {"m_Overwrite", m_Overwrite},
+    {"m_InterpolType", m_InterpolType},
+    {"m_InterpolOption",m_InterpolOption},
+    {"m_TensInterpol", m_TensInterpol},
+    {"m_InterpolLogOption", m_InterpolLogOption},
+    {"m_TensTfm", m_TensTfm},
+    {"m_SoftPath",m_SoftPath},
+    {"m_DTIRegOptions",m_DTIRegOptions},
+    {"m_DTIRegExtraPath",m_DTIRegExtraPath},
+    {"m_BFAffineTfmMode", m_BFAffineTfmMode},
+    {"m_GridGeneralCommand",m_GridGeneralCommand},
+    {"m_GridAtlasCommand",m_GridAtlasCommand},
+    {"m_ScalarMeasurement",m_ScalarMeasurement},
+    {"m_nbLoopsDTIReg", m_nbLoopsDTIReg}
+  };
+  std::cout << std::setw(4) << obj << std::endl;
+
+  // config.json Write to file
+  std::string name="/common/config.json";
+  std::string filename = m_OutputPath + name;
+  std::cout << "Writing script configuration to file to : " + filename  << std::endl;
+  std::ofstream o(filename);
+  o << std::setw(4) << obj << std::endl;
+
+  // h-build.json Write to file
+  std::string hbname="/common/h-build.json";
+  std::string hbfilename = m_OutputPath + hbname;
+  std::cout << "Writing hierarchical build configuration to file to : " + hbfilename  << std::endl;
+  std::ofstream hbo(hbfilename);
+  hbo << std::setw(4) << m_HierarchyBuild << std::endl;
+
+  std::cout << "Script configuration written."<< std::endl;
+
+}
+
+// Hierarchical
+
+void ScriptWriter::setHierarchy(json hbuild){
+  m_HierarchyBuild=hbuild;
+}
+
+//
+
+void ScriptWriter::setCasesPath(std::vector < std::string > CasesPath)
+{
+  m_CasesPath.clear() ;
+  m_CasesIDs.clear() ;
+  for (unsigned int i=0;i<CasesPath.size();i++)
+  {
+    m_CasesPath.push_back( CasesPath[i] );
+    m_CasesIDs.push_back( itksys::SystemTools::GetFilenameWithoutExtension( CasesPath[i] ) );
+  }
+}
+void ScriptWriter::clearCasesPath()
+{
+  m_CasesPath.clear();
+  m_CasesIDs.clear() ;
+}
+
+void ScriptWriter::setOutputPath(std::string OutputPath)
+{
+  m_OutputPath = OutputPath;
+}
+
+void ScriptWriter::setRegType(int RegType)
+{
+  m_RegType = RegType;
+}
+
+void ScriptWriter::setnbLoops(int nbLoops)
+{
+  m_nbLoops = nbLoops;
+}
+
+void ScriptWriter::setnbLoopsDTIReg(int nbLoopsDTIReg)
+{
+  m_nbLoopsDTIReg=nbLoopsDTIReg;
+}
+
+void ScriptWriter::setTemplatePath(std::string TemplatePath)
+{
+  m_TemplatePath = TemplatePath;
+}
+
+void ScriptWriter::setOverwrite(int Overwrite)
+{
+  m_Overwrite = Overwrite;
+}
+
+void ScriptWriter::setInterpolType(std::string Type)
+{
+  m_InterpolType = Type;
+}
+
+void ScriptWriter::setInterpolOption(std::string Option)
+{
+  m_InterpolOption = Option;
+}
+
+void ScriptWriter::setTensInterpol(std::string TensInterpol)
+{
+  m_TensInterpol = TensInterpol;
+}
+
+void ScriptWriter::setInterpolLogOption(std::string InterpolLogOption)
+{
+  m_InterpolLogOption = InterpolLogOption;
+}
+
+void ScriptWriter::setTensorTfm(std::string TensTfm)
+{
+  m_TensTfm = TensTfm;
+}
+
+void ScriptWriter::setSoftPath(std::vector < std::string > SoftPath) // 1=ImageMath, 2=ResampleDTIlogEuclidean, 3=CropDTI, 4=dtiprocess, 5=BRAINSFit, 6=GreedyAtlas, 7=dtiaverage, 8=DTI-Reg, 9=unu
+{
+  m_SoftPath.clear();
+  for (unsigned int i=0;i<SoftPath.size();i++) m_SoftPath.push_back( SoftPath[i] );
+}
+
+void ScriptWriter::setDTIRegOptions(std::vector < std::string > DTIRegOptions)
+{
+  m_DTIRegOptions.clear();
+  for (unsigned int i=0;i<DTIRegOptions.size();i++) m_DTIRegOptions.push_back( DTIRegOptions[i] );
+/*
+  RegMethod
+  ANTS
+    ARegType
+    TfmStep
+    Iter
+    SimMet
+    SimParam
+    GSigma
+    SmoothOff
+
+  BRAINS
+    BRegType
+    TfmMode
+    NbPyrLev
+    PyrLevIt
+*/
+}
+
+void ScriptWriter::setDTIRegExtraPath(std::string DTIRegExtraPath)
+{
+  m_DTIRegExtraPath=DTIRegExtraPath;
+}
+
+void ScriptWriter::setBFAffineTfmMode(std::string BFAffineTfmMode)
+{
+  m_BFAffineTfmMode=BFAffineTfmMode;
+}
+
+void ScriptWriter::setGridProcess(bool useGridProcess)
+{
+  m_useGridProcess = useGridProcess;
+}
+
+int ScriptWriter::setScalarMeasurement(std::string scalarMeasurement)
+{
+  if( scalarMeasurement != "FA"
+   && scalarMeasurement != "MD"
+    )
+  {
+    return -1 ;
+  }
+  m_ScalarMeasurement = scalarMeasurement ;
+  return 0 ;
+}
+
+void ScriptWriter::setGridGeneralCommand(std::string GridCommand)
+{
+  m_GridGeneralCommand = setGridCommand( GridCommand ) ;
+}
+
+void ScriptWriter::setGridAtlasCommand(std::string GridCommand)
+{
+
+  m_GridAtlasCommand = setGridCommand( GridCommand ) ;
+}
+
+std::string ScriptWriter::setGridCommand(std::string GridCommand)
+{
+  size_t index = 0;
+  // from http://stackoverflow.com/questions/4643512/replace-substring-with-another-substring-c
+  while (true)
+  {
+    /* Locate the substring to replace. */
+    index = GridCommand.find("\"", index);
+    if (index == std::string::npos)
+    {
+      break ;
+    }
+    /* Make the replacement. */
+    GridCommand.replace(index, 1, "\\\"");
+    /* Advance index forward so the next iteration doesn't pick it up as well. */
+    index += 2;
+  }
+  return GridCommand;
+}
+
+void ScriptWriter::setPythonPath(std::string PythonPath)
+{
+  m_PythonPath = PythonPath;
+}
+
+void ScriptWriter::setNbThreads(int NbThreads) // if( NbThreadsSpinBox->value() != 0 ) // 0 <=> automatic = no limit option given
+{
+  m_NbThreadsString = IntToStr(NbThreads);
+/*Multi threading option used to set env var at the beginning of the main script */
+}
+
+
+
+// Old Scripts
+//
+//
+//
+//
+//
+
+
+
+std::string ScriptWriter::pyExecuteCommandPreprocessCase ( std::string NameOfFileVarToTest, std::string NameOfCmdVarToExec, std::string ErrorTxtToDisplay, std::string SpacesBeforeFirstIf )
+{
+  std::string Script="";
+
+  if(m_Overwrite==1)
+  {
+    Script = Script + SpacesBeforeFirstIf + "if 1 :\n";
+  }
+  else
+  {
+    Script = Script + SpacesBeforeFirstIf + "if not CheckFileExists( " + NameOfFileVarToTest + ", case, allcasesIDs[case] ) :\n";
+  }
+
+  if( ! m_useGridProcess )
+  {
+    Script = Script + SpacesBeforeFirstIf + "  if os.system(" + NameOfCmdVarToExec + ")!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] " + ErrorTxtToDisplay + "\')\n";
+  }
+  else
+  {
+    Script = Script + SpacesBeforeFirstIf + "  GridProcessCaseCommandsArray.append(" + NameOfCmdVarToExec + ") # Executed eventually\n";
+  }
+
+  Script = Script + SpacesBeforeFirstIf + "else : print(\"=> The file \\'\" + " + NameOfFileVarToTest + " + \"\\' already exists so the command will not be executed\")\n"; // not used if overwrite because "if 1 :"
+
+  return Script;
+}
+
+
+
+
+
+
+
   /////////////////////////////////////////
  //     SUB  WRITING FUNCTIONS          //
 /////////////////////////////////////////
 // to avoid having to write twice the same and reduce writing functions size
 
-void ScriptWriter::setExecutableDir(std::string path)
+
+
+  /////////////////////////////////////////
+ //         WRITING FUNCTIONS           //
+/////////////////////////////////////////
+
+void ScriptWriter::WriteScript()
 {
-  m_ExecutableDir = path;
+  std::cout<<"| Write script configuration file"<<std::endl;
+  SaveScriptConfiguration();
+  std::cout<<"| Script file written"<<std::endl;
+  std::cout<<"|"<<std::endl;
+  std::cout<<"|"<<std::endl; // command line display
+  std::cout<<"| Number of Cases: "<<m_CasesPath.size()<<std::endl; // command line display
+  std::cout<<"| Output Directory : "<<m_OutputPath<<"/DTIAtlas"<<std::endl; // command line display
+  if( m_useGridProcess )
+  {
+    std::cout<<"| Using grid processing"<<std::endl; // command line display
+  }
+  if(m_RegType==1)
+  {
+    std::cout<<"| Using Case 1 (" << m_CasesIDs[0] << ") as reference in the first Registration Loop"<<std::endl; // command line display
+  }
+  else
+  {
+    std::cout<<"| Using Template as reference for the Registration: "<<m_TemplatePath<<std::endl; // command line display
+  }
+  std::cout<<"| Number of loops in the Registration Loop : "<<m_nbLoops<<std::endl; // command line display
+  std::cout<<"| Writing begin: "; // command line display (no endl)
+
+  Preprocess();
+  AtlasBuilding();
+  MainScript();
 }
+
 std::string pyTestGridProcess ( bool NoCase1 )
 {
   std::string Script = "\n# Function that tests if all batches have been processed on the grid\n";
@@ -170,135 +680,6 @@ std::string pyCheckFileExists (std::string scalarMeasurement)
 }
 
 
-ScriptWriter::ScriptWriter()
-{
-  m_ScalarMeasurement = "FA" ;
-}
-
-std::string ScriptWriter::pyExecuteCommandPreprocessCase ( std::string NameOfFileVarToTest, std::string NameOfCmdVarToExec, std::string ErrorTxtToDisplay, std::string SpacesBeforeFirstIf )
-{
-  std::string Script="";
-
-  if(m_Overwrite==1)
-  {
-    Script = Script + SpacesBeforeFirstIf + "if 1 :\n";
-  }
-  else
-  {
-    Script = Script + SpacesBeforeFirstIf + "if not CheckFileExists( " + NameOfFileVarToTest + ", case, allcasesIDs[case] ) :\n";
-  }
-
-  if( ! m_useGridProcess )
-  {
-    Script = Script + SpacesBeforeFirstIf + "  if os.system(" + NameOfCmdVarToExec + ")!=0 : DisplayErrorAndQuit(\'[\' + allcasesIDs[case] + \'] " + ErrorTxtToDisplay + "\')\n";
-  }
-  else
-  {
-    Script = Script + SpacesBeforeFirstIf + "  GridProcessCaseCommandsArray.append(" + NameOfCmdVarToExec + ") # Executed eventually\n";
-  }
-
-  Script = Script + SpacesBeforeFirstIf + "else : print(\"=> The file \\'\" + " + NameOfFileVarToTest + " + \"\\' already exists so the command will not be executed\")\n"; // not used if overwrite because "if 1 :"
-
-  return Script;
-}
-
-  /////////////////////////////////////////
- //         WRITING FUNCTIONS           //
-/////////////////////////////////////////
-
-void ScriptWriter::WriteScript()
-{
-  std::cout<<"| Write script configuration file"<<std::endl;
-  SaveScriptConfiguration();
-  std::cout<<"| Script file written"<<std::endl;
-  std::cout<<"|"<<std::endl;
-  std::cout<<"|"<<std::endl; // command line display
-  std::cout<<"| Number of Cases: "<<m_CasesPath.size()<<std::endl; // command line display
-  std::cout<<"| Output Directory : "<<m_OutputPath<<"/DTIAtlas"<<std::endl; // command line display
-  if( m_useGridProcess )
-  {
-    std::cout<<"| Using grid processing"<<std::endl; // command line display
-  }
-  if(m_RegType==1)
-  {
-    std::cout<<"| Using Case 1 (" << m_CasesIDs[0] << ") as reference in the first Registration Loop"<<std::endl; // command line display
-  }
-  else
-  {
-    std::cout<<"| Using Template as reference for the Registration: "<<m_TemplatePath<<std::endl; // command line display
-  }
-  std::cout<<"| Number of loops in the Registration Loop : "<<m_nbLoops<<std::endl; // command line display
-  std::cout<<"| Writing begin: "; // command line display (no endl)
-
-  Preprocess();
-  AtlasBuilding();
-  MainScript();
-}
-
-void ScriptWriter::WriteScriptFromTemplate(std::string templateName)
-{
-  std::cout<<"| Write script configuration file"<<std::endl;
-  SaveScriptConfiguration();
-  std::cout<<"| Script file written"<<std::endl;
-  std::cout<<"|"<<std::endl;
-  std::cout<<"|"<<std::endl; // command line display
-  std::cout<<"| Number of Cases: "<<m_CasesPath.size()<<std::endl; // command line display
-  std::cout<<"| Output Directory : "<<m_OutputPath<<"/DTIAtlas"<<std::endl; // command line display
-  if( m_useGridProcess )
-  {
-    std::cout<<"| Using grid processing"<<std::endl; // command line display
-  }
-  if(m_RegType==1)
-  {
-    std::cout<<"| Using Case 1 (" << m_CasesIDs[0] << ") as reference in the first Registration Loop"<<std::endl; // command line display
-  }
-  else
-  {
-    std::cout<<"| Using Template as reference for the Registration: "<<m_TemplatePath<<std::endl; // command line display
-  }
-  std::cout<<"| Number of loops in the Registration Loop : "<<m_nbLoops<<std::endl; // command line display
-  std::cout<<"| Writing begin: "; // command line display (no endl)
-
-  PreprocessFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Preprocess.py");
-  AtlasBuildingFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_AtlasBuilding.py");
-  MainScriptFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Main.py");
-}
-
-void ScriptWriter::PreprocessFromTemplate(std::string filename)
-{
-  std::string Script;
-  std::ifstream f(filename);
-  if(f){
-    std::ostringstream ss;
-    ss << f.rdbuf();
-    Script=ss.str();
-  }
-  m_Script_Preprocess= Script;
-}
-
-void ScriptWriter::AtlasBuildingFromTemplate(std::string filename)
-{
-  std::string Script;
-  std::ifstream f(filename);
-  if(f){
-    std::ostringstream ss;
-    ss << f.rdbuf();
-    Script=ss.str();
-  }
-  m_Script_AtlasBuilding= Script;
-}
-
-void ScriptWriter::MainScriptFromTemplate(std::string filename)
-{
-  std::string Script;
-  std::ifstream f(filename);
-  if(f){
-    std::ostringstream ss;
-    ss << f.rdbuf();
-    Script=ss.str();
-  }
-  m_Script_Main= Script;
-}
 
 void ScriptWriter::Preprocess ()
 {
@@ -1528,347 +1909,3 @@ void ScriptWriter::MainScript()
 
   m_Script_Main=Script;
 }
-
-  /////////////////////////////////////////
- //         SCRIPT ACCESSORS            //
-/////////////////////////////////////////
-
-std::string ScriptWriter::getScript_Preprocess()
-{
-  return m_Script_Preprocess;
-}
-
-std::string ScriptWriter::getScript_AtlasBuilding()
-{
-  return m_Script_AtlasBuilding;
-}
-
-std::string ScriptWriter::getScript_Main()
-{
-  return m_Script_Main;
-}
-
-  /////////////////////////////////////////
- //           CHECK DATASET             //
-/////////////////////////////////////////
-
-int ScriptWriter::setCroppingSize( bool SafetyMargin ) // returns 0 if no cropping , 1 if cropping needed
-{  
-  m_NeedToBeCropped=0;
-
-  int MaxSize [3] = {-1,-1,-1};
-
-/////////itk type definitions
-  typedef itk::Image < double , 4 > ImageType; //itk type for image
-  typedef itk::ImageFileReader <ImageType> ReaderType; //itk reader class to open an image
-  ReaderType::Pointer reader=ReaderType::New();
-  ImageType::RegionType region;
-
-//////////Testing all the cases
-  for (unsigned int i=0;i<m_CasesPath.size();i++) // read the headers of all files
-  {
-    reader->SetFileName( m_CasesPath[i] ); //Label is a path => open the image
-    reader->UpdateOutputInformation(); // get the informations in the header
-    region = reader->GetOutput()->GetLargestPossibleRegion();
-
-    if( (int)region.GetSize()[0] != MaxSize[0] ) //x coordinate
-    {
-      if( (int)region.GetSize()[0] > MaxSize[0] )
-      {
-        MaxSize[0]=region.GetSize()[0];
-      }
-      if( i > 0 )
-      {
-        m_NeedToBeCropped=1;
-      }
-    }
-    if( (int)region.GetSize()[1] != MaxSize[1] ) //y coordinate
-    {
-      if( (int)region.GetSize()[1] > MaxSize[1] )
-      {
-        MaxSize[1]=region.GetSize()[1];
-      }
-      if( i > 0 )
-      {
-        m_NeedToBeCropped=1;
-      }
-    }
-    if( (int)region.GetSize()[2] != MaxSize[2] ) //z coordinate
-    {
-      if( (int)region.GetSize()[2] > MaxSize[2] )
-      {
-        MaxSize[2]=region.GetSize()[2];
-      }
-      if( i > 0 )
-      {
-        m_NeedToBeCropped=1;
-      }
-    }
-  }
-
-  if(SafetyMargin) // bool SafetyMargin (CropDTI will add 2 voxels each size : place the image in the center)
-  {
-    m_NeedToBeCropped=1; 
-    MaxSize[0] = MaxSize[0] + 4; // add 2 voxels each side in each direction to the computed cropping size
-    MaxSize[1] = MaxSize[1] + 4; // add 2 voxels each side in each direction to the computed cropping size
-    MaxSize[2] = MaxSize[2] + 4; // add 2 voxels each side in each direction to the computed cropping size
-  }
-
-  if(m_NeedToBeCropped==1)
-  {
-    m_CropSize[0] = IntToStr(MaxSize[0]);
-    m_CropSize[1] = IntToStr(MaxSize[1]);
-    m_CropSize[2] = IntToStr(MaxSize[2]);
-
-    std::cout<<"| Crop size computed : ["<<m_CropSize[0]<<";"<<m_CropSize[1]<<";"<<m_CropSize[2]<<"]"<<std::endl;
-    return 1;
-  }
-
-  else return 0;
-}
-
-int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
-{  
-/////////itk definitions
-  typedef itk::Image < double , 4 > ImageType; //itk type for image
-  typedef itk::ImageFileReader <ImageType> ReaderType; //itk reader class to open an image
-
-  ReaderType::Pointer reader=ReaderType::New();
-  reader->SetFileName( m_CasesPath[0] ); //Label is a path => open the image
-  reader->UpdateOutputInformation();
-  const ImageType::SpacingType& sp = reader-> GetOutput()->GetSpacing();
-  double RefSpacing [3]; // the spacing of the first case is the reference for this computation
-  RefSpacing[0]=sp[0];
-  RefSpacing[1]=sp[1];
-  RefSpacing[2]=sp[2];
-
-//////////Testing all the cases
-  for (unsigned int i=1;i<m_CasesPath.size();i++) // read the headers of all files
-  {
-    reader->SetFileName( m_CasesPath[i] ); //Label is a path => open the image
-    reader->UpdateOutputInformation(); // get the informations in the header
-    const ImageType::SpacingType& sp = reader-> GetOutput() -> GetSpacing();
-
-    if( fabs(sp[0]-RefSpacing[0])/RefSpacing[0] > 0.05 ) return 1;
-    if( fabs(sp[1]-RefSpacing[1])/RefSpacing[1] > 0.05 ) return 1;
-    if( fabs(sp[2]-RefSpacing[2])/RefSpacing[2] > 0.05 ) return 1;
-  }
-
-  return 0;
-}
-
-  /////////////////////////////////////////
- //           SET THE VALUES            //
-/////////////////////////////////////////
-void ScriptWriter::SaveScriptConfiguration(void)
-{
-  std::cout << "Script Configuration generated" << std::endl;
-  json obj={
-    {"m_OutputPath",m_OutputPath},
-    {"m_PythonPath", m_PythonPath},
-    {"m_useGridProcess", m_useGridProcess},
-    {"m_NbThreadsString" , m_NbThreadsString},
-    {"m_CasesPath", m_CasesPath},
-    {"m_CasesIDs", m_CasesIDs},
-    {"m_RegType", m_RegType},
-    {"m_nbLoops", m_nbLoops},
-    {"m_TemplatePath",m_TemplatePath},
-    {"m_CropSize", m_CropSize},
-    {"m_NeedToBeCropped", m_NeedToBeCropped},
-    {"m_Overwrite", m_Overwrite},
-    {"m_InterpolType", m_InterpolType},
-    {"m_InterpolOption",m_InterpolOption},
-    {"m_TensInterpol", m_TensInterpol},
-    {"m_InterpolLogOption", m_InterpolLogOption},
-    {"m_TensTfm", m_TensTfm},
-    {"m_SoftPath",m_SoftPath},
-    {"m_DTIRegOptions",m_DTIRegOptions},
-    {"m_DTIRegExtraPath",m_DTIRegExtraPath},
-    {"m_BFAffineTfmMode", m_BFAffineTfmMode},
-    {"m_GridGeneralCommand",m_GridGeneralCommand},
-    {"m_GridAtlasCommand",m_GridAtlasCommand},
-    {"m_ScalarMeasurement",m_ScalarMeasurement},
-    {"m_nbLoopsDTIReg", m_nbLoopsDTIReg}
-  };
-  std::cout << std::setw(4) << obj << std::endl;
-
-  // Write to file
-  std::string name="/DTIAtlas/Script/config.json";
-  std::string filename = m_OutputPath + name;
-  std::cout << "Writing script configuration to file to : " + filename  << std::endl;
-  std::ofstream o(filename);
-  o << std::setw(4) << obj << std::endl;
-
-  std::cout << "Script configuration written."<< std::endl;
-
-}
-
-void ScriptWriter::setCasesPath(std::vector < std::string > CasesPath)
-{
-  m_CasesPath.clear() ;
-  m_CasesIDs.clear() ;
-  for (unsigned int i=0;i<CasesPath.size();i++)
-  {
-    m_CasesPath.push_back( CasesPath[i] );
-    m_CasesIDs.push_back( itksys::SystemTools::GetFilenameWithoutExtension( CasesPath[i] ) );
-  }
-}
-void ScriptWriter::clearCasesPath()
-{
-  m_CasesPath.clear();
-  m_CasesIDs.clear() ;
-}
-
-void ScriptWriter::setOutputPath(std::string OutputPath)
-{
-  m_OutputPath = OutputPath;
-}
-
-void ScriptWriter::setRegType(int RegType)
-{
-  m_RegType = RegType;
-}
-
-void ScriptWriter::setnbLoops(int nbLoops)
-{
-  m_nbLoops = nbLoops;
-}
-
-void ScriptWriter::setnbLoopsDTIReg(int nbLoopsDTIReg)
-{
-  m_nbLoopsDTIReg=nbLoopsDTIReg;
-}
-
-void ScriptWriter::setTemplatePath(std::string TemplatePath)
-{
-  m_TemplatePath = TemplatePath;
-}
-
-void ScriptWriter::setOverwrite(int Overwrite)
-{
-  m_Overwrite = Overwrite;
-}
-
-void ScriptWriter::setInterpolType(std::string Type)
-{
-  m_InterpolType = Type;
-}
-
-void ScriptWriter::setInterpolOption(std::string Option)
-{
-  m_InterpolOption = Option;
-}
-
-void ScriptWriter::setTensInterpol(std::string TensInterpol)
-{
-  m_TensInterpol = TensInterpol;
-}
-
-void ScriptWriter::setInterpolLogOption(std::string InterpolLogOption)
-{
-  m_InterpolLogOption = InterpolLogOption;
-}
-
-void ScriptWriter::setTensorTfm(std::string TensTfm)
-{
-  m_TensTfm = TensTfm;
-}
-
-void ScriptWriter::setSoftPath(std::vector < std::string > SoftPath) // 1=ImageMath, 2=ResampleDTIlogEuclidean, 3=CropDTI, 4=dtiprocess, 5=BRAINSFit, 6=GreedyAtlas, 7=dtiaverage, 8=DTI-Reg, 9=unu
-{
-  m_SoftPath.clear();
-  for (unsigned int i=0;i<SoftPath.size();i++) m_SoftPath.push_back( SoftPath[i] );
-}
-
-void ScriptWriter::setDTIRegOptions(std::vector < std::string > DTIRegOptions)
-{
-  m_DTIRegOptions.clear();
-  for (unsigned int i=0;i<DTIRegOptions.size();i++) m_DTIRegOptions.push_back( DTIRegOptions[i] );
-/*
-  RegMethod
-  ANTS
-    ARegType
-    TfmStep
-    Iter
-    SimMet
-    SimParam
-    GSigma
-    SmoothOff
-
-  BRAINS
-    BRegType
-    TfmMode
-    NbPyrLev
-    PyrLevIt
-*/
-}
-
-void ScriptWriter::setDTIRegExtraPath(std::string DTIRegExtraPath)
-{
-  m_DTIRegExtraPath=DTIRegExtraPath;
-}
-
-void ScriptWriter::setBFAffineTfmMode(std::string BFAffineTfmMode)
-{
-  m_BFAffineTfmMode=BFAffineTfmMode;
-}
-
-void ScriptWriter::setGridProcess(bool useGridProcess)
-{
-  m_useGridProcess = useGridProcess;
-}
-
-int ScriptWriter::setScalarMeasurement(std::string scalarMeasurement)
-{
-  if( scalarMeasurement != "FA"
-   && scalarMeasurement != "MD"
-    )
-  {
-    return -1 ;
-  }
-  m_ScalarMeasurement = scalarMeasurement ;
-  return 0 ;
-}
-
-void ScriptWriter::setGridGeneralCommand(std::string GridCommand)
-{
-  m_GridGeneralCommand = setGridCommand( GridCommand ) ;
-}
-
-void ScriptWriter::setGridAtlasCommand(std::string GridCommand)
-{
-
-  m_GridAtlasCommand = setGridCommand( GridCommand ) ;
-}
-
-std::string ScriptWriter::setGridCommand(std::string GridCommand)
-{
-  size_t index = 0;
-  // from http://stackoverflow.com/questions/4643512/replace-substring-with-another-substring-c
-  while (true)
-  {
-    /* Locate the substring to replace. */
-    index = GridCommand.find("\"", index);
-    if (index == std::string::npos)
-    {
-      break ;
-    }
-    /* Make the replacement. */
-    GridCommand.replace(index, 1, "\\\"");
-    /* Advance index forward so the next iteration doesn't pick it up as well. */
-    index += 2;
-  }
-  return GridCommand;
-}
-
-void ScriptWriter::setPythonPath(std::string PythonPath)
-{
-  m_PythonPath = PythonPath;
-}
-
-void ScriptWriter::setNbThreads(int NbThreads) // if( NbThreadsSpinBox->value() != 0 ) // 0 <=> automatic = no limit option given
-{
-  m_NbThreadsString = IntToStr(NbThreads);
-/*Multi threading option used to set env var at the beginning of the main script */
-}
-

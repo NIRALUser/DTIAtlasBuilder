@@ -722,12 +722,18 @@ void GUI::openHierarchyFile() /*SLOT*/
   if(!fileBrowse.isEmpty())
   {
     //load and set the caseHierarchyTreeView
-    m_HierarchyModel->loadFile(fileBrowse);
-    QModelIndex idx=m_HierarchyModel->getCurrentItem()->index();
-    enableTreeViewWidget(true);
-    caseHierarchyTreeView->clicked(idx);
-    caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
-    caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+    try{
+      m_HierarchyModel->loadFile(fileBrowse);
+      QModelIndex idx=m_HierarchyModel->getCurrentItem()->index();
+      enableTreeViewWidget(true);
+      caseHierarchyTreeView->clicked(idx);
+      caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+      caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+    }catch(const std::exception &e){
+      m_HierarchyModel->clear();
+      QMessageBox::warning(this,"Failed to load","Failed to load hierarchy file.");
+    }
+
     //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
   }
 }
@@ -848,6 +854,13 @@ void GUI::enableTreeViewWidget(bool tf){
   caseHierarchyTreeView->setEnabled(tf);
   addNodeButton->setEnabled(tf);
   removeNodeButton->setEnabled(tf);
+  saveHierarchyButton->setEnabled(tf);
+  ComputepushButton->setEnabled(tf);
+  StoppushButton->setEnabled(tf);
+  AffineQCButton->setEnabled(tf);
+  DeformQCButton->setEnabled(tf);
+  CleanOutputPushButton->setEnabled(tf);
+  ResampQCButton->setEnabled(tf);
 }
 
 
@@ -1019,8 +1032,8 @@ void GUI::RemoveSelectedCases() /*SLOT*/
     if ( CaseListWidget->count()==0 )    
     {
       RemovePushButton->setEnabled(false);
-      ComputepushButton->setEnabled(false);
-      DisableQC();
+      //ComputepushButton->setEnabled(false);
+      //DisableQC();
     }
     m_ParamSaved=0;
     SelectCasesLabel->setText( QString("") );
@@ -1097,7 +1110,7 @@ void GUI::CleanOutputFolder() /*SLOT*/
 {
   // Remove all useless temporary images
 
-  std::string PopupText = "This action will remove the content of all these folders:\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/2_NonLinear_Registration\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas\n" + OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/First_Resampling\n\nDo you really want to remove them?";
+  std::string PopupText = "This action will remove the content of all these folders:\n" + OutputFolderLineEdit->text().toStdString() + "/atlases\n" + OutputFolderLineEdit->text().toStdString() + "/final_atlas\n" + "Do you really want to remove them?";
   int ret = QMessageBox::warning(this, "Remove Files", QString( PopupText.c_str() ), QMessageBox::No | QMessageBox::Yes );
 
   if (ret == QMessageBox::Yes) 
@@ -1105,10 +1118,8 @@ void GUI::CleanOutputFolder() /*SLOT*/
     std::cout<<"| Cleaning output folder...";
 
     std::vector< std::string > PathsToRemove;
-    PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/1_Affine_Registration");
-    PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/2_NonLinear_Registration");
-    PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/3_Diffeomorphic_Atlas");
-    PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/DTIAtlas/4_Final_Resampling/First_Resampling");
+    PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/atlases");
+    PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/final_atlas");
 
     for( unsigned int i = 0 ; i < PathsToRemove.size() ; ++i )
     {
@@ -1433,7 +1444,7 @@ void GUI::SaveCSVResults(int Crop, int nbLoops) // Crop = 0 if no cropping , 1 i
 {  
 
   QString csvPath;
-  csvPath = m_OutputPath + QString("/DTIAtlas/DTIAtlasBuilderResults.csv");
+  csvPath = m_OutputPath + QString("/common/DTIAtlasBuilderResults.csv");
   QFile file(csvPath);
 
   if ( file.open( QFile::WriteOnly ) )
@@ -2078,18 +2089,18 @@ int GUI::LoadParameters(QString paramFile, bool DiscardParametersCSV) // Discard
 
 void GUI::GenerateXMLForGA()
 {
-  QString  xmlFileName = m_OutputPath + QString("/DTIAtlas/2_NonLinear_Registration/GreedyAtlasParameters.xml");
+  QString  xmlFileName = m_OutputPath + QString("/common/GreedyAtlasParameters.xml");
 
-  if( ! itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/DTIAtlas/2_NonLinear_Registration").c_str(), ITKmode_F_OK) ) // Test if the main folder does not exists => itksys::SystemTools::GetPermissions() returns true if ITKmode_F(file)_OK
+  if( ! itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/common").c_str(), ITKmode_F_OK) ) // Test if the main folder does not exists => itksys::SystemTools::GetPermissions() returns true if ITKmode_F(file)_OK
   {
-    if( itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/DTIAtlas/2_NonLinear_Registration_AW").c_str(), ITKmode_F_OK) ) // old version of the folder => put the xml in the old folder : will be renamed in the python script to the new name
+    if( itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/common").c_str(), ITKmode_F_OK) ) // old version of the folder => put the xml in the old folder : will be renamed in the python script to the new name
     {
-      xmlFileName = m_OutputPath + QString("/DTIAtlas/2_NonLinear_Registration_AW/GreedyAtlasParameters.xml");
+      xmlFileName = m_OutputPath + QString("common/GreedyAtlasParameters.xml");
     }
     else
     {
       std::cout<<"| Creating Non Linear Registration directory..."<<std::endl; // command line display
-      std::string Dir = m_OutputPath.toStdString() + "/DTIAtlas/2_NonLinear_Registration";
+      std::string Dir = m_OutputPath.toStdString() + "/common";
       itksys::SystemTools::MakeDirectory( Dir.c_str() );
     }
   }
@@ -2946,9 +2957,9 @@ int GUI::Compute() /*SLOT*/
   else
   {
 
-    if(CaseListWidget->count()==0)
+    if(!m_HierarchyModel->checkValidity())
     {
-      if(!m_noGUI && !m_Testing) QMessageBox::critical(this, "No Cases", "Please give at least one case");
+      if(!m_noGUI && !m_Testing) QMessageBox::critical(this, "No Cases", "There might be some node having no cases");
       else std::cout<<"| No Cases: Please give at least one case"<<std::endl;
     }
     else // OK Case
@@ -3079,17 +3090,17 @@ bool GUI::CheckOutput( bool& FirstComputeInOutputFolder )
   }
   m_scriptwriter->setOutputPath(m_OutputPath.toStdString());
 
-  if( ! itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/DTIAtlas").c_str(), ITKmode_F_OK) ) // Test if the main folder does not exists => itksys::SystemTools::GetPermissions() returns true if ITKmode_F(file)_OK
+  if( ! itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/common").c_str(), ITKmode_F_OK) ) // Test if the main folder does not exists => itksys::SystemTools::GetPermissions() returns true if ITKmode_F(file)_OK
   {
-    std::cout<<"| Creating Main directory..."<<std::endl; // command line display
-    std::string Dir = m_OutputPath.toStdString() + "/DTIAtlas";
+    std::cout<<"| Creating Configuration directory..."<<std::endl; // command line display
+    std::string Dir = m_OutputPath.toStdString() + "/common";
     itksys::SystemTools::MakeDirectory( Dir.c_str() );
   }
 
-  if( ! itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/DTIAtlas/Script").c_str(), ITKmode_F_OK) ) // Test if the script folder does not exists => itksys::SystemTools::GetPermissions() returns true if ITKmode_F(file)_OK
+  if( ! itksys::SystemTools::GetPermissions((m_OutputPath.toStdString() + "/scripts").c_str(), ITKmode_F_OK) ) // Test if the script folder does not exists => itksys::SystemTools::GetPermissions() returns true if ITKmode_F(file)_OK
   {
     std::cout<<"| Creating Script directory..."<<std::endl; // command line display
-    std::string Dir = m_OutputPath.toStdString() + "/DTIAtlas/Script";
+    std::string Dir = m_OutputPath.toStdString() + "/scripts";
     itksys::SystemTools::MakeDirectory( Dir.c_str() );
     FirstComputeInOutputFolder  = true;
   }
@@ -3421,7 +3432,7 @@ void GUI::GenerateScriptFile( std::string ScriptName, std::string ScriptText )
 
   std::cout<<"| Generating " << ScriptName << " script file..."; // command line display
 
-  QString ScriptPath = m_OutputPath + QString("/DTIAtlas/Script/DTIAtlasBuilder_") + QString(ScriptName.c_str()) + QString(".py");
+  QString ScriptPath = m_OutputPath + QString("/scripts/DTIAtlasBuilder_") + QString(ScriptName.c_str()) + QString(".py");
   QFile file(ScriptPath);
 
   if ( file.open( QFile::WriteOnly ) )
@@ -3441,7 +3452,7 @@ void GUI::GenerateServerScript()
 {
     std::cout<<"| Generating Server script file..."; // command line display
 
-    QString ScriptPath = m_OutputPath + QString("/DTIAtlas/Script/RunCommandOnServer.py");
+    QString ScriptPath = m_OutputPath + QString("/scripts/RunCommandOnServer.py");
     QFile fileMain(ScriptPath);
 
     if ( fileMain.open( QFile::WriteOnly ) )
@@ -3529,12 +3540,13 @@ int GUI::LaunchScriptWriter()
 
 /* Launch writing */
   //m_scriptwriter->WriteScript(); // Master Function : get pid to send a signal to Qt process to move progress bar
+  m_scriptwriter->setHierarchy(m_HierarchyModel->getHierarchy());
   m_scriptwriter->WriteScriptFromTemplate("New"); //New Writer from template python source file
 
   GenerateXMLForGA();
 
   SaveCSVResults(m_NeedToBeCropped,NbLoopsSpinBox->value());
-  SaveParameters(m_OutputPath + QString("/DTIAtlas/DTIAtlasBuilderParameters.txt"), m_OutputPath + QString("/DTIAtlas/DTIAtlasBuilderDataset.csv"));
+  SaveParameters(m_OutputPath + QString("/common/DTIAtlasBuilderParameters.txt"), m_OutputPath + QString("/common/DTIAtlasBuilderDataset.csv"));
 
   GenerateScriptFile( "Preprocess", m_scriptwriter->getScript_Preprocess() );
   GenerateScriptFile( "AtlasBuilding", m_scriptwriter->getScript_AtlasBuilding() );
@@ -3550,6 +3562,7 @@ int GUI::LaunchScriptWriter()
 
 int GUI::LaunchScriptRunner()
 {
+
   ComputepushButton->setEnabled(false);
   StoppushButton->setEnabled(true);
   CleanOutputPushButton->setEnabled(false);
@@ -3558,12 +3571,12 @@ int GUI::LaunchScriptRunner()
 
 /* Running the Script: */ // python path found before writing script : contains already a space after the command
   std::string program;
-  program = m_PythonPath + " " + m_OutputPath.toStdString() + "/DTIAtlas/Script/DTIAtlasBuilder_Main.py"; // 
+  program = m_PythonPath + " " + m_OutputPath.toStdString() + "/scripts/DTIAtlasBuilder_Main.py"; // 
   std::cout<<"| Starting: " << program << std::endl;
 
   std::cout<<"| Script Running..."<< std::endl; // command line display
 
-  std::string LogFilePath = m_OutputPath.toStdString() + "/DTIAtlas/Script/DTIAtlasBuilder.log";
+  std::string LogFilePath = m_OutputPath.toStdString() + "/scripts/DTIAtlasBuilder.log";
   m_ScriptQProcess->setStandardOutputFile(LogFilePath.c_str(), QIODevice::Truncate); // Truncate = overwrite // Append= write after what's written
 
   if(m_noGUI) // !! no log file in the case of nogui (execute will write the stdout in the console, as it is the same process)
@@ -3592,7 +3605,7 @@ void GUI::KillScriptQProcess() /* SLOT */
 /* Kill other processes by  PID : read PID.log file */
   if((std::string)Platform == "mac" || (std::string)Platform == "linux") // Kill PID
   {
-    QString PIDlogFilePath = m_OutputPath + QString("/DTIAtlas/Script/PID.log");
+    QString PIDlogFilePath = m_OutputPath + QString("/scripts/PID.log");
     if( itksys::SystemTools::GetPermissions(PIDlogFilePath.toStdString().c_str(), ITKmode_F_OK) ) // PID file exists -> read it
     {
       QFile PIDfile(PIDlogFilePath);
@@ -3648,7 +3661,7 @@ void GUI::ScriptQProcessDone(int ExitCode) /*SLOT*/ // called
 
   if(!m_noGUI)
   {
-    std::string LogFileText = "| Log file written in: " + m_OutputPath.toStdString() + "/DTIAtlas/Script/DTIAtlasBuilder.log";
+    std::string LogFileText = "| Log file written in: " + m_OutputPath.toStdString() + "/scripts/DTIAtlasBuilder.log";
     std::cout<<LogFileText<<std::endl;
     ScriptRunningDisplayQLabel->setText(ScriptRunningDisplayQLabel->text() + QString(LogFileText.c_str()));
   }
@@ -3659,12 +3672,12 @@ void GUI::RunningCompleted()
   ScriptRunningDisplayQLabel->setText("Running Completed ");
 
   std::cout<< "| Running Completed !"<<std::endl;
-  std::cout<< "| Final Atlas is in: " << m_OutputPath.toStdString() << "/DTIAtlas/4_Final_Resampling/FinalAtlasDTI.nrrd"<<std::endl;
-  std::cout<< "| Final Displacement Fields for each case are in: " << m_OutputPath.toStdString() << "/DTIAtlas/4_Final_Resampling/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd" <<std::endl;
+  std::cout<< "| Final Atlas is in: " << m_OutputPath.toStdString() << "/final_atlas/FinalAtlasDTI.nrrd"<<std::endl;
+  std::cout<< "| Final Displacement Fields for each case are in: " << m_OutputPath.toStdString() << "/final_atlas/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd" <<std::endl;
 
   if(!m_noGUI && !m_Testing)
   {
-    std::string RunningCompletedTextPopup = "Running Completed !\n\nFinal Atlas is in:\n" + m_OutputPath.toStdString() + "/DTIAtlas/4_Final_Resampling/FinalAtlasDTI.nrrd\n\nFinal Displacement Fields for each case are in:\n" + m_OutputPath.toStdString() + "/DTIAtlas/4_Final_Resampling/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd";
+    std::string RunningCompletedTextPopup = "Running Completed !\n\nFinal Atlas is in:\n" + m_OutputPath.toStdString() + "/final_atlas/FinalAtlasDTI.nrrd\n\nFinal Displacement Fields for each case are in:\n" + m_OutputPath.toStdString() + "/final_atlas/FinalDeformationFields/<case>_GlobalDisplacementField.nrrd";
     QMessageBox::information(this, "Running Completed", QString(RunningCompletedTextPopup.c_str()));
   }
 }

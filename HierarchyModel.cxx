@@ -84,6 +84,18 @@ bool CaseHierarchyModel::checkCaseExists(QString name){
 bool CaseHierarchyModel::isRoot(QString name){
 	return name==m_rootNode->text();
 }
+bool CaseHierarchyModel::checkValidity(){
+	foreach(const json &obj, m_CaseHierarchy["build"]){
+		std::string s=obj["type"];
+		QString nodeType=QString(s.c_str());
+		if(nodeType==QString("end_node")){
+			if(obj["datasetfiles"].size() ==0){
+				return false;
+			}
+		}
+	}
+	return true;
+}
 
 void CaseHierarchyModel::addNode(QString nodename){
 

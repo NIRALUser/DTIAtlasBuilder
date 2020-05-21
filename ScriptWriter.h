@@ -56,6 +56,9 @@ class ScriptWriter
     void SaveScriptConfiguration(void);
 
     /* */
+    void setHierarchy(json);
+
+    /* */
     void setCasesPath(std::vector < std::string > CasesPath);
     void clearCasesPath();
     void setOutputPath(std::string OutputPath);
@@ -84,6 +87,10 @@ class ScriptWriter
   private:
 /* Environment */
     std::string m_ExecutableDir;
+
+/* Hierarchical Build */
+    json m_HierarchyBuild;
+
 /* VALUES */
     std::vector < std::string > m_CasesPath;
     std::vector < std::string > m_CasesIDs;

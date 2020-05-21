@@ -107,6 +107,7 @@ def main(args):
     projectPath=os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
     scriptPath=os.path.join(projectPath,"scripts")
     commonPath=os.path.join(projectPath,'common')
+    configPath=os.path.join(commonPath,"config.json")
     hbuildPath=os.path.join(commonPath,"h-build.json")
     
     ### generate build sequence
@@ -115,6 +116,11 @@ def main(args):
         hbuild={}
         with open(hbuildPath,'r') as f:
             hbuild=json.load(f)
+        config={}
+        with open(configPath,'r') as f:
+            config=json.load(f)
+
+        hbuild["config"]=config
         hbuild['config']['m_GreedyAtlasParametersTemplatePath']=str(os.path.join(commonPath,'GreedyAtlasParameters.xml'))
         initSequence=parse_hbuild(hbuild,root_path=projectPath,root_node=args.node)
         buildSequence=furnish_sequence(hbuild,initSequence)
@@ -167,8 +173,10 @@ if __name__=="__main__":
 
     try:
        main(args)
+       sys.exit(0)
     except Exception as e:
         print(str(e))
+        sys.exit(1)
 
 
 
