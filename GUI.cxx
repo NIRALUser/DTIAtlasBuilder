@@ -1438,7 +1438,7 @@ void GUI::SaveCSVDatasetBrowse() /*SLOT*/
     for(int i=0; i < CaseListWidget->count() ;i++) stream << i+1 << m_CSVseparator << CaseListWidget->item(i)->text().remove(0, CaseListWidget->item(i)->text().split(":").at(0).size()+2 ) << endl;
     std::cout<<"DONE"<<std::endl; // command line display
   
-    SelectCasesLabel->setText( QString("Current CSV file : ") + CSVBrowseName );
+    //SelectCasesLabel->setText( QString("Current CSV file : ") + CSVBrowseName );
     QMessageBox::information(this, "Saving succesful", "Dataset has been succesfully saved at" + CSVBrowseName);    
   }
   else qDebug( "Could not create file");
@@ -1595,7 +1595,7 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
       for(int i=0; i < CaseListWidget->count() ;i++) streamcsv << i+1 << m_CSVseparator << CaseListWidget->item(i)->text().remove(0, CaseListWidget->item(i)->text().split(":").at(0).size()+2 ) << endl;
       std::cout<<"DONE"<<std::endl; // command line display
     
-      SelectCasesLabel->setText( QString("Current CSV file : ") + CSVFileName );
+      //SelectCasesLabel->setText( QString("Current CSV file : ") + CSVFileName );
     }
     else 
     {
