@@ -3349,6 +3349,7 @@ bool GUI::CheckProgramsExecutable()
   SoftPath.push_back(dtiavgPath->text().toStdString());
   SoftPath.push_back(DTIRegPath->text().toStdString());
   SoftPath.push_back(unuPath->text().toStdString());
+  SoftPath.push_back(ITKTransformToolsPath->text().toStdString());
 
   m_scriptwriter->setSoftPath(SoftPath);
   SoftPath.clear();
