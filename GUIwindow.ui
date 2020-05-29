@@ -1293,16 +1293,16 @@ as an Affine transform already computed, it will be used as an input for the Aff
        <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QPushButton" name="ImagemathButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="ResampPath"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="CropDTIPath"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="CropDTIButton">
             <property name="text">
-             <string>ImageMath</string>
+             <string>CropDTI</string>
             </property>
            </widget>
           </item>
@@ -1310,28 +1310,6 @@ as an Affine transform already computed, it will be used as an input for the Aff
            <widget class="QPushButton" name="ResampButton">
             <property name="text">
              <string>ResampleDTIlogEuclidean</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="ImagemathPath"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="ResampPath"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QPushButton" name="ImagemathResetButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>Reset Software Path</string>
-            </property>
-            <property name="text">
-             <string>R</string>
             </property>
            </widget>
           </item>
@@ -1345,46 +1323,8 @@ as an Affine transform already computed, it will be used as an input for the Aff
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="CropDTIButton">
-            <property name="text">
-             <string>CropDTI</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="CropDTIPath"/>
-          </item>
-          <item row="2" column="2">
-           <widget class="QPushButton" name="CropDTIResetButton">
-            <property name="toolTip">
-             <string>Reset Software Path</string>
-            </property>
-            <property name="text">
-             <string>R</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="dtiprocButton">
-            <property name="text">
-             <string>dtiprocess</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QPushButton" name="BRAINSFitButton">
-            <property name="text">
-             <string>BRAINSFit</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QPushButton" name="GAButton">
-            <property name="text">
-             <string>GreedyAtlas</string>
-            </property>
-           </widget>
+          <item row="9" column="1">
+           <widget class="QLineEdit" name="unuPath"/>
           </item>
           <item row="6" column="0">
            <widget class="QPushButton" name="dtiavgButton">
@@ -1393,87 +1333,8 @@ as an Affine transform already computed, it will be used as an input for the Aff
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
-           <widget class="QPushButton" name="DTIRegButton">
-            <property name="text">
-             <string>DTI-Reg</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0">
-           <widget class="QPushButton" name="unuButton">
-            <property name="text">
-             <string>unu</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="0">
-           <widget class="QPushButton" name="MriWatcherButton">
-            <property name="text">
-             <string>MriWatcher</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="dtiprocPath"/>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="BRAINSFitPath"/>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLineEdit" name="GAPath"/>
-          </item>
           <item row="6" column="1">
            <widget class="QLineEdit" name="dtiavgPath"/>
-          </item>
-          <item row="7" column="1">
-           <widget class="QLineEdit" name="DTIRegPath"/>
-          </item>
-          <item row="9" column="1">
-           <widget class="QLineEdit" name="unuPath"/>
-          </item>
-          <item row="10" column="1">
-           <widget class="QLineEdit" name="MriWatcherPath"/>
-          </item>
-          <item row="3" column="2">
-           <widget class="QPushButton" name="dtiprocResetButton">
-            <property name="toolTip">
-             <string>Reset Software Path</string>
-            </property>
-            <property name="text">
-             <string>R</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QPushButton" name="BRAINSFitResetButton">
-            <property name="toolTip">
-             <string>Reset Software Path</string>
-            </property>
-            <property name="text">
-             <string>R</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="2">
-           <widget class="QPushButton" name="GAResetButton">
-            <property name="toolTip">
-             <string>Reset Software Path</string>
-            </property>
-            <property name="text">
-             <string>R</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="2">
-           <widget class="QPushButton" name="dtiavgResetButton">
-            <property name="toolTip">
-             <string>Reset Software Path</string>
-            </property>
-            <property name="text">
-             <string>R</string>
-            </property>
-           </widget>
           </item>
           <item row="7" column="2">
            <widget class="QPushButton" name="DTIRegResetButton">
@@ -1495,11 +1356,167 @@ as an Affine transform already computed, it will be used as an input for the Aff
             </property>
            </widget>
           </item>
+          <item row="4" column="2">
+           <widget class="QPushButton" name="BRAINSFitResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QPushButton" name="unuButton">
+            <property name="text">
+             <string>unu</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QPushButton" name="ImagemathResetButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QPushButton" name="GAResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QPushButton" name="GAButton">
+            <property name="text">
+             <string>GreedyAtlas</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QPushButton" name="dtiavgResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QPushButton" name="DTIRegButton">
+            <property name="text">
+             <string>DTI-Reg</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="BRAINSFitButton">
+            <property name="text">
+             <string>BRAINSFit</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="dtiprocResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="dtiprocButton">
+            <property name="text">
+             <string>dtiprocess</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="ImagemathPath"/>
+          </item>
+          <item row="2" column="2">
+           <widget class="QPushButton" name="CropDTIResetButton">
+            <property name="toolTip">
+             <string>Reset Software Path</string>
+            </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="DTIRegPath"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="dtiprocPath"/>
+          </item>
+          <item row="10" column="0">
+           <widget class="QPushButton" name="MriWatcherButton">
+            <property name="text">
+             <string>MriWatcher</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="GAPath"/>
+          </item>
+          <item row="10" column="1">
+           <widget class="QLineEdit" name="MriWatcherPath"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="ImagemathButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>ImageMath</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="BRAINSFitPath"/>
+          </item>
           <item row="10" column="2">
            <widget class="QPushButton" name="MriWatcherResetButton">
             <property name="toolTip">
              <string>Reset Software Path</string>
             </property>
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="QPushButton" name="ITKTransformToolsButton">
+            <property name="text">
+             <string>ITKTransformTools</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="QLineEdit" name="ITKTransformToolsPath"/>
+          </item>
+          <item row="11" column="2">
+           <widget class="QPushButton" name="ITKTransformToolsResetButton">
             <property name="text">
              <string>R</string>
             </property>

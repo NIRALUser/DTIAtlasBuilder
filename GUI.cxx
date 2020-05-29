@@ -247,6 +247,8 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     SoftButtonMapper->setMapping(unuButton,9);
     QObject::connect(MriWatcherButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
     SoftButtonMapper->setMapping(MriWatcherButton,10);
+    QObject::connect(ITKTransformToolsButton, SIGNAL(clicked()), SoftButtonMapper, SLOT(map()));
+    SoftButtonMapper->setMapping(ITKTransformToolsButton,11);
 
 /* Reset software path Buttons */
     QSignalMapper *ResetSoftButtonMapper = new QSignalMapper();
@@ -272,6 +274,8 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     ResetSoftButtonMapper->setMapping(unuResetButton,9);
     QObject::connect(MriWatcherResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
     ResetSoftButtonMapper->setMapping(MriWatcherResetButton,10);
+    QObject::connect(ITKTransformToolsResetButton, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(ITKTransformToolsResetButton,11);
 
 /* When any value changes, the value of m_ParamSaved is set to 0 */
     QObject::connect(TemplateLineEdit, SIGNAL(textChanged(QString)), this, SLOT(WidgetHasChangedParamNoSaved()));
@@ -377,6 +381,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
   m_FindProgramDTIABExecDirVec.push_back(commandRan + "/teem/bin/" );
   m_FindProgramDTIABExecDirVec.push_back(commandRan + "/BRAINSTools/bin/" );
   m_FindProgramDTIABExecDirVec.push_back(commandRan + "/MriWatcher/bin/");
+  m_FindProgramDTIABExecDirVec.push_back(commandRan + "/ITKTransformTools/bin/");
   
   // look for the programs with the itk function
   ConfigDefault(commandRan);
@@ -484,6 +489,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     DTIRegFound=false; // so it will not test the version
   }
   if(unuPath->text().isEmpty()) notFound = notFound + "> unu\n";
+  if(ITKTransformToolsPath->text().isEmpty()) notFound = notFound + "> ITKTransformTools\n";
   if(MriWatcherPath->text().isEmpty()) notFound = notFound + "> MriWatcher (Program will work, but QC will not be available)\n";
 
   if( !notFound.empty() )
@@ -2333,6 +2339,12 @@ int GUI::LoadConfig(QString configFile) // returns -1 if fails, otherwise 0
       if(!list.at(1).isEmpty()) MriWatcherPath->setText(list.at(1));
       else if(MriWatcherPath->text().isEmpty()) notFound = notFound + "> MriWatcher (Program will work, but QC will not be available)\n";
 
+      line = stream.readLine();
+      list = line.split("=");
+      if( LoadConfigReturnTrueIfCorrupted(list.at(0),"ITKTransformTools") ) return -1;
+      if(!list.at(1).isEmpty()) ITKTransformToolsPath->setText(list.at(1));
+      else if(ITKTransformToolsPath->text().isEmpty()) notFound = notFound + "> ITKTransformTools\n";
+
       std::cout<<"DONE"<<std::endl; // command line display
 
       if(m_FromConstructor!=1) // do not test when from constructor -> test at the end of it
@@ -2388,6 +2400,7 @@ void GUI::SaveConfig() /*SLOT*/
       stream << "DTI-Reg=" << DTIRegPath->text() << endl;
       stream << "unu=" << unuPath->text() << endl;
       stream << "MriWatcher=" << MriWatcherPath->text() << endl;
+      stream << "ITKTransformTools=" << ITKTransformToolsPath->text() << endl;
 
       std::cout<<"DONE"<<std::endl; // command line display
     }
@@ -2497,9 +2510,15 @@ void GUI::ConfigDefault(std::string commandRan) /*SLOT*/
   if(program.empty()) { if(unuPath->text().isEmpty()) notFound = notFound + "> unu\n"; }
   else unuPath->setText(QString(program.c_str()));
 
+  program = FindProgram("ITKTransformTools",m_FindProgramDTIABExecDirVec);
+  if(program.empty()) { if(ITKTransformToolsPath->text().isEmpty()) notFound = notFound + "> ITKTransformTools\n"; }
+  else ITKTransformToolsPath->setText(QString(program.c_str()));
+
+
   program = FindProgram("MriWatcher",m_FindProgramDTIABExecDirVec);
   if(program.empty()) { if(MriWatcherPath->text().isEmpty()) notFound = notFound + "> MriWatcher (Program will work, but QC will not be available)\n"; }
   else MriWatcherPath->setText(QString(program.c_str()));
+
 
   std::cout<<"DONE"<<std::endl; // command line display
 
@@ -2520,7 +2539,7 @@ void GUI::ConfigDefault(std::string commandRan) /*SLOT*/
   }
 }
 
-void GUI::BrowseSoft(int soft)  /*SLOT*/ //softwares: 1=ImageMath, 2=ResampleDTIlogEuclidean, 3=CropDTI, 4=dtiprocess, 5=BRAINSFit, 6=GreedyAtlas, 7=dtiaverage, 8=DTI-Reg, 9=unu, 10=MriWatcher
+void GUI::BrowseSoft(int soft)  /*SLOT*/ //softwares: 1=ImageMath, 2=ResampleDTIlogEuclidean, 3=CropDTI, 4=dtiprocess, 5=BRAINSFit, 6=GreedyAtlas, 7=dtiaverage, 8=DTI-Reg, 9=unu, 10=MriWatcher , 11=ITKTransformTools
 {
   QString SoftBrowse = QFileDialog::getOpenFileName(this, "Open Software", QString(), "Executable Files (*)");
 
@@ -2553,6 +2572,8 @@ void GUI::BrowseSoft(int soft)  /*SLOT*/ //softwares: 1=ImageMath, 2=ResampleDTI
     case 9: unuPath->setText(SoftBrowse);
       break;
     case 10: MriWatcherPath->setText(SoftBrowse);
+      break;
+    case 11: ITKTransformToolsPath->setText(SoftBrowse);
       break;
     }
   }
@@ -2646,6 +2667,8 @@ void GUI::ResetSoft(int softindex) /*SLOT*/ //softwares: 1=ImageMath, 2=Resample
     break;
   case 10: soft="MriWatcher";
     break;
+  case 11: soft="ITKTransformTools";
+    break;
   }
 
   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
@@ -2679,6 +2702,7 @@ void GUI::ResetSoft(int softindex) /*SLOT*/ //softwares: 1=ImageMath, 2=Resample
     }
     else if(softindex==9) unuPath->setText(QString(program.c_str()));
     else if(softindex==10) MriWatcherPath->setText(QString(program.c_str()));
+    else if(softindex==11) ITKTransformToolsPath->setText(QString(program.c_str()));
   }
 
   std::cout<<"DONE"<<std::endl; // command line display
@@ -3225,6 +3249,7 @@ bool GUI::CheckPrograms()
     || dtiavgPath->text().isEmpty()
     || DTIRegPath->text().isEmpty()
     || unuPath->text().isEmpty()
+    || ITKTransformToolsPath->text().isEmpty()
     || MriWatcherPath->text().isEmpty() ) // if any path is missing => check in the config file and in the PATH
   {
     const char * value = itksys::SystemTools::GetEnv("DTIAtlasBuilderSoftPath"); // C function = const char * getenv(const char *)
@@ -3244,6 +3269,7 @@ bool GUI::CheckPrograms()
     CheckProgram( "dtiaverage", dtiavgPath, notFound );
     CheckProgram( "DTI-Reg", DTIRegPath, notFound );
     CheckProgram( "unu", unuPath, notFound );
+    CheckProgram( "ITKTransformTools", ITKTransformToolsPath, notFound );
 
     if(MriWatcherPath->text().isEmpty()) // MriWatcher special because not in notFound -> just warning no QC
     {
@@ -3288,15 +3314,16 @@ bool GUI::CheckProgramExecutable( QLineEdit *ProgramPath )
 
 bool GUI::CheckProgramsExecutable()
 {
-  if( ! CheckProgramExecutable( ImagemathPath  ) ) return false;
-  if( ! CheckProgramExecutable( ResampPath     ) ) return false;
-  if( ! CheckProgramExecutable( CropDTIPath    ) ) return false;
-  if( ! CheckProgramExecutable( dtiprocPath    ) ) return false;
-  if( ! CheckProgramExecutable( BRAINSFitPath  ) ) return false;
-  if( ! CheckProgramExecutable( GAPath         ) ) return false;
-  if( ! CheckProgramExecutable( dtiavgPath     ) ) return false;
-  if( ! CheckProgramExecutable( DTIRegPath     ) ) return false;
-  if( ! CheckProgramExecutable( unuPath        ) ) return false;
+  if( ! CheckProgramExecutable( ImagemathPath                ) ) return false;
+  if( ! CheckProgramExecutable( ResampPath                   ) ) return false;
+  if( ! CheckProgramExecutable( CropDTIPath                  ) ) return false;
+  if( ! CheckProgramExecutable( dtiprocPath                  ) ) return false;
+  if( ! CheckProgramExecutable( BRAINSFitPath                ) ) return false;
+  if( ! CheckProgramExecutable( GAPath                       ) ) return false;
+  if( ! CheckProgramExecutable( dtiavgPath                   ) ) return false;
+  if( ! CheckProgramExecutable( DTIRegPath                   ) ) return false;
+  if( ! CheckProgramExecutable( unuPath                      ) ) return false;
+  if( ! CheckProgramExecutable( ITKTransformToolsPath        ) ) return false;
 
   // MriWatcher special because no critical -> just warning no QC
   if(MriWatcherPath->text().isEmpty()) DisableQC();
