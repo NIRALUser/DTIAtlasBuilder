@@ -8,3 +8,4 @@ dtiaverage=${dtiaveragePath}
 DTI-Reg=${DTI-RegPath}
 unu=${unuPath}
 MriWatcher=${MriWatcherPath}
+ITKTransformTools=${ITKTransformToolsPath}

@@ -7,6 +7,7 @@ import argparse
 import csv
 import DTIAtlasBuilder_Preprocess
 import DTIAtlasBuilder_AtlasBuilding
+import shutil
 
 ### load configutation json
 
@@ -17,6 +18,44 @@ def unique(list1):
         if x not in unique_list: 
             unique_list.append(x) 
     return unique_list
+
+def isComponent(seq,name):
+    comp=list(filter(lambda x : x['name']==name,seq))
+    if len(comp)>0 :
+        return comp[0] 
+    else:
+        return False 
+
+def generate_deformation_track(seq,node="target"): #input : initialSequence to generate deformation field tracking information (to concatenate them)
+    component=isComponent(seq,node)
+    outseq=[]
+    if component != False:
+        for c in component["dataset_ids"]:
+            tmpseq=generate_deformation_track(seq,c)
+            for t in tmpseq:
+                outseq.append(node+"/"+t)
+    else:
+        outseq.append(node)
+        return outseq 
+    return outseq
+    
+def furnish_deformation_track(seq,project_path): #input deformSequence 
+    res=[]
+    for d in seq:
+        tmp={}
+        tmp['id']=d
+        compseq=d.split('/')
+        entry=[]
+        for idx,c in enumerate(compseq[0:-1]):
+            fpath=c + "/5_Final_Atlas/FinalDeformationFields/" + compseq[idx+1] + "_GlobalDisplacementField.nrrd"
+            fpath=os.path.join(project_path,fpath)
+            entry.append(fpath)
+        tmp['filelist']=entry
+        res.append(tmp)
+    return res 
+
+
+
 
 def parse_hbuild(hb,root_path,root_node="target"): #hbuild parser to generate build sequence
     if root_node is None:
@@ -112,6 +151,8 @@ def main(args):
     
     ### generate build sequence
     buildSequence=[]
+    hbuild={}
+    deformSequence=[]
     if args.buildsequence is None:
         hbuild={}
         with open(hbuildPath,'r') as f:
@@ -137,6 +178,16 @@ def main(args):
         with open(args.buildsequence,'r') as f:
             buildSequence=json.load(f)
 
+    with open(os.path.join(commonPath,'initial_sequence.json'),'w') as f:
+        json.dump(initSequence,f,indent=4)
+
+    ## generate deformation field map
+    deformInitSequence=generate_deformation_track(initSequence,node=hbuild['project']['target_node'])
+    deformSequence=furnish_deformation_track(deformInitSequence,project_path=projectPath)
+
+    with open(os.path.join(commonPath,'deformation_track.json'),'w') as f:
+        json.dump(deformSequence,f,indent=4)
+
     ### atlas build begins (to be multiprocessed)
     print("\nThe current date and time are:")
     print( time.strftime('%x %X %Z') )
@@ -152,8 +203,25 @@ def main(args):
         try:
             DTIAtlasBuilder_AtlasBuilding.run(cfg)
         except Exception as e:
-            raise Exception("Error occurred in DTIAtlasBuilding_DTIAtlasBuilder" + str(e))
+            raise Exception("Error occurred in DTIAtlasBuilding_DTIAtlasBuilder : " + str(e))
     ### atlas build ends
+
+    ### copy final atals to 'final_atlas' directory
+
+    try:
+        if args.node is None:
+            src=os.path.join(projectPath,"atlases/"+hbuild['project']['target_node'])
+        else:
+            src=os.path.join(projectPath,"atlases/"+args.node)
+        dst=os.path.join(projectPath,"final_atlas")
+        print("Copying filed from %s to %s" %(src,dst))
+        shutil.rmtree(dst)
+        shutil.copytree(src,dst)
+
+    except Exception as e:
+        raise Exception("Error occurred in copying final atlas directory : " +str(e))
+
+    print("Final atlas copied into %s "% dst)
     # Display execution time
     time2=time.time()
     timeTot=time2-time1
@@ -177,6 +245,8 @@ if __name__=="__main__":
     except Exception as e:
         print(str(e))
         sys.exit(1)
+
+
 
 
 

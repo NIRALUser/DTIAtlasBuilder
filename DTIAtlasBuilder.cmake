@@ -187,6 +187,7 @@ file(COPY ${niral_utilities_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/
 file(COPY ${BRAINSTools_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/BRAINSTools)
 file(COPY ${ResampleDTIlogEuclidean_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ResampleDTIlogEuclidean)
 file(COPY ${MriWatcher_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher)
+file(COPY ${ITKTransformTools_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ITKTransformTools)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Stylesheet/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/Stylesheet)
 
 set(DTI-RegPath ${CMAKE_INSTALL_PREFIX}/bin/DTI-Reg/bin/DTI-Reg)
@@ -200,6 +201,7 @@ set(ImageMathPath  ${CMAKE_INSTALL_PREFIX}/bin/niral_utilities/bin/ImageMath)
 set(BRAINSFitPath  ${CMAKE_INSTALL_PREFIX}/bin/BRAINSTools/bin/BRAINSFit)
 set(ResampleDTIlogEuclideanPath  ${CMAKE_INSTALL_PREFIX}/bin/ResampleDTIlogEuclidean/bin/ResampleDTIlogEuclidean)
 set(MriWatcherPath  ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher/bin/MriWatcher)
+set(ITKTransformToolsPath  ${CMAKE_INSTALL_PREFIX}/bin/ITKTransformTools/bin/ITKTransformTools)
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_INSTALL_PREFIX}/bin/DTIAtlasBuilderSoftConfig.txt)
 
