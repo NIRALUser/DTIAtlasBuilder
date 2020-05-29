@@ -69,6 +69,25 @@ bool CaseHierarchyModel::checkNodename(QString name){
 		return 0;
 	}
 }
+
+QStringList CaseHierarchyModel::getRootComponents(){
+	QStringList ql;
+	std::string rootname=getRoot()->text().toStdString();
+	std::string rootnodetype=m_CaseHierarchy["build"][rootname]["type"];
+	if(QString(rootnodetype.c_str())==QString("end_node")){
+		std::vector<std::string> comps=m_CaseHierarchy["build"][rootname]["datasetfiles"];
+		foreach(const std::string& s, comps ){
+			ql.append(QString(s.c_str()));
+		}
+	}else{
+		std::vector<std::string> comps=m_CaseHierarchy["build"][rootname]["components"];
+		foreach(const std::string& s, comps){
+			ql.append(QString(s.c_str()));
+		}
+	}
+	return ql;
+}
+
 bool CaseHierarchyModel::checkCaseExists(QString name){
 	std::string tmp=m_CaseHierarchy["build"][name.toStdString()]["type"];
 	QString nodeType=QString(tmp.c_str());

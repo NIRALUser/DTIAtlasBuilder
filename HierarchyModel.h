@@ -48,6 +48,7 @@ public:
 	json getHierarchy(){return m_CaseHierarchy;}; // hierarchy 
 
 	QStringList getFileList(QString node); // get the list of files of a node
+	QStringList getRootComponents(); // get component list
 	QStandardItem* getRoot(){return m_rootNode;};
 	void setCurrentTag(QModelIndex i);  
 	QString getCurrentTag(){return m_currentTag;};

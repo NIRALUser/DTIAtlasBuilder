@@ -150,6 +150,9 @@ class GUI : public QMainWindow, public Ui::MainWindow
     void LoadParametersSlot();
     void SaveParametersSlot();
 
+/*Project*/
+    void GenerateProjectDirectorySlot();
+
 /*SOFT CONFIG*/
     void LoadConfigSlot();
     void SaveConfig();
@@ -177,8 +180,11 @@ class GUI : public QMainWindow, public Ui::MainWindow
     void GridProcesscheckBoxHasChanged(int);
     void OutputFolderLineEditHasChanged(QString);
 
+
+
 /*MAIN FUNCT*/
     int Compute();
+    int GenerateProjectDirectoryOnly();
     void ScriptQProcessDone(int);
     void KillScriptQProcess();
     void UpdateScriptRunningGUIDisplay();
