@@ -109,7 +109,7 @@ void ScriptWriter::UtilitiesScriptFromTemplate(std::string filename)
     ss << f.rdbuf();
     Script=ss.str();
   }
-  m_Script_Main= Script;
+  m_Script_Utilities= Script;
 }
 
 
@@ -132,6 +132,12 @@ std::string ScriptWriter::getScript_Main()
 {
   return m_Script_Main;
 }
+
+std::string ScriptWriter::getScript_Utilities()
+{
+  return m_Script_Utilities;
+}
+
 
   /////////////////////////////////////////
  //           CHECK DATASET             //

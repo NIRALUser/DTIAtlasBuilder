@@ -51,6 +51,7 @@ class ScriptWriter
     std::string getScript_Preprocess();
     std::string getScript_AtlasBuilding();
     std::string getScript_Main();
+    std::string getScript_Utilities();
 
 /*CHECK DATASET*/
     int setCroppingSize( bool SafetyMargin ); // returns 0 if no cropping , 1 if cropping needed
@@ -126,7 +127,8 @@ class ScriptWriter
 /* SCRIPTS */
     std::string m_Script_Preprocess; //contains the whole Script for Pre processing
     std::string m_Script_AtlasBuilding; //contains the whole Script for Atlas Building
-    std::string m_Script_Main;//contains the whole Main Scrit
+    std::string m_Script_Main;//contains the whole Main Script
+    std::string m_Script_Utilities;//contains utilities script
 };
 #endif
 

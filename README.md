@@ -54,7 +54,7 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
-#### [v1.6.1]() 
+#### [v1.6.1-beta1](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.1-beta1) (06/01/2020)
 - New action in file menu added : Open Project Directory, which loads all the parameters and hierarchy from an existing project directory
 - New action in tool menu added : Generate Project Directory, which generates all the necessary files for the project and doesn't execute the script.
 - Generation of deformation fields track file for the concatenation by ITKTransformTools

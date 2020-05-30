@@ -3766,6 +3766,7 @@ int GUI::LaunchScriptWriter()
   GenerateScriptFile( "Preprocess", m_scriptwriter->getScript_Preprocess() );
   GenerateScriptFile( "AtlasBuilding", m_scriptwriter->getScript_AtlasBuilding() );
   GenerateScriptFile( "Main", m_scriptwriter->getScript_Main() );
+  GenerateScriptFile( "Utilities", m_scriptwriter->getScript_Utilities() );
 
   if( GridProcesscheckBox->isChecked() )
   {
