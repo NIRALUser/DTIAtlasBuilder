@@ -223,6 +223,16 @@ def main(args):
         raise Exception("Error occurred in copying final atlas directory : " +str(e))
 
     print("Final atlas copied into %s "% dst)
+
+
+    ### Concatenate the displacement fields
+    print("\nConcatenating deformation fields")
+    try:
+        DTIAtlasBuilder_Utilities.ITKTransformTools_Concatenate(config,deformSequence)
+
+    except Exception as e:
+        raise Exception("Error occurred in concatenating deformation fields : " + str(e))
+
     # Display execution time
     time2=time.time()
     timeTot=time2-time1
