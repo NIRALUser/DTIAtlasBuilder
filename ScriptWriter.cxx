@@ -61,6 +61,7 @@ void ScriptWriter::WriteScriptFromTemplate(QStringList casePaths)
   PreprocessFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Preprocess.py");
   AtlasBuildingFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_AtlasBuilding.py");
   MainScriptFromTemplate(m_ExecutableDir +"/Script/DTIAtlasBuilder_Main.py");
+  UtilitiesScriptFromTemplate(m_ExecutableDir + "/Script/DTIAtlasBuilder_Utilities.py");
 }
 
 void ScriptWriter::PreprocessFromTemplate(std::string filename)
@@ -98,6 +99,19 @@ void ScriptWriter::MainScriptFromTemplate(std::string filename)
   }
   m_Script_Main= Script;
 }
+
+void ScriptWriter::UtilitiesScriptFromTemplate(std::string filename)
+{
+  std::string Script;
+  std::ifstream f(filename);
+  if(f){
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    Script=ss.str();
+  }
+  m_Script_Main= Script;
+}
+
 
 
   /////////////////////////////////////////

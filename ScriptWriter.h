@@ -44,6 +44,7 @@ class ScriptWriter
     void PreprocessFromTemplate(std::string);
     void AtlasBuildingFromTemplate(std::string);
     void MainScriptFromTemplate(std::string);
+    void UtilitiesScriptFromTemplate(std::string);
 
 /*SCRIPT ACCESSORS*/
     void setExecutableDir(std::string);

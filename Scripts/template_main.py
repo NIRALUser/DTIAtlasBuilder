@@ -7,6 +7,7 @@ import argparse
 import csv
 import DTIAtlasBuilder_Preprocess
 import DTIAtlasBuilder_AtlasBuilding
+import DTIAtlasBuilder_Utilities
 import shutil
 
 ### load configutation json
@@ -47,7 +48,7 @@ def furnish_deformation_track(seq,project_path): #input deformSequence
         compseq=d.split('/')
         entry=[]
         for idx,c in enumerate(compseq[0:-1]):
-            fpath=c + "/5_Final_Atlas/FinalDeformationFields/" + compseq[idx+1] + "_GlobalDisplacementField.nrrd"
+            fpath="atlases/" + c + "/5_Final_Atlas/FinalDeformationFields/" + compseq[idx+1] + "_GlobalDisplacementField.nrrd"
             fpath=os.path.join(project_path,fpath)
             entry.append(fpath)
         tmp['filelist']=entry
@@ -245,6 +246,7 @@ if __name__=="__main__":
     except Exception as e:
         print(str(e))
         sys.exit(1)
+
 
 
 

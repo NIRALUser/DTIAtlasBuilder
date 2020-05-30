@@ -2,7 +2,7 @@
 
 # DTIAtlasBuilder
 
-Current stable release: [**1.5**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.0) (11/12/2018)
+Current stable release: [**1.6.0**](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.0) (11/12/2018)
 
 ## What is it?
 
@@ -54,18 +54,29 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
-#### [v1.6.0]() (05/28/2020)
+#### [v1.6.1]() 
+- New action in file menu added : Open Project Directory, which loads all the parameters and hierarchy from an existing project directory
+- New action in tool menu added : Generate Project Directory, which generates all the necessary files for the project and doesn't execute the script.
+- Generation of deformation fields track file for the concatenation by ITKTransformTools
+- Concatenation of deformation fields from hierarchical atlas structure.
+- Todos 
+	- Nifti to Nrrd conversion 
+
+
+#### [v1.6.0](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.0) (05/28/2020)
 - Hierarchical atlas build has been implemented.
 - Treeview implemented for GUI users to generate the hierarchy.
 - Deformation field track file is generated for the concatenation over multiple level atlas build.
 - MriWatcher can view the final atlases for QC.
 - DTIAtlasBuilderParameters.txt now has version 4, where iteration over final resampling is added and dataset csv file field is removed.
 - ITKTransformTools is added to the installation binary directory as a tool for the concatenation of deformation fields 
+- Project directory scaffolding has been changed to 'atlases','final_atlas','common','scripts'
 
-#### [v1.5.2]() (04/20/2020)
+
+#### [v1.5.2](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.2) (04/20/2020)
 - Final Atlas will be copied into 5_Final_Atlas  directory once completed
 
-#### [v1.5.1]() (04/09/2020)
+#### [v1.5.1](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.5.1) (04/09/2020)
 - Superbuild pattern renewed 
 - Scripts are now extracted into independent python codes. Hard coded scripts are no more to be used.
 - JSON incorporated

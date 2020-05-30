@@ -177,7 +177,7 @@ endif()
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/template_main.py ${CMAKE_INSTALL_PREFIX}/bin/Script/DTIAtlasBuilder_Main.py)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/template_preprocess.py ${CMAKE_INSTALL_PREFIX}/bin/Script/DTIAtlasBuilder_Preprocess.py)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/template_atlasbuilding.py ${CMAKE_INSTALL_PREFIX}/bin/Script/DTIAtlasBuilder_AtlasBuilding.py)
-
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/template_utilities.py ${CMAKE_INSTALL_PREFIX}/bin/Script/DTIAtlasBuilder_Utilities.py)
 
 file(COPY ${DTI-Reg_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/DTI-Reg)
 file(COPY ${DTIProcess_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/DTIProcess)
