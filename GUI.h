@@ -135,6 +135,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
     void ExitProgram();
 
 /*HIERARCHY*/
+
     void newHierarchyProject();
     void openHierarchyFile();
     void saveHierarchyFile();
@@ -152,6 +153,7 @@ class GUI : public QMainWindow, public Ui::MainWindow
 
 /*Project*/
     void GenerateProjectDirectorySlot();
+    void openProjectDirectorySlot();
 
 /*SOFT CONFIG*/
     void LoadConfigSlot();

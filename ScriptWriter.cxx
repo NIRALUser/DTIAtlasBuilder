@@ -6,6 +6,7 @@
 #include <fstream>
 #include <math.h> // for the absolute value
 
+
 /*itk classes*/
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -31,22 +32,24 @@ ScriptWriter::ScriptWriter()
 }
 
 
-void ScriptWriter::WriteScriptFromTemplate(std::string templateName)
+void ScriptWriter::WriteScriptFromTemplate(QStringList casePaths)
 {
   std::cout<<"| Write script configuration file"<<std::endl;
   SaveScriptConfiguration();
   std::cout<<"| Script file written"<<std::endl;
   std::cout<<"|"<<std::endl;
   std::cout<<"|"<<std::endl; // command line display
-  std::cout<<"| Number of Cases: "<<m_CasesPath.size()<<std::endl; // command line display
-  std::cout<<"| Output Directory : "<<m_OutputPath<<"/DTIAtlas"<<std::endl; // command line display
+
+
+  std::cout<<"| Number of Cases: "<<casePaths.size()<<std::endl; // command line display
+  std::cout<<"| Output Directory : "<<m_OutputPath<<"/common"<<std::endl; // command line display
   if( m_useGridProcess )
   {
     std::cout<<"| Using grid processing"<<std::endl; // command line display
   }
   if(m_RegType==1)
   {
-    std::cout<<"| Using Case 1 (" << m_CasesIDs[0] << ") as reference in the first Registration Loop"<<std::endl; // command line display
+    std::cout<<"| Using Case 1 (" << casePaths[0].toStdString() << ") as reference in the first Registration Loop"<<std::endl; // command line display
   }
   else
   {
@@ -195,14 +198,19 @@ int ScriptWriter::setCroppingSize( bool SafetyMargin ) // returns 0 if no croppi
   else return 0;
 }
 
-int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
+int ScriptWriter::CheckVoxelSize(QStringList casePaths) // returns 0 if voxel size OK , otherwise 1
 {  
 /////////itk definitions
   typedef itk::Image < double , 4 > ImageType; //itk type for image
   typedef itk::ImageFileReader <ImageType> ReaderType; //itk reader class to open an image
 
   ReaderType::Pointer reader=ReaderType::New();
-  reader->SetFileName( m_CasesPath[0] ); //Label is a path => open the image
+  try{
+    reader->SetFileName( casePaths[0].toStdString() ); //Label is a path => open the image
+  }catch(const std::exception &e){
+    std::cout << "reader->SetFilename exception" << std::endl;
+  }
+  
   reader->UpdateOutputInformation();
   const ImageType::SpacingType& sp = reader-> GetOutput()->GetSpacing();
   double RefSpacing [3]; // the spacing of the first case is the reference for this computation
@@ -211,9 +219,9 @@ int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
   RefSpacing[2]=sp[2];
 
 //////////Testing all the cases
-  for (unsigned int i=1;i<m_CasesPath.size();i++) // read the headers of all files
+  for (unsigned int i=1;i<casePaths.size();i++) // read the headers of all files
   {
-    reader->SetFileName( m_CasesPath[i] ); //Label is a path => open the image
+    reader->SetFileName( casePaths[i].toStdString() ); //Label is a path => open the image
     reader->UpdateOutputInformation(); // get the informations in the header
     const ImageType::SpacingType& sp = reader-> GetOutput() -> GetSpacing();
 
@@ -224,6 +232,41 @@ int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
 
   return 0;
 }
+
+// int ScriptWriter::CheckVoxelSize() // returns 0 if voxel size OK , otherwise 1
+// {  
+// /////////itk definitions
+//   typedef itk::Image < double , 4 > ImageType; //itk type for image
+//   typedef itk::ImageFileReader <ImageType> ReaderType; //itk reader class to open an image
+
+//   ReaderType::Pointer reader=ReaderType::New();
+//   try{
+//     reader->SetFileName( m_CasesPath[0] ); //Label is a path => open the image
+//   }catch(const std::exception &e){
+//     std::cout << "reader->SetFilename exception" << std::endl;
+//   }
+  
+//   reader->UpdateOutputInformation();
+//   const ImageType::SpacingType& sp = reader-> GetOutput()->GetSpacing();
+//   double RefSpacing [3]; // the spacing of the first case is the reference for this computation
+//   RefSpacing[0]=sp[0];
+//   RefSpacing[1]=sp[1];
+//   RefSpacing[2]=sp[2];
+
+// //////////Testing all the cases
+//   for (unsigned int i=1;i<m_CasesPath.size();i++) // read the headers of all files
+//   {
+//     reader->SetFileName( m_CasesPath[i] ); //Label is a path => open the image
+//     reader->UpdateOutputInformation(); // get the informations in the header
+//     const ImageType::SpacingType& sp = reader-> GetOutput() -> GetSpacing();
+
+//     if( fabs(sp[0]-RefSpacing[0])/RefSpacing[0] > 0.05 ) return 1;
+//     if( fabs(sp[1]-RefSpacing[1])/RefSpacing[1] > 0.05 ) return 1;
+//     if( fabs(sp[2]-RefSpacing[2])/RefSpacing[2] > 0.05 ) return 1;
+//   }
+
+//   return 0;
+// }
 
   /////////////////////////////////////////
  //           SET THE VALUES            //

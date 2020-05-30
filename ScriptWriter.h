@@ -10,6 +10,10 @@
 #include <iostream>
 #include <iomanip>
 
+// QT 
+#include <QString>
+#include <QStringList>
+
 /*json classes*/
 #include <iostream>
 #include "nlohmann/json.hpp"
@@ -36,7 +40,7 @@ class ScriptWriter
     void AtlasBuilding();
     void MainScript();
     // New code with template python code
-    void WriteScriptFromTemplate(std::string);
+    void WriteScriptFromTemplate(QStringList);
     void PreprocessFromTemplate(std::string);
     void AtlasBuildingFromTemplate(std::string);
     void MainScriptFromTemplate(std::string);
@@ -49,7 +53,7 @@ class ScriptWriter
 
 /*CHECK DATASET*/
     int setCroppingSize( bool SafetyMargin ); // returns 0 if no cropping , 1 if cropping needed
-    int CheckVoxelSize(); // returns 0 if voxel size OK , otherwise 1
+    int CheckVoxelSize(QStringList); // returns 0 if voxel size OK , otherwise 1
 
 /*SET THE VALUES*/
     /* Script Configuration */

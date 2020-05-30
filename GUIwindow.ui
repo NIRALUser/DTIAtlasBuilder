@@ -118,14 +118,14 @@
                <item>
                 <widget class="QPushButton" name="openHierarchyButton">
                  <property name="text">
-                  <string>Load Hierarchy File</string>
+                  <string>Load Project File</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QPushButton" name="saveHierarchyButton">
                  <property name="text">
-                  <string>Save Hierarchy File</string>
+                  <string>Save Project File</string>
                  </property>
                 </widget>
                </item>
@@ -1970,6 +1970,7 @@ paths configured.</string>
     </property>
     <addaction name="actionNew_Project"/>
     <addaction name="actionOpen_Project_File"/>
+    <addaction name="actionOpen_Project_Directory"/>
     <addaction name="actionSave_Project_File"/>
     <addaction name="actionLoad_parameters"/>
     <addaction name="actionSave_parameters"/>
@@ -2085,6 +2086,11 @@ paths configured.</string>
   <action name="actionGenerate_Project_Directory">
    <property name="text">
     <string>Generate Project Directory</string>
+   </property>
+  </action>
+  <action name="actionOpen_Project_Directory">
+   <property name="text">
+    <string>Open Project Directory</string>
    </property>
   </action>
  </widget>

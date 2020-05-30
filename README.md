@@ -55,9 +55,11 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 ## Change Log:
 
 #### [v1.6.0]() (05/28/2020)
-- Hierarchical atlas build has been implemented
+- Hierarchical atlas build has been implemented.
 - Treeview implemented for GUI users to generate the hierarchy.
 - Deformation field track file is generated for the concatenation over multiple level atlas build.
+- MriWatcher can view the final atlases for QC.
+- DTIAtlasBuilderParameters.txt now has version 4, where iteration over final resampling is added and dataset csv file field is removed.
 - ITKTransformTools is added to the installation binary directory as a tool for the concatenation of deformation fields 
 
 #### [v1.5.2]() (04/20/2020)

@@ -88,6 +88,20 @@ QStringList CaseHierarchyModel::getRootComponents(){
 	return ql;
 }
 
+QStringList CaseHierarchyModel::getAllCasePaths(){
+	QStringList ql;
+	foreach(const json &obj, m_CaseHierarchy["build"]){
+		std::string t=obj["type"];
+		if(QString("end_node")==QString(t.c_str())){
+			std::vector<std::string> fl=obj["datasetfiles"];
+			foreach(const std::string& s, fl){
+				ql.append(QString(s.c_str()));
+			}
+		}
+	}
+	return ql;
+}
+
 bool CaseHierarchyModel::checkCaseExists(QString name){
 	std::string tmp=m_CaseHierarchy["build"][name.toStdString()]["type"];
 	QString nodeType=QString(tmp.c_str());

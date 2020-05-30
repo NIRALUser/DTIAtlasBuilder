@@ -49,6 +49,7 @@ public:
 
 	QStringList getFileList(QString node); // get the list of files of a node
 	QStringList getRootComponents(); // get component list
+	QStringList getAllCasePaths(); // get all actual case files list (for sanity check)
 	QStandardItem* getRoot(){return m_rootNode;};
 	void setCurrentTag(QModelIndex i);  
 	QString getCurrentTag(){return m_currentTag;};

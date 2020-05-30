@@ -198,6 +198,7 @@ GUI::GUI(std::string ParamFile, std::string ConfigFile, std::string CSVFile, boo
     QObject::connect(actionNew_Project, SIGNAL(triggered()), this, SLOT(newHierarchyProject()));
     QObject::connect(actionOpen_Project_File, SIGNAL(triggered()), this, SLOT(openHierarchyFile()));
     QObject::connect(actionSave_Project_File, SIGNAL(triggered()), this, SLOT(saveHierarchyFile()));
+    QObject::connect(actionOpen_Project_Directory,SIGNAL(triggered()),this,SLOT(openProjectDirectorySlot()));
 
     QObject::connect(actionLoad_parameters, SIGNAL(triggered()), this, SLOT(LoadParametersSlot()));
     QObject::connect(actionSave_parameters, SIGNAL(triggered()), this, SLOT(SaveParametersSlot()));
@@ -744,8 +745,44 @@ void GUI::openHierarchyFile() /*SLOT*/
       m_HierarchyModel->clear();
       QMessageBox::warning(this,"Failed to load","Failed to load hierarchy file.");
     }
-
     //std::cout << m_HierarchyModel->toString().toStdString() << std::endl;
+  }
+}
+
+void GUI::openProjectDirectorySlot() // 
+{
+  QString CurrentOutputFolder = "";
+  if( !OutputFolderLineEdit->text().isEmpty() )
+  {
+    CurrentOutputFolder = OutputFolderLineEdit->text();
+  }
+
+  QString OutputBrowse = QFileDialog::getExistingDirectory( this, "Find Directory", CurrentOutputFolder );
+  if(!OutputBrowse.isEmpty())
+  {
+    OutputFolderLineEdit->setText(OutputBrowse);
+    //Load hiearchical build file
+    try{
+      QString filename = OutputBrowse + "/common/h-build.json";
+      m_HierarchyModel->loadFile(filename);
+      QModelIndex idx=m_HierarchyModel->getCurrentItem()->index();
+      enableTreeViewWidget(true);
+      caseHierarchyTreeView->clicked(idx);
+      caseHierarchyTreeView->selectionModel()->select(QItemSelection(idx,idx),QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+      caseHierarchyTreeView->setExpanded(m_HierarchyModel->getCurrentItem()->index(),1);
+      SelectCasesLabel->setText(filename);
+    }catch(const std::exception &e){
+      m_HierarchyModel->clear();
+      QMessageBox::warning(this,"Failed to load","Failed to load hierarchy file.");
+    }
+    //Load parameter file
+    try{
+      QString paramfilename=OutputBrowse+"/common/DTIAtlasBuilderParameters.txt";
+      LoadParameters(paramfilename,false);
+    }catch(const std::exception &e){
+      QMessageBox::warning(this,"Failed to load","Failed to load parameter file.");
+    }
+
   }
 }
 
@@ -1576,7 +1613,7 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
 
     QTextStream stream( &file );
 
-    stream << "DTIAtlasBuilderParameterFileVersion" << "=3" << endl;
+    stream << "DTIAtlasBuilderParameterFileVersion" << "=4" << endl;
     stream << "Output Folder=" << OutputFolderLineEdit->text() << endl;
     stream << "Atlas Template=" << TemplateLineEdit->text() << endl;
     stream << "Scalar Measurement=" << ScalarMeasurementComboBox->currentText() << endl;
@@ -1633,27 +1670,27 @@ void GUI::SaveParameters(QString ParamBrowseName,QString CSVFileName)
 
     stream << "NbThreads=" << NbThreadsSpinBox->value() << endl;
 
-    stream << "CSV Dataset File=" << CSVFileName << endl;
-
+    //stream << "CSV Dataset File=" << CSVFileName << endl;
+    stream << "nbLoopsDTIReg=" << NbLoopsDTIRegSpinBox->value() <<endl;
     std::cout<<"DONE"<<std::endl; // command line display
 
-    QFile filecsv(CSVFileName);
-    if ( filecsv.open( QFile::WriteOnly ) )
-    {
-      std::cout<<"| Generating Dataset csv file..."; // command line display
+    // QFile filecsv(CSVFileName);
+    // if ( filecsv.open( QFile::WriteOnly ) )
+    // {
+    //   std::cout<<"| Generating Dataset csv file..."; // command line display
 
-      QTextStream streamcsv( &filecsv );
-      streamcsv << QString("id") << m_CSVseparator << QString("Original DTI Image") << endl;
-      for(int i=0; i < CaseListWidget->count() ;i++) streamcsv << i+1 << m_CSVseparator << CaseListWidget->item(i)->text().remove(0, CaseListWidget->item(i)->text().split(":").at(0).size()+2 ) << endl;
-      std::cout<<"DONE"<<std::endl; // command line display
+    //   QTextStream streamcsv( &filecsv );
+    //   streamcsv << QString("id") << m_CSVseparator << QString("Original DTI Image") << endl;
+    //   for(int i=0; i < CaseListWidget->count() ;i++) streamcsv << i+1 << m_CSVseparator << CaseListWidget->item(i)->text().remove(0, CaseListWidget->item(i)->text().split(":").at(0).size()+2 ) << endl;
+    //   std::cout<<"DONE"<<std::endl; // command line display
     
-      //SelectCasesLabel->setText( QString("Current CSV file : ") + CSVFileName );
-    }
-    else 
-    {
-      std::cout<<"FAILED"<<std::endl; // command line display
-      qDebug( "Could not create csv file");
-    }
+    //   //SelectCasesLabel->setText( QString("Current CSV file : ") + CSVFileName );
+    // }
+    // else 
+    // {
+    //   std::cout<<"FAILED"<<std::endl; // command line display
+    //   qDebug( "Could not create csv file");
+    // }
 
   }
   else qDebug( "Could not create parameter file");
@@ -2111,28 +2148,35 @@ int GUI::LoadParameters(QString paramFile, bool DiscardParametersCSV) // Discard
       NbThreadsSpinBox->setValue( list.at(1).toInt() );
     }
 
+    if (ParamFileVersion >=4){
+      line = stream.readLine();
+      list = line.split("=");
+      if( LoadParametersReturnTrueIfCorrupted(list.at(0),"nbLoopsDTIReg") ) return -1;
+      NbLoopsDTIRegSpinBox->setValue( list.at(1).toInt() ); 
+    }
+
 
     std::cout<<"DONE"<<std::endl; // command line display
 
 /* Opening CSV File */
-    if( ! DiscardParametersCSV )
-    {
-      line = stream.readLine();
-      list = line.split("=");
-      if(!list.at(0).contains(QString("CSV Dataset File")))
-      {
-        if(!m_noGUI && !m_Testing) 
-        {
-          QMessageBox::critical(this, "Corrupt File", "This parameter file is corrupted\nIt may have been modified manually.\nPlease save it again.");
-          std::cout<<"FAILED"<<std::endl; // command line display
-        }
-        else std::cout<<"FAILED"<<std::endl<<"| This parameter file is corrupted. It may have been modified manually. Please save it again."<<std::endl;
-        return -1;
-      }
-      QString CSVpath = list.at(1);
-      // CaseListWidget->clear();
-      ReadCSV(CSVpath);
-    } // if( ! DiscardParametersCSV )
+    // if( ! DiscardParametersCSV )
+    // {
+    //   line = stream.readLine();
+    //   list = line.split("=");
+    //   if(!list.at(0).contains(QString("CSV Dataset File")))
+    //   {
+    //     if(!m_noGUI && !m_Testing) 
+    //     {
+    //       QMessageBox::critical(this, "Corrupt File", "This parameter file is corrupted\nIt may have been modified manually.\nPlease save it again.");
+    //       std::cout<<"FAILED"<<std::endl; // command line display
+    //     }
+    //     else std::cout<<"FAILED"<<std::endl<<"| This parameter file is corrupted. It may have been modified manually. Please save it again."<<std::endl;
+    //     return -1;
+    //   }
+    //   QString CSVpath = list.at(1);
+    //   // CaseListWidget->clear();
+    //   ReadCSV(CSVpath);
+    // } // if( ! DiscardParametersCSV )
 
     m_ParamSaved=1;
   } 
@@ -2179,13 +2223,13 @@ void GUI::GenerateXMLForGA()
     stream <<"      <NumFiles val=\"" << IntOrDoubleToStr<int>(m_CasesPath.size()).c_str() << "\" />"<< endl;
     stream <<"      <Weight val=\"1\" />"<< endl;
     stream <<"    </InputImageFormatString>"<< endl;
-    for (unsigned int i=0;i<m_CasesPath.size();i++)
-    {
-      stream <<"    <WeightedImage>"<< endl;
-      stream <<"      <Filename val=\"" << m_OutputPath << "/final_atlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "/" << itksys::SystemTools::GetFilenameWithoutExtension( m_CasesPath[i] ).c_str() << "_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "_Final" << ScalarMeasurementComboBox->currentText() << ".nrrd\" />"<< endl;
-      stream <<"      <ItkTransform val=\"1\" />"<< endl;
-      stream <<"    </WeightedImage>"<< endl;
-    }
+    // for (unsigned int i=0;i<m_CasesPath.size();i++)
+    // {
+    //   stream <<"    <WeightedImage>"<< endl;
+    //   stream <<"      <Filename val=\"" << m_OutputPath << "/final_atlas/1_Affine_Registration/Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "/" << itksys::SystemTools::GetFilenameWithoutExtension( m_CasesPath[i] ).c_str() << "_Loop" << IntOrDoubleToStr<int>(NbLoopsSpinBox->value()).c_str() << "_Final" << ScalarMeasurementComboBox->currentText() << ".nrrd\" />"<< endl;
+    //   stream <<"      <ItkTransform val=\"1\" />"<< endl;
+    //   stream <<"    </WeightedImage>"<< endl;
+    // }
     stream <<"  </WeightedImageSet>"<< endl;
 
 /* Scale Levels */
@@ -3169,12 +3213,14 @@ bool GUI::CheckCase( std::string CasePath, bool NoErrorPopup ) // called when hi
   return true;
 
 } // CheckCase
-
 bool GUI::CheckAllCases()
 {
-  for(int i=0; i < CaseListWidget->count() ;i++) 
+  QStringList ql=m_HierarchyModel->getAllCasePaths();
+
+  foreach(const QString &s, ql) 
   {
-    std::string CurrentCase = CaseListWidget->item(i)->text().toStdString().substr( CaseListWidget->item(i)->text().split(":").at(0).size()+2 );
+    //std::string CurrentCase = CaseListWidget->item(i)->text().toStdString().substr( CaseListWidget->item(i)->text().split(":").at(0).size()+2 );
+    std::string CurrentCase= s.toStdString();
     // substr: keep only what is after "id: " (.size() returns the nb of digits of the id and +2 is for ": " after the id number)
 
     if( ! CheckCase( CurrentCase, false ) ) // returns false if bad file
@@ -3184,10 +3230,29 @@ bool GUI::CheckAllCases()
     m_CasesPath.push_back( CurrentCase );
   }
 
-  m_scriptwriter->setCasesPath(m_CasesPath); // m_CasesPath is a vector
+  //m_scriptwriter->setCasesPath(m_CasesPath); // m_CasesPath is a vector
 
   return true;
 }
+
+// bool GUI::CheckAllCases()
+// {
+//   for(int i=0; i < CaseListWidget->count() ;i++) 
+//   {
+//     std::string CurrentCase = CaseListWidget->item(i)->text().toStdString().substr( CaseListWidget->item(i)->text().split(":").at(0).size()+2 );
+//     // substr: keep only what is after "id: " (.size() returns the nb of digits of the id and +2 is for ": " after the id number)
+
+//     if( ! CheckCase( CurrentCase, false ) ) // returns false if bad file
+//     {
+//       return false;
+//     }
+//     m_CasesPath.push_back( CurrentCase );
+//   }
+
+//   m_scriptwriter->setCasesPath(m_CasesPath); // m_CasesPath is a vector
+
+//   return true;
+// }
 
 bool GUI::CheckOutput( bool& FirstComputeInOutputFolder )
 {
@@ -3527,17 +3592,25 @@ bool GUI::FindPython()
 
 bool GUI::CheckVoxelSizeAndCropping()
 {
-  if(m_scriptwriter->CheckVoxelSize()==1) 
-  {
-    if(!m_noGUI && !m_Testing) QMessageBox::critical(this, "Different Voxel Sizes", "Error: The voxel size of the images\nare not the same,\nplease change dataset"); // returns 0 if voxel size OK , otherwise 1
-    else std::cout<<"| Error: The voxel size of the images are not the same, please change dataset" << std::endl;
+  QStringList casePaths=m_HierarchyModel->getAllCasePaths();
+
+  try{
+
+      if(m_scriptwriter->CheckVoxelSize(casePaths)==1) 
+      {
+        if(!m_noGUI && !m_Testing) QMessageBox::critical(this, "Different Voxel Sizes", "Error: The voxel size of the images\nare not the same,\nplease change dataset"); // returns 0 if voxel size OK , otherwise 1
+        else std::cout<<"| Error: The voxel size of the images are not the same, please change dataset" << std::endl;
+        return false;
+      }
+      m_NeedToBeCropped=m_scriptwriter->setCroppingSize( SafetyMargincheckBox->isChecked() ); // returns 0 if no cropping , 1 if cropping needed
+      if( m_NeedToBeCropped==1 && !SafetyMargincheckBox->isChecked() )
+      {
+        if(!m_noGUI && !m_Testing) QMessageBox::warning(this, "Cropping", "Warning: The images do not have the same size, \nso some of them will be cropped");
+        else std::cout<<"| Warning: The images do not have the same size, so some of them will be cropped" << std::endl;
+      }
+  }catch(const std::exception &e){
+    std::cout << "Exception occurred in GUI::CheckVoxelSizeAndCropping" << std::endl;
     return false;
-  }
-  m_NeedToBeCropped=m_scriptwriter->setCroppingSize( SafetyMargincheckBox->isChecked() ); // returns 0 if no cropping , 1 if cropping needed
-  if( m_NeedToBeCropped==1 && !SafetyMargincheckBox->isChecked() )
-  {
-    if(!m_noGUI && !m_Testing) QMessageBox::warning(this, "Cropping", "Warning: The images do not have the same size, \nso some of them will be cropped");
-    else std::cout<<"| Warning: The images do not have the same size, so some of them will be cropped" << std::endl;
   }
 
   return true;
@@ -3666,7 +3739,14 @@ int GUI::LaunchScriptWriter()
     return -1;
   }
 
-  if( ! CheckVoxelSizeAndCropping() )
+  bool chk;
+  try{
+    chk=CheckVoxelSizeAndCropping();
+  }catch(const std::exception &e){
+    std::cout << "Exception while CheckVoxelSizeAndCropping" << std::endl;
+  }
+  
+  if( ! chk )
   {
     return -1;
   }
@@ -3676,11 +3756,11 @@ int GUI::LaunchScriptWriter()
 /* Launch writing */
   //m_scriptwriter->WriteScript(); // Master Function : get pid to send a signal to Qt process to move progress bar
   m_scriptwriter->setHierarchy(m_HierarchyModel->getHierarchy());
-  m_scriptwriter->WriteScriptFromTemplate("New"); //New Writer from template python source file
+  m_scriptwriter->WriteScriptFromTemplate(m_HierarchyModel->getAllCasePaths()); //New Writer from template python source file
 
   GenerateXMLForGA();
 
-  SaveCSVResults(m_NeedToBeCropped,NbLoopsSpinBox->value());
+  //SaveCSVResults(m_NeedToBeCropped,NbLoopsSpinBox->value());
   SaveParameters(m_OutputPath + QString("/common/DTIAtlasBuilderParameters.txt"), m_OutputPath + QString("/common/DTIAtlasBuilderDataset.csv"));
 
   GenerateScriptFile( "Preprocess", m_scriptwriter->getScript_Preprocess() );
