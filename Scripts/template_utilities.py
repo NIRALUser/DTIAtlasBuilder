@@ -48,7 +48,7 @@ def ITKTransformTools_Concatenate(config,payload): ## payload should be deformat
             tmpCommand=command + outFilename +" -r " + refDTI + " "
             inpListStr=""
             fl=map(str,elm["filelist"])
-            fl.reverse()
+            #fl.reverse()
             for fn in fl:
                 inpListStr+= fn + " displacement "
             tmpCommand+=inpListStr
