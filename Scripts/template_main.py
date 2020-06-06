@@ -9,6 +9,7 @@ import DTIAtlasBuilder_Preprocess
 import DTIAtlasBuilder_AtlasBuilding
 import DTIAtlasBuilder_Utilities
 import shutil
+import threading
 
 ### load configutation json
 
@@ -123,6 +124,8 @@ def furnish_sequence(hb,seq):
         conf["m_OutputPath"]=s['project_path']
         conf["m_CasesPath"]=s['dataset_files']
         conf["m_CasesIDs"]=s['dataset_ids']
+        conf["m_NodeInfo"]=hb["build"][s['name']]
+        conf["m_NodeName"]=s["name"]
         bs.append(conf)
 
     return bs
@@ -143,6 +146,18 @@ def generate_directories(project_path,sequence): ## from build sequence, generat
           os.mkdir(apath)
     print("Initial directories are generated")
 
+
+def dependency_satisfied(hb,node_name,completed_atlases):
+    if hb["build"][node_name]["type"]=="end_node": 
+        return True
+    else:
+        comps=hb["build"][node_name]["components"]
+        for c in comps:
+            if c not in completed_atlases: return False 
+        return True
+
+
+
 def main(args):
     projectPath=os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../"))
     scriptPath=os.path.join(projectPath,"scripts")
@@ -154,6 +169,7 @@ def main(args):
     buildSequence=[]
     hbuild={}
     deformSequence=[]
+    numThreads=1
     if args.buildsequence is None:
         hbuild={}
         with open(hbuildPath,'r') as f:
@@ -161,7 +177,7 @@ def main(args):
         config={}
         with open(configPath,'r') as f:
             config=json.load(f)
-
+        numThreads=max(1,int(config["m_NbThreadsString"]))
         hbuild["config"]=config
         hbuild['config']['m_GreedyAtlasParametersTemplatePath']=str(os.path.join(commonPath,'GreedyAtlasParameters.xml'))
         initSequence=parse_hbuild(hbuild,root_path=projectPath,root_node=args.node)
@@ -178,9 +194,12 @@ def main(args):
     else:
         with open(args.buildsequence,'r') as f:
             buildSequence=json.load(f)
+        numThreads=max(int(buildSequence[0]["m_NbThreadsString"]),1)
 
     with open(os.path.join(commonPath,'initial_sequence.json'),'w') as f:
         json.dump(initSequence,f,indent=4)
+
+
 
     ## generate deformation field map
     deformInitSequence=generate_deformation_track(initSequence,node=hbuild['project']['target_node'])
@@ -189,26 +208,53 @@ def main(args):
     with open(os.path.join(commonPath,'deformation_track.json'),'w') as f:
         json.dump(deformSequence,f,indent=4)
 
+
+
+
+
     ### atlas build begins (to be multiprocessed)
     print("\nThe current date and time are:")
     print( time.strftime('%x %X %Z') )
     print("\n=============== Main Script ================")
     time1=time.time()
-    for cfg in buildSequence:
+
+    ## threading
+    completedAtlases=[] #entry should be the node name 
+    runningAtlases=[] # should have length less or equal than numTheads, entry is the node name
+
+
+    def buildAtlas(conf,rt,ct): # rt : list of running threads, ct : list of completed threads, nt : number of thread (numThreads)
+        prjName=conf["m_NodeName"]
+        rt.append(prjName)
         try:
-            DTIAtlasBuilder_Preprocess.run(cfg)
+            DTIAtlasBuilder_Preprocess.run(conf)
         except Exception as e:
             raise Exception("Error occurred in DTIAtlasBuilder_Preprocess : " + str(e))
-            
 
         try:
-            DTIAtlasBuilder_AtlasBuilding.run(cfg)
+            DTIAtlasBuilder_AtlasBuilding.run(conf)
         except Exception as e:
-            raise Exception("Error occurred in DTIAtlasBuilding_DTIAtlasBuilder : " + str(e))
-    ### atlas build ends
+            raise Exception("Error occurred in DTIAtlasBuilding_DTIAtlasBuilder : " + str(e))    
+        rt.remove(prjName)
+        ct.append(prjName)
+
+    numNodes=len(buildSequence)
+    while len(completedAtlases) < numNodes:
+        if len(runningAtlases) < numThreads and len(buildSequence)>0:
+            if dependency_satisfied(hbuild,buildSequence[0]["m_NodeName"],completedAtlases):
+                cfg=buildSequence.pop(0)
+                threading.Thread(target=buildAtlas,args=(cfg,runningAtlases,completedAtlases)).start()
+
+        # print("Completed : " + str(completedAtlases))
+        # print("Running : " + str(runningAtlases))
+        # print("Pending : " + str([x["m_NodeName"] for x in buildSequence]))
+        time.sleep(1.0)
+
+    # print("Completed : " + str(completedAtlases))
+    # print("Running : " + str(runningAtlases))
+    # print("Pending : " + str([x["m_NodeName"] for x in buildSequence]))
 
     ### copy final atals to 'final_atlas' directory
-
     try:
         if args.node is None:
             src=os.path.join(projectPath,"atlases/"+hbuild['project']['target_node'])
@@ -256,6 +302,7 @@ if __name__=="__main__":
     except Exception as e:
         print(str(e))
         sys.exit(1)
+
 
 
 

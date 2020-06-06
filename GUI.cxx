@@ -1169,6 +1169,7 @@ void GUI::CleanOutputFolder() /*SLOT*/
     std::vector< std::string > PathsToRemove;
     PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/atlases");
     PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/final_atlas");
+    PathsToRemove.push_back(OutputFolderLineEdit->text().toStdString() + "/displacement_fields");
 
     for( unsigned int i = 0 ; i < PathsToRemove.size() ; ++i )
     {
