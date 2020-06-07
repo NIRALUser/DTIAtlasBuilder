@@ -54,13 +54,17 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
+#### [v1.6.3](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.3) (06/08/2020))
+- Parallel build using multithread enabled (Change the number of thread to use in Software configuration tab)
+	- Desirable usage : set the number of thread whose multiple is equal to the number of end-nodes to maximize the parallelism
+	
+
 #### [v1.6.1-beta1](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.1-beta1) (06/01/2020)
 - New action in file menu added : Open Project Directory, which loads all the parameters and hierarchy from an existing project directory
 - New action in tool menu added : Generate Project Directory, which generates all the necessary files for the project and doesn't execute the script.
 - Generation of deformation fields track file for the concatenation by ITKTransformTools
 - Concatenation of deformation fields from hierarchical atlas structure.
-- Todos 
-	- Nifti to Nrrd conversion 
+
 
 
 #### [v1.6.0](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.0) (05/28/2020)
