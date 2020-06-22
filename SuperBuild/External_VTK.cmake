@@ -103,8 +103,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     find_package(Qt4 REQUIRED)
   else()
     set(VTK_QT_ARGS
-        -DVTK_USE_GUISUPPORT:BOOL=OFF
-        -DVTK_USE_QT:BOOL=OFF
+        -DVTK_USE_GUISUPPORT:BOOL=ON
+        -DVTK_USE_QT:BOOL=ON
         )
   endif()
 
