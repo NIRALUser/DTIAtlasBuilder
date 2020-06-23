@@ -54,7 +54,12 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
-#### [v1.6.3](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.3) (06/08/2020))
+#### [v1.6.4](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.4) (06/27/2020)
+- DTIAtlasBuilderResults.csv is now being generates for all the sub atlases
+- DTIAtlasBuilderResults.csv for the concatenated displacement fields is generated in the project root directory with the same name. This file has the original images and first level intermediate files and the concatenated displacement field file path from final atlas to the individual images.
+
+
+#### [v1.6.3](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.3) (06/08/2020)
 - Parallel build using multithread enabled (Change the number of thread to use in Software configuration tab)
 	- Desirable usage : set the number of thread whose multiple is equal to the number of end-nodes to maximize the parallelism
 	
