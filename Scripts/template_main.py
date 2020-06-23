@@ -156,6 +156,51 @@ def dependency_satisfied(hb,node_name,completed_atlases):
             if c not in completed_atlases: return False 
         return True
 
+def generate_results_csv(cfg):
+
+    outpath=os.path.join(cfg["m_OutputPath"],"DTIAtlasBuilderResults.csv")
+    m_OutputPath=cfg["m_OutputPath"]
+    m_ScalarMeasurement=cfg["m_ScalarMeasurement"]
+    m_nbLoops=cfg["m_nbLoops"]
+    m_nbLoopsDTIReg=cfg["m_nbLoopsDTIReg"]
+    m_NeedToBeCropped=cfg["m_NeedToBeCropped"]
+    header=["id", "Original DTI Image"]
+    if m_NeedToBeCropped==1: header + ["Cropped DTI"]
+    tmp=[cfg["m_ScalarMeasurement"]+ " from original",
+        "Affine transform", "Affine Registered DTI", 
+        "Affine Registered "+cfg["m_ScalarMeasurement"],
+        "Diffeomorphic Deformed " + cfg["m_ScalarMeasurement"],
+        "Diffeomorphic Deformation field to Affine space",
+        "Diffeomorphic Deformation field to Affine space",
+        "Diffeomorphic DTI",
+        "Diffeomorphic Deformation field to Original space",
+        "DTI-Reg Final DTI"
+        ]
+    header+=tmp
+    with open(outpath,"w") as f:
+        csvwriter=csv.writer(f,delimiter=',')
+        csvwriter.writerow(header)
+        for idx,case in enumerate(zip(cfg["m_CasesIDs"],cfg["m_CasesPath"])):
+            caseID,casePath = case
+            row=[
+                idx+1,
+                casePath]
+            if m_NeedToBeCropped==1: row+=[m_OutputPath+"/1_Affine_Registration/" + caseID+"_croppedDTI.nrrd"]
+            row+=[
+                m_OutputPath+"/1_Affine_Registration/" + caseID + "_" + m_ScalarMeasurement + ".nrrd",
+                m_OutputPath+"/1_Affine_Registration/Loop" + str(m_nbLoops) + "/" + caseID + "_Loop" + str(m_nbLoops)+"_LinearTrans.txt",
+                m_OutputPath+"/1_Affine_Registration/Loop" + str(m_nbLoops) + "/" + caseID + "_Loop" + str(m_nbLoops)+"_LinearTrans_DTI.nrrd",
+                m_OutputPath+"/1_Affine_Registration/Loop" + str(m_nbLoops) + "/" + caseID + "_Loop" + str(m_nbLoops)+"_Final" + m_ScalarMeasurement +".nrrd",
+                m_OutputPath+"/2_NonLinear_Registration/" + caseID + "_NonLinearTrans_" + m_ScalarMeasurement + ".mhd",
+                m_OutputPath+"/2_NonLinear_Registration/" + caseID + "_HField.mhd" ,
+                m_OutputPath+"/2_NonLinear_Registration/" + caseID + "_InverseHField.mhd" ,
+                m_OutputPath+"/3_Diffeomorphic_Atlas/" + caseID + "_DiffeomorphicDTI.nrrd",
+                m_OutputPath+"/4_Final_Resampling/FinalDeformationFields/" + caseID + "_GlobalDisplacementField.nrrd",
+                m_OutputPath+"/4_Final_Resampling/FinalTensors/" + caseID + "_FinalDeformedDTI.nrrd"
+            ]
+            csvwriter.writerow(row)
+
+
 
 
 def main(args):
@@ -218,6 +263,7 @@ def main(args):
     print("\n=============== Main Script ================")
     time1=time.time()
 
+
     ## threading
     completedAtlases=[] #entry should be the node name 
     runningAtlases=[] # should have length less or equal than numTheads, entry is the node name
@@ -243,6 +289,7 @@ def main(args):
         if len(runningAtlases) < numThreads and len(buildSequence)>0:
             if dependency_satisfied(hbuild,buildSequence[0]["m_NodeName"],completedAtlases):
                 cfg=buildSequence.pop(0)
+                generate_results_csv(cfg)
                 threading.Thread(target=buildAtlas,args=(cfg,runningAtlases,completedAtlases)).start()
 
         # print("Completed : " + str(completedAtlases))
@@ -302,6 +349,7 @@ if __name__=="__main__":
     except Exception as e:
         print(str(e))
         sys.exit(1)
+
 
 
 
