@@ -28,6 +28,12 @@ def isComponent(seq,name):
     else:
         return False 
 
+def find_config_by_nodename(build_sequence,nodename):
+    for cfg in build_sequence:
+        if cfg["m_NodeName"]==nodename:
+            return cfg 
+
+
 def generate_deformation_track(seq,node="target"): #input : initialSequence to generate deformation field tracking information (to concatenate them)
     component=isComponent(seq,node)
     outseq=[]
@@ -41,18 +47,39 @@ def generate_deformation_track(seq,node="target"): #input : initialSequence to g
         return outseq 
     return outseq
     
-def furnish_deformation_track(seq,project_path): #input deformSequence 
+def furnish_deformation_track(seq,project_path,build_sequence): #input deformSequence 
     res=[]
     for d in seq:
         tmp={}
         tmp['id']=d
         compseq=d.split('/')
+        cfg=find_config_by_nodename(build_sequence,compseq[-2])
+        originalDTIId=compseq[-1]
+        originalDTIPath=None
+        for idx,case in enumerate(zip(cfg["m_CasesIDs"],cfg["m_CasesPath"])):
+            caseID,casePath=case 
+            if originalDTIId==caseID: 
+                originalDTIPath=casePath
+                break
+
         entry=[]
         for idx,c in enumerate(compseq[0:-1]):
             fpath="atlases/" + c + "/5_Final_Atlas/FinalDeformationFields/" + compseq[idx+1] + "_GlobalDisplacementField.nrrd"
             fpath=os.path.join(project_path,fpath)
             entry.append(fpath)
         tmp['filelist']=entry
+        tmp['original_dti_path']=originalDTIPath 
+        tmp['original_dti_id']=originalDTIId
+        tmp['scalar_measurement']=cfg["m_ScalarMeasurement"]
+        tmp['nb_loops']=cfg['m_nbLoops']
+        tmp['nb_loops_dtireg']=cfg['m_nbLoopsDTIReg']
+        tmp['project_path']=cfg['m_OutputPath']
+        tmp['need_to_be_cropped']=cfg['m_NeedToBeCropped']
+        outputDir=os.path.join(project_path,"displacement_fields")
+        hpairList=tmp["id"].split("/")
+        outFilename="_".join(hpairList) + "_GlobalDisplacementField_Concatenated.nrrd"
+        outFilename=os.path.join(outputDir,outFilename)
+        tmp['output_path']=outFilename
         res.append(tmp)
     return res 
 
@@ -156,6 +183,55 @@ def dependency_satisfied(hb,node_name,completed_atlases):
             if c not in completed_atlases: return False 
         return True
 
+
+
+def generate_results_csv_from_deformation_track(deformation_track,project_path): # generate final result file with deformation track file
+
+    dt=deformation_track
+    outpath=os.path.join(project_path,"DTIAtlasBuilderResults.csv")
+    
+    m_ScalarMeasurement=dt[0]["scalar_measurement"]
+    m_NeedToBeCropped=dt[0]["need_to_be_cropped"]
+    header=["id", "Original DTI Image"]
+    if m_NeedToBeCropped==1: header + ["Cropped DTI"]
+    tmp=[m_ScalarMeasurement+ " from original",
+        "Affine transform", "Affine Registered DTI", 
+        "Affine Registered "+m_ScalarMeasurement,
+        "Diffeomorphic Deformed " + m_ScalarMeasurement,
+        "Diffeomorphic Deformation field to Affine space",
+        "Diffeomorphic Deformation field to Affine space",
+        "Diffeomorphic DTI",
+        "Diffeomorphic Deformation field to Original space",
+        "DTI-Reg Final DTI"
+        ]
+    header+=tmp
+    with open(outpath,"w") as f:
+        csvwriter=csv.writer(f,delimiter=',')
+        csvwriter.writerow(header)
+        for idx,case in enumerate(dt):
+            caseID,casePath = case["original_dti_id"],case["original_dti_path"]
+            m_OutputPath=case["project_path"]
+            m_nbLoops=case["nb_loops"]
+            m_nbLoopsDTIReg=case["nb_loops_dtireg"]
+            row=[
+                idx+1,
+                casePath]
+            if m_NeedToBeCropped==1: row+=[m_OutputPath+"/1_Affine_Registration/" + caseID+"_croppedDTI.nrrd"]
+            concatenated_displacement_path=case["output_path"]
+            row+=[
+                m_OutputPath+"/1_Affine_Registration/" + caseID + "_" + m_ScalarMeasurement + ".nrrd",
+                m_OutputPath+"/1_Affine_Registration/Loop" + str(m_nbLoops) + "/" + caseID + "_Loop" + str(m_nbLoops)+"_LinearTrans.txt",
+                m_OutputPath+"/1_Affine_Registration/Loop" + str(m_nbLoops) + "/" + caseID + "_Loop" + str(m_nbLoops)+"_LinearTrans_DTI.nrrd",
+                m_OutputPath+"/1_Affine_Registration/Loop" + str(m_nbLoops) + "/" + caseID + "_Loop" + str(m_nbLoops)+"_Final" + m_ScalarMeasurement +".nrrd",
+                m_OutputPath+"/2_NonLinear_Registration/" + caseID + "_NonLinearTrans_" + m_ScalarMeasurement + ".mhd",
+                m_OutputPath+"/2_NonLinear_Registration/" + caseID + "_HField.mhd" ,
+                m_OutputPath+"/2_NonLinear_Registration/" + caseID + "_InverseHField.mhd" ,
+                m_OutputPath+"/3_Diffeomorphic_Atlas/" + caseID + "_DiffeomorphicDTI.nrrd",
+                concatenated_displacement_path,
+                m_OutputPath+"/4_Final_Resampling/FinalTensors/" + caseID + "_FinalDeformedDTI.nrrd"
+            ]
+            csvwriter.writerow(row)
+
 def generate_results_csv(cfg):
 
     outpath=os.path.join(cfg["m_OutputPath"],"DTIAtlasBuilderResults.csv")
@@ -248,7 +324,7 @@ def main(args):
 
     ## generate deformation field map
     deformInitSequence=generate_deformation_track(initSequence,node=hbuild['project']['target_node'])
-    deformSequence=furnish_deformation_track(deformInitSequence,project_path=projectPath)
+    deformSequence=furnish_deformation_track(deformInitSequence,projectPath,buildSequence)
 
     with open(os.path.join(commonPath,'deformation_track.json'),'w') as f:
         json.dump(deformSequence,f,indent=4)
@@ -322,6 +398,7 @@ def main(args):
     print("\nConcatenating deformation fields")
     try:
         DTIAtlasBuilder_Utilities.ITKTransformTools_Concatenate(config,deformSequence)
+        generate_results_csv_from_deformation_track(deformSequence,projectPath)
 
     except Exception as e:
         raise Exception("Error occurred in concatenating deformation fields : " + str(e))
