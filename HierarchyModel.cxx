@@ -159,7 +159,7 @@ void CaseHierarchyModel::removeNode(QStandardItem* itm){
 		QString nn=itm->text();
 		QString pn=parent->text();
 		std::vector<std::string> v;
-		foreach(auto  &str, m_CaseHierarchy["build"][pn.toStdString()]["components"]){
+		foreach(const std::string  &str, m_CaseHierarchy["build"][pn.toStdString()]["components"]){
 		 	std::string s=std::string(str);
 			if(nn!=QString(s.c_str())){
 				//std::cout << "remainingNode " << s << std::endl;

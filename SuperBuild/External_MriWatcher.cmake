@@ -40,7 +40,7 @@ endif()
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   # option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 GLUT)
+  set(${proj}_DEPENDENCIES ITKv4)
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
   # Set CMake OSX variable to pass down the external project

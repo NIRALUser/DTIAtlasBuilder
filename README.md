@@ -54,6 +54,12 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
+#### [v1.6.4a](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.4a) (07/26/2020)
+- json related conversion ambiguity resolved.
+- glut is not going to be build. Freeglut needs to be installed as described in Dockerfile
+- OSX build bug fixed.
+
+
 #### [v1.6.4](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.6.4) (06/27/2020)
 - DTIAtlasBuilderResults.csv is now being generated for all the sub atlases
 - DTIAtlasBuilderResults.csv for the concatenated displacement fields is generated in the project root directory with the same name. This file has the original images' paths, the first level intermediate files and the concatenated displacement field file path from the final atlas to the individual images.

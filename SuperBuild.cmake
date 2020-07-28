@@ -200,7 +200,7 @@ list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4
                                                                                       ResampleDTIlogEuclidean
                                                                                       niral_utilities
                                                                                       CLAPACK
-                                                                                      GLUT
+                                                                                      #GLUT
                                                                                       MriWatcher
                                                                                       AtlasWerks
                                                                                       JSON 

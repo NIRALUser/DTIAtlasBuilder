@@ -26,13 +26,14 @@ endif()
 
 find_package(Qt5 COMPONENTS Core Widgets Gui)
 
+
 if(Qt5_FOUND)
   find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
   include_directories(${Qt5Widgets_INCLUDE_DIRS})
   add_definitions(${Qt5Widgets_DEFINITIONS})
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+  set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
   set(QT_LIBRARIES ${Qt5Widgets_LIBRARIES})
 
   qt5_add_resources(RCC_SRCS DTIAtlasBuilder.qrc)
@@ -150,7 +151,7 @@ SEMMacroBuildCLI(
   export(TARGETS ${LOCAL_NAME} APPEND FILE ${CMAKE_BINARY_DIR}/${PRIMARY_PROJECT_NAME}-exports.cmake)
 
 set_target_properties(DTIAtlasBuilder PROPERTIES COMPILE_FLAGS "-DDTIAtlasBuilder_BUILD_SLICER_EXTENSION=${SlicerExtCXXVar}")# Add preprocessor definitions
-
+set_property(TARGET DTIAtlasBuilder PROPERTY CXX_STANDARD 11 )
 
 
 
@@ -186,7 +187,7 @@ file(COPY ${teem_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/teem)
 file(COPY ${niral_utilities_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/niral_utilities)
 file(COPY ${BRAINSTools_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/BRAINSTools)
 file(COPY ${ResampleDTIlogEuclidean_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ResampleDTIlogEuclidean)
-file(COPY ${MriWatcher_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher)
+#file(COPY ${MriWatcher_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher)
 file(COPY ${ITKTransformTools_BINARY_DIR}/../ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ITKTransformTools)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Stylesheet/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/Stylesheet)
 
@@ -200,7 +201,7 @@ set(CropDTIPath  ${CMAKE_INSTALL_PREFIX}/bin/niral_utilities/bin/CropDTI)
 set(ImageMathPath  ${CMAKE_INSTALL_PREFIX}/bin/niral_utilities/bin/ImageMath)
 set(BRAINSFitPath  ${CMAKE_INSTALL_PREFIX}/bin/BRAINSTools/bin/BRAINSFit)
 set(ResampleDTIlogEuclideanPath  ${CMAKE_INSTALL_PREFIX}/bin/ResampleDTIlogEuclidean/bin/ResampleDTIlogEuclidean)
-set(MriWatcherPath  ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher/bin/MriWatcher)
+#set(MriWatcherPath  ${CMAKE_INSTALL_PREFIX}/bin/MriWatcher/bin/MriWatcher)
 set(ITKTransformToolsPath  ${CMAKE_INSTALL_PREFIX}/bin/ITKTransformTools/bin/ITKTransformTools)
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasBuilderSoftConfig.txt.in ${CMAKE_INSTALL_PREFIX}/bin/DTIAtlasBuilderSoftConfig.txt)
